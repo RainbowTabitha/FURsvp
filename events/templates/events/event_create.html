@@ -1,0 +1,181 @@
+{% extends 'events/base.html' %}
+{% block title %}Create Event - FURsvp{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb bg-transparent p-0">
+                    <li class="breadcrumb-item">
+                        <a href="/" class="text-decoration-none d-flex align-items-center">
+                            <i class="material-icons me-1">home</i> Events
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        <span class="text-primary">Create Event</span>
+                    </li>
+                </ol>
+            </nav>
+
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-4">
+                        <i class="material-icons text-primary me-2" style="font-size: 2.5rem;">add_circle</i>
+                        <h1 class="card-title display-5 mb-0">Create New Event</h1>
+                    </div>
+
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Title Field -->
+                        <div class="mb-4">
+                            <label for="{{ form.title.id_for_label }}" class="form-label fw-bold">
+                                <i class="material-icons align-middle me-1">event_note</i>
+                                Event Title
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="material-icons text-primary">edit</i>
+                                </span>
+                                {{ form.title }}
+                            </div>
+                            {% if form.title.help_text %}
+                                <div class="form-text">{{ form.title.help_text }}</div>
+                            {% endif %}
+                            {% if form.title.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.title.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Group Field -->
+                        <div class="mb-4">
+                            <label for="{{ form.group.id_for_label }}" class="form-label fw-bold">
+                                <i class="material-icons align-middle me-1">group</i>
+                                Group
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="material-icons text-primary">groups</i>
+                                </span>
+                                {{ form.group }}
+                            </div>
+                            {% if form.group.help_text %}
+                                <div class="form-text">{{ form.group.help_text }}</div>
+                            {% endif %}
+                            {% if form.group.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.group.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Date Field -->
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="{{ form.date.id_for_label }}" class="form-label fw-bold">
+                                    <i class="material-icons align-middle me-1">calendar_today</i>
+                                    Date
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light">
+                                        <i class="material-icons text-primary">event</i>
+                                    </span>
+                                    {{ form.date }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="{{ form.start_time.id_for_label }}" class="form-label fw-bold">
+                                    <i class="material-icons align-middle me-1">schedule</i>
+                                    Start Time
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light">
+                                        <i class="material-icons text-primary">schedule</i>
+                                    </span>
+                                    {{ form.start_time }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="{{ form.end_time.id_for_label }}" class="form-label fw-bold">
+                                    <i class="material-icons align-middle me-1">schedule</i>
+                                    End Time
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light">
+                                        <i class="material-icons text-primary">schedule</i>
+                                    </span>
+                                    {{ form.end_time }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Description Field -->
+                        <div class="mb-4">
+                            <label for="{{ form.description.id_for_label }}" class="form-label fw-bold">
+                                <i class="material-icons align-middle me-1">description</i>
+                                Description
+                            </label>
+                            {{ form.description }}
+                        </div>
+
+                        <div class="d-grid gap-2 mt-5">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="material-icons me-2">add</i> Create Event
+                            </button>
+                            <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                                <i class="material-icons me-2">arrow_back</i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize TinyMCE
+    tinymce.init({
+        selector: '#event-description',
+        height: 300,
+        width: '100%',
+        menubar: false,
+        plugins: 'advlist,autolink,lists,link,image,charmap,preview,anchor,searchreplace,visualblocks,code,fullscreen,insertdatetime,media,table,code,help,wordcount',
+        toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
+        content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; }',
+        branding: false,
+        promotion: false,
+        setup: function(editor) {
+            editor.on('init', function() {
+                editor.getContainer().style.transition = 'border-color 0.15s ease-in-out';
+            });
+        }
+    });
+
+    // Initialize Flatpickr
+    flatpickr("#{{ form.date.id_for_label }}", {
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        disableMobile: "true",
+        theme: "material_blue",
+        allowInput: true,
+        altInput: true,
+        altFormat: "F j, Y",
+        altInputClass: "form-control",
+        onChange: function(selectedDates, dateStr, instance) {
+            document.getElementById("{{ form.date.id_for_label }}").value = dateStr;
+        }
+    });
+});
+</script>
+{% endblock %}
+
+{% block extra_js %}
+{{ form.media }}
+<script>
+</script>
+{% endblock %}

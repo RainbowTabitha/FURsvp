@@ -1,0 +1,354 @@
+{% extends 'events/base.html' %}
+{% load users_extras %}
+{% load widget_tweaks %}
+{% block title %}Profile - FURsvp{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <div class="position-relative d-inline-block">
+                            {% if profile.profile_picture_base64 %}
+                                <img src="{{ profile.profile_picture_base64 }}" alt="{{ profile.get_display_name }}" class="rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                            {% else %}
+                                <div class="rounded-circle d-flex align-items-center justify-content-center avatar-initials-placeholder" style="background-color: {{ profile.get_avatar_color }};">
+                                    {{ profile.get_initials }}
+                                </div>
+                            {% endif %}
+                            <button type="button" class="btn btn-primary rounded-circle position-absolute" data-bs-toggle="modal" data-bs-target="#profilePictureModal" style="bottom: -10px; right: -10px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; padding: 0;">
+                                <i class="material-icons" style="font-size: 20px; line-height: 1;">edit</i>
+                            </button>
+                        </div>
+                        <h2 class="mt-3">{{ profile.get_display_name }}</h2>
+                        <p class="text-muted">@{{ user.username }}</p>
+                    </div>
+
+                    <form method="post" class="mb-4" id="main-profile-form" action="{% url 'profile' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="submit_profile_changes" value="1">
+                        
+                        <div class="mb-3">
+                            <label for="{{ profile_form.display_name.id_for_label }}" class="form-label">
+                                <i class="material-icons align-middle me-1">badge</i>
+                                Display Name
+                            </label>
+                            {{ profile_form.display_name }}
+                            {% if profile_form.display_name.help_text %}
+                                <div class="form-text">{{ profile_form.display_name.help_text }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ profile_form.discord_username.id_for_label }}" class="form-label">
+                                <i class="material-icons align-middle me-1">chat</i>
+                                Discord Username
+                            </label>
+                            {{ profile_form.discord_username }}
+                            {% if profile_form.discord_username.help_text %}
+                                <div class="form-text">{{ profile_form.discord_username.help_text }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ profile_form.telegram_username.id_for_label }}" class="form-label">
+                                <i class="material-icons align-middle me-1">send</i>
+                                Telegram Username
+                            </label>
+                            {{ profile_form.telegram_username }}
+                            {% if profile_form.telegram_username.help_text %}
+                                <div class="form-text">{{ profile_form.telegram_username.help_text }}</div>
+                            {% endif %}
+                        </div>
+
+                        {{ profile_form.profile_picture_base64 }}
+
+                        {% if profile.is_approved_organizer %}
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="material-icons align-middle me-1">star</i>
+                                    Approved Group Administrator
+                                </label>
+                                <p class="form-control-static">Yes</p>
+                            </div>
+                        {% else %}
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="material-icons align-middle me-1">star</i>
+                                    Approved Group Administrator
+                                </label>
+                                <p class="form-control-static">No</p>
+                            </div>
+                        {% endif %}
+
+                        <div class="d-grid">
+                            <button type="button" class="btn btn-primary" id="main-profile-save-button">
+                                <i class="material-icons">save</i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+
+                    {% if profile.is_approved_organizer %}
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h2 class="h4 mb-0">
+                                <i class="material-icons">event</i> Your Events
+                            </h2>
+                            <a href="{% url 'create_event' %}" class="btn btn-primary">
+                                <i class="material-icons">add_circle</i> Create New Event
+                            </a>
+                        </div>
+
+                        <div class="row">
+                            {% for event in user_events %}
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="card shadow-sm h-100">
+                                    <div class="card-body d-flex flex-column">
+                                        <h5 class="card-title text-primary">
+                                            <a href="{% url 'event_detail' event.id %}" class="text-decoration-none text-primary">{{ event.title }}</a>
+                                        </h5>
+                                        <p class="card-text mb-1"><i class="material-icons me-1 align-middle">group</i> {{ event.group.name }}</p>
+                                        <p class="card-text mb-3"><i class="material-icons me-1 align-middle">calendar_today</i> {{ event.date }}</p>
+                                        <div class="mt-auto">
+                                            <span class="badge bg-primary rounded-pill py-2 px-3">
+                                                <i class="material-icons me-1 align-middle">people</i> {{ event.rsvps.count }} RSVPs
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="col-12">
+                                <div class="alert alert-info text-center" role="alert">
+                                    <i class="material-icons align-middle me-2">info</i> You haven't created any events yet.
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Assistant Assignments Section -->
+                        <div class="mt-5">
+                            <h2 class="h4 mb-4">
+                                <i class="material-icons">groups</i> Assistant Assignments
+                            </h2>
+
+                            <!-- Create New Assignment Form -->
+                            <div class="card shadow-sm mb-4">
+                                <div class="card-body">
+                                    <h3 class="h5 mb-3">Assign New Assistant</h3>
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="create_assignment_submit" value="1">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label for="{{ assistant_assignment_form.delegated_user.id_for_label }}" class="form-label">
+                                                    <i class="material-icons align-middle me-1">person_add</i>
+                                                    Select User
+                                                </label>
+                                                {{ assistant_assignment_form.delegated_user|add_class:"form-select" }}
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="{{ assistant_assignment_form.group.id_for_label }}" class="form-label">
+                                                    <i class="material-icons align-middle me-1">group</i>
+                                                    Select Group
+                                                </label>
+                                                {{ assistant_assignment_form.group|add_class:"form-select" }}
+                                            </div>
+                                        </div>
+                                        <div class="mt-3">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="material-icons">add</i> Assign Assistant
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- Existing Assignments -->
+                            {% if existing_assignments %}
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <h3 class="h5 mb-3">Current Assignments</h3>
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>User</th>
+                                                    <th>Group</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for assignment in existing_assignments %}
+                                                <tr>
+                                                    <td>{{ assignment.delegated_user.username }}</td>
+                                                    <td>{{ assignment.group.name }}</td>
+                                                    <td>
+                                                        <form method="post" style="display: inline;">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="delete_assignment_submit" value="1">
+                                                            <input type="hidden" name="assignment_id" value="{{ assignment.id }}">
+                                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to remove this assistant?')">
+                                                                <i class="material-icons">delete</i>
+                                                            </button>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-info text-center" role="alert">
+                                <i class="material-icons align-middle me-2">info</i> No assistant assignments yet.
+                            </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Profile Picture Modal -->
+<div class="modal fade" id="profilePictureModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="material-icons">photo_camera</i> Update Profile Picture
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="profile-picture-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="profile_picture_base64" id="profile-picture-base64">
+                    <input type="hidden" name="submit_pfp_changes" value="1">
+                    <div class="mb-3">
+                        <label for="profile-picture-input" class="form-label">Choose an image</label>
+                        <input type="file" class="form-control" id="profile-picture-input" accept="image/*">
+                    </div>
+                    <div class="mb-3 d-none" id="image-cropper-container">
+                        <img id="image-to-crop" src="" alt="Image to Crop" style="max-width: 100%; display: block;">
+                    </div>
+
+                    <!-- Remove Profile Picture Button -->
+                    {% if profile.profile_picture_base64 %}
+                    <div class="mb-3" id="remove-pfp-button-container">
+                        <button type="button" class="btn btn-outline-danger w-100" id="remove-pfp-button">
+                            <i class="material-icons me-2">delete</i> Remove Current Profile Picture
+                        </button>
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="crop-and-save-button">Crop and Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-initials-placeholder {
+        width: 150px;
+        height: 150px;
+        color: white;
+        font-size: 3rem;
+        font-weight: bold;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const profilePictureInput = document.getElementById('profile-picture-input');
+    const imageToCrop = document.getElementById('image-to-crop');
+    const imageCropperContainer = document.getElementById('image-cropper-container');
+    const profilePictureBase64Input = document.getElementById('profile-picture-base64');
+    const cropAndSaveButton = document.getElementById('crop-and-save-button');
+    const removePfpButtonContainer = document.getElementById('remove-pfp-button-container');
+    const removePfpButton = document.getElementById('remove-pfp-button');
+    let cropper;
+
+    // Show/hide remove button based on if a profile picture exists
+    if (removePfpButtonContainer && profilePictureBase64Input.value) {
+        removePfpButtonContainer.style.display = 'block';
+    }
+
+    profilePictureInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                imageToCrop.src = event.target.result;
+                if (cropper) {
+                    cropper.destroy();
+                }
+                imageCropperContainer.classList.remove('d-none');
+                cropper = new Cropper(imageToCrop, {
+                    aspectRatio: 1 / 1,
+                    viewMode: 1,
+                    autoCropArea: 0.8,
+                    responsive: true,
+                    dragMode: 'move',
+                    cropBoxMovable: true,
+                    cropBoxResizable: true,
+                    toggleDragModeOnDblclick: false
+                });
+                // Hide remove button when a new image is selected for upload
+                if (removePfpButtonContainer) {
+                    removePfpButtonContainer.style.display = 'none';
+                }
+            };
+            reader.readAsDataURL(file);
+        } else {
+            // If no file selected (e.g., cleared input), hide cropper and show remove button if pfp exists
+            if (cropper) {
+                cropper.destroy();
+            }
+            imageCropperContainer.classList.add('d-none');
+            if (removePfpButtonContainer && profilePictureBase64Input.value) {
+                removePfpButtonContainer.style.display = 'block';
+            }
+        }
+    });
+
+    cropAndSaveButton.addEventListener('click', function() {
+        if (cropper) {
+            const croppedCanvas = cropper.getCroppedCanvas({
+                width: 150, // Target width for the profile picture
+                height: 150 // Target height for the profile picture
+            });
+            profilePictureBase64Input.value = croppedCanvas.toDataURL('image/jpeg');
+            document.getElementById('profile-picture-form').submit();
+        }
+    });
+
+    if (removePfpButton) {
+        removePfpButton.addEventListener('click', function() {
+            if (confirm('Are you sure you want to remove your profile picture?')) {
+                profilePictureBase64Input.value = ''; // Clear the base64 value
+                document.getElementById('profile-picture-form').submit();
+            }
+        });
+    }
+
+    // Handle main profile form submission
+    const mainProfileSaveButton = document.getElementById('main-profile-save-button');
+    const mainProfileForm = document.getElementById('main-profile-form');
+
+    if (mainProfileSaveButton && mainProfileForm) {
+        mainProfileSaveButton.addEventListener('click', function() {
+            console.log("Attempting to submit main profile form..."); // New debug log
+            mainProfileForm.submit();
+        });
+    }
+});
+</script>
+{% endblock %} 

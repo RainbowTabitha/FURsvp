@@ -1,0 +1,381 @@
+{% extends 'events/base.html' %}
+{% load users_extras %}
+{% block title %}{{ event.title }} - FURsvp{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb bg-transparent p-0">
+                    <li class="breadcrumb-item">
+                        <a href="/" class="text-decoration-none d-flex align-items-center">
+                            <i class="material-icons me-1">home</i> Events
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        <span class="text-primary">{{ event.title }}</span>
+                    </li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h1 class="card-title display-5 mb-4">{{ event.title }}</h1>
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="material-icons text-primary me-2">group</i>
+                        <strong>Group:</strong>
+                        <span class="ms-2">{{ event.group.name }}</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="material-icons text-primary me-2">calendar_today</i>
+                        <strong>Date:</strong>
+                        <span class="ms-2">{{ event.date }}</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="material-icons text-primary me-2">schedule</i>
+                        <strong>Time:</strong>
+                        <span class="ms-2">
+                            {{ event.start_time|time:"g:i A" }}
+                            {% if event.end_time %}
+                                - {{ event.end_time|time:"g:i A" }}
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="mt-4">
+                        <h5 class="mb-3">Description</h5>
+                        <p class="card-text">{{ event.description|safe }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RSVP Panel moved here -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h2 class="card-title h4 mb-4">
+                        <i class="material-icons">how_to_reg</i> RSVP
+                    </h2>
+                    {% if user.is_authenticated %}
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="mb-4">
+                                <label for="{{ form.status.id_for_label }}" class="form-label fw-bold">
+                                    <i class="material-icons align-middle me-1">event_available</i>
+                                    Your Response
+                                </label>
+                                {{ form.status }}
+                            </div>
+                        </form>
+                        {% if user_rsvp %}
+                            <form method="post" class="mb-4">
+                                {% csrf_token %}
+                                <input type="hidden" name="remove_rsvp" value="1">
+                                <button type="submit" class="btn btn-outline-danger w-100" onclick="return confirm('Are you sure you want to remove your RSVP for this event?')">
+                                    <i class="material-icons">person_remove</i> Remove My RSVP
+                                </button>
+                            </form>
+                        {% endif %}
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="material-icons align-middle me-1">info</i> Please log in to RSVP.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Attendee List moved here (outside of login check) -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h3 class="h5 mb-3">
+                        <i class="material-icons">groups</i> Attendees
+                    </h3>
+                    <!-- Attending -->
+                    <div class="mb-3">
+                        <h4 class="h6 text-success mb-2">
+                            <i class="material-icons align-middle me-1">check_circle</i> Attending ({{ rsvp_groups.attending|length }})
+                        </h4>
+                        <div class="list-group list-group-flush">
+                            {% for rsvp_data in rsvp_groups.attending %}
+                                {% with rsvp=rsvp_data.rsvp %}
+                                <div class="list-group-item d-flex align-items-center py-2">
+                                    {% if rsvp.user %}
+                                        <div class="me-2">{{ rsvp.user.profile|get_avatar_sized_html:32|safe }}</div>
+                                        {% if can_view_contact_info %}
+                                            <a href="#" class="text-body js-open-contact-modal"
+                                               data-display-name="{{ rsvp.user.profile.get_display_name }}"
+                                               data-discord="{{ rsvp.user.profile.discord_username|default_if_none:'' }}"
+                                               data-telegram="{{ rsvp.user.profile.telegram_username|default_if_none:'' }}"
+                                               data-user-id="{{ rsvp.user.id }}"
+                                               data-is-banned="{{ rsvp_data.is_banned|yesno:'true,false' }}">
+                                                {{ rsvp.user.profile.get_display_name }}
+                                            </a>
+                                        {% else %}
+                                            {{ rsvp.user.profile.get_display_name }}
+                                        {% endif %}
+                                    {% else %}
+                                        <div class="me-2"><i class="material-icons text-muted">person</i></div>
+                                        <span class="text-body">{{ rsvp.name }}</span>
+                                    {% endif %}
+                                </div>
+                                {% endwith %}
+                            {% empty %}
+                                <div class="list-group-item text-muted py-2">No attendees yet</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <!-- Maybe -->
+                    <div class="mb-3">
+                        <h4 class="h6 text-warning mb-2">
+                            <i class="material-icons align-middle me-1">help</i> Maybe ({{ rsvp_groups.maybe|length }})
+                        </h4>
+                        <div class="list-group list-group-flush">
+                            {% for rsvp_data in rsvp_groups.maybe %}
+                                {% with rsvp=rsvp_data.rsvp %}
+                                <div class="list-group-item d-flex align-items-center py-2">
+                                    {% if rsvp.user %}
+                                        <div class="me-2">{{ rsvp.user.profile|get_avatar_sized_html:32|safe }}</div>
+                                        {% if can_view_contact_info %}
+                                            <a href="#" class="text-body js-open-contact-modal"
+                                               data-display-name="{{ rsvp.user.profile.get_display_name }}"
+                                               data-discord="{{ rsvp.user.profile.discord_username|default_if_none:'' }}"
+                                               data-telegram="{{ rsvp.user.profile.telegram_username|default_if_none:'' }}"
+                                               data-user-id="{{ rsvp.user.id }}"
+                                               data-is-banned="{{ rsvp_data.is_banned|yesno:'true,false' }}">
+                                                {{ rsvp.user.profile.get_display_name }}
+                                            </a>
+                                        {% else %}
+                                            {{ rsvp.user.profile.get_display_name }}
+                                        {% endif %}
+                                    {% else %}
+                                        <div class="me-2"><i class="material-icons text-muted">person</i></div>
+                                        <span class="text-body">{{ rsvp.name }}</span>
+                                    {% endif %}
+                                </div>
+                                {% endwith %}
+                            {% empty %}
+                                <div class="list-group-item text-muted py-2">No maybes yet</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <!-- Not Attending -->
+                    <div class="mb-3">
+                        <h4 class="h6 text-danger mb-2">
+                            <i class="material-icons align-middle me-1">cancel</i> Not Attending ({{ rsvp_groups.not_attending|length }})
+                        </h4>
+                        <div class="list-group list-group-flush">
+                            {% for rsvp_data in rsvp_groups.not_attending %}
+                                {% with rsvp=rsvp_data.rsvp %}
+                                <div class="list-group-item d-flex align-items-center py-2">
+                                    {% if rsvp.user %}
+                                        <div class="me-2">{{ rsvp.user.profile|get_avatar_sized_html:32|safe }}</div>
+                                        {% if can_view_contact_info %}
+                                            <a href="#" class="text-body js-open-contact-modal"
+                                               data-display-name="{{ rsvp.user.profile.get_display_name }}"
+                                               data-discord="{{ rsvp.user.profile.discord_username|default_if_none:'' }}"
+                                               data-telegram="{{ rsvp.user.profile.telegram_username|default_if_none:'' }}"
+                                               data-user-id="{{ rsvp.user.id }}"
+                                               data-is-banned="{{ rsvp_data.is_banned|yesno:'true,false' }}">
+                                                {{ rsvp.user.profile.get_display_name }}
+                                            </a>
+                                        {% else %}
+                                            {{ rsvp.user.profile.get_display_name }}
+                                        {% endif %}
+                                    {% else %}
+                                        <div class="me-2"><i class="material-icons text-muted">person</i></div>
+                                        <span class="text-body">{{ rsvp.name }}</span>
+                                    {% endif %}
+                                </div>
+                                {% endwith %}
+                            {% empty %}
+                                <div class="list-group-item text-muted py-2">No declines yet</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right column for staff/admin panels -->
+        <div class="col-lg-4">
+            {% if is_organizer or is_site_admin %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h2 class="card-title h5 mb-3">
+                        <i class="material-icons">edit</i> Manage Event
+                    </h2>
+                    <a href="{% url 'edit_event' event.id %}" class="btn btn-primary w-100 mb-2">
+                        <i class="material-icons">edit</i> Edit Event
+                    </a>
+                    <form method="post" onsubmit="return confirm('Are you sure you want to delete this event? This action cannot be undone.');">
+                        {% csrf_token %}
+                        <input type="hidden" name="delete_event" value="1">
+                        <button type="submit" class="btn btn-danger w-100">
+                            <i class="material-icons">delete_forever</i> Delete Event
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Attendee Contact Modal -->
+<div class="modal fade" id="attendeeContactModal" tabindex="-1" aria-labelledby="attendeeContactModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="attendeeContactModalLabel">Contact Info</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Content will be dynamically loaded here by JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <!-- Buttons will be dynamically loaded here by JavaScript -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    window.onload = function() {
+        console.log("Window loaded: Initializing modal logic.");
+        // Explicitly define a JavaScript variable for can_view_contact_info
+        const canViewContactInfo = JSON.parse("{{ can_view_contact_info|lower }}");
+
+        // Existing JavaScript for RSVP form and avatar cropper...
+
+        // Attendee Contact Modal Logic
+        document.querySelectorAll('.js-open-contact-modal').forEach(button => {
+            button.addEventListener('click', function (event) {
+                event.preventDefault(); // Prevent default link behavior
+
+                // Get the modal element when the button is clicked
+                const attendeeContactModalElement = document.querySelector('#attendeeContactModal');
+                if (!attendeeContactModalElement) {
+                    console.error('Modal element with ID "attendeeContactModal" not found inside click handler.');
+                    return; // Exit if the modal element is not found
+                }
+
+                // Extract info from data-bs-attributes
+                const displayName = button.getAttribute('data-display-name');
+                const discordUsername = button.getAttribute('data-discord');
+                const telegramUsername = button.getAttribute('data-telegram');
+                const userId = button.getAttribute('data-user-id');
+                const isBanned = button.getAttribute('data-is-banned') === 'true';
+
+                // Update the modal's content.
+                const modalTitle = attendeeContactModalElement.querySelector('.modal-title');
+                const modalBody = attendeeContactModalElement.querySelector('.modal-body');
+                const modalFooter = attendeeContactModalElement.querySelector('.modal-footer');
+
+                modalTitle.textContent = 'Contact Info for ' + displayName;
+
+                let bodyContent = '';
+                if (discordUsername) {
+                    bodyContent += '<p><i class="material-icons align-middle me-1">chat</i> Discord: ' + discordUsername + '</p>';
+                } else {
+                    bodyContent += '<p><i class="material-icons align-middle me-1">chat</i> Discord: Not provided</p>';
+                }
+                if (telegramUsername) {
+                    bodyContent += '<p><i class="material-icons align-middle me-1">send</i> Telegram: ' + telegramUsername + '</p>';
+                } else {
+                    bodyContent += '<p><i class="material-icons align-middle me-1">send</i> Telegram: Not provided</p>';
+                }
+                
+                // Use the new JavaScript variable for permission check
+                if (canViewContactInfo) {
+                    bodyContent += '<hr>';
+                    bodyContent += '<p><strong>Ban Status:</strong> <span id="banStatusBadge" class="badge bg-' + (isBanned ? 'danger' : 'success') + '">' + (isBanned ? 'Banned' : 'Not Banned') + '</span></p>';
+                    bodyContent += '<div class="mb-3"><label for="banReason" class="form-label">' + (isBanned ? 'Unban Reason (Optional):' : 'Ban Reason (Optional):') + '</label><textarea class="form-control" id="banReason" rows="2"></textarea></div>';
+                }
+
+                modalBody.innerHTML = bodyContent;
+
+                let footerContent = '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>';
+                if (canViewContactInfo) {
+                    if (isBanned) {
+                        footerContent += '<button type="button" class="btn btn-success ms-2" id="unbanUserBtn" data-user-id="' + userId + '">Unban User</button>';
+                    } else {
+                        footerContent += '<button type="button" class="btn btn-danger ms-2" id="banUserBtn" data-user-id="' + userId + '">Ban User</button>';
+                    }
+                }
+                modalFooter.innerHTML = footerContent;
+
+                const banUserBtn = document.getElementById('banUserBtn');
+                if (banUserBtn) {
+                    banUserBtn.addEventListener('click', function() {
+                        handleBanUnban('ban', userId, '{{ event.group.id }}');
+                    });
+                }
+
+                const unbanUserBtn = document.getElementById('unbanUserBtn');
+                if (unbanUserBtn) {
+                    unbanUserBtn.addEventListener('click', function() {
+                        handleBanUnban('unban', userId, '{{ event.group.id }}');
+                    });
+                }
+                // Get or create the Modal instance when the button is clicked
+                const modalInstance = bootstrap.Modal.getOrCreateInstance(attendeeContactModalElement, {});
+                modalInstance.show(); // Manually show the modal
+            });
+        });
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        async function handleBanUnban(action, userId, groupId) {
+            const reasonInput = document.getElementById('banReason');
+            const reason = reasonInput ? reasonInput.value : '';
+            const csrfToken = getCookie('csrftoken');
+
+            const formData = new FormData();
+            formData.append('user_id', userId);
+            formData.append('group_id', groupId);
+            formData.append('action', action);
+            formData.append('reason', reason);
+
+            try {
+                const response = await fetch('{% url "ban_user" %}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while processing your request.');
+            }
+        }
+    };
+</script>
+{% endblock %} 

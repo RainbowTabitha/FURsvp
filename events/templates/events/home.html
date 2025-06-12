@@ -1,0 +1,67 @@
+{% extends 'events/base.html' %}
+{% block title %}Home - FURsvp{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center mb-5">
+        <div class="col-lg-8 text-center">
+            <h1 class="display-4 mb-4">FURsvp Event Manager</h1>
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <p class="lead">Dedicated to helping organizers of events of all sizes in the furry community, FURsvp's event manager is great for organizers who need a quick-and-dirty solution to get a head count, or as a free and hassle-free alternative to mainstream event services. RSVPing for an event is as simple as filling in your name, no user account needed.</p>
+                    <p class="mb-0">Please share your thoughts, ideas and feedback regarding this service. We'd love to hear from you! 
+                        <a href="mailto:info@tabithahanegan.com" class="text-decoration-none">
+                            <i class="material-icons">email</i> Email us!
+                        </a>
+                    </p>
+                </div>
+            </div>
+            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                {% if user.is_authenticated and user.profile.is_approved_organizer %}
+                <a href="{% url 'create_event' %}" class="btn btn-primary btn-lg px-4 gap-3">
+                    <i class="material-icons" style="vertical-align: middle; line-height: 1;">add_circle</i> Create an Event
+                </a>
+                {% elif user.is_authenticated%}
+                {% else %}
+                <a href="{% url 'register' %}" class="btn btn-primary btn-lg px-4 gap-3">
+                    <i class="material-icons" style="vertical-align: middle; line-height: 1;">person_add</i> Create an Account
+                </a>
+                <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg px-4">
+                    <i class="material-icons" style="vertical-align: middle; line-height: 1;">login</i> Login
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <h2 class="mb-4">
+        <i class="material-icons" style="vertical-align: middle; line-height: 1;">event</i> Upcoming Events
+    </h2>
+    <div class="row">
+        {% for event in events %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title text-primary">
+                        <a href="{% url 'event_detail' event.id %}" class="text-decoration-none text-primary">{{ event.title }}</a>
+                    </h5>
+                    <p class="card-text mb-1"><i class="material-icons me-1 align-middle">group</i> {{ event.group.name }}</p>
+                    <p class="card-text mb-3"><i class="material-icons me-1 align-middle">calendar_today</i> {{ event.date }}</p>
+                    <div class="mt-auto">
+                        <span class="badge bg-primary rounded-pill py-2 px-3">
+                            <i class="material-icons me-1 align-middle">people</i> {{ event.rsvps.count }} RSVPs
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info text-center" role="alert">
+                <i class="material-icons align-middle me-2">event_busy</i> No upcoming events found.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 

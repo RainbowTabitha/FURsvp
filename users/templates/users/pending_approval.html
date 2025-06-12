@@ -1,0 +1,10 @@
+{% extends 'events/base.html' %}
+{% block title %}Pending Approval - FURsvp{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Account Pending Approval</h1>
+    <p>Your account is currently awaiting approval from an administrator. You will be able to create events once your account has been approved.</p>
+    <p><a href="{% url 'home' %}">Back to Homepage</a></p>
+</div>
+{% endblock %} 

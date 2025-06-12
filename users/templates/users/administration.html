@@ -1,0 +1,283 @@
+{% extends 'events/base.html' %}
+{% load users_extras %}
+{% load widget_tweaks %}
+{% block title %}Administration - FURsvp{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb bg-transparent p-0 flex-nowrap">
+                    <li class="breadcrumb-item">
+                        <a href="/" class="text-decoration-none d-flex align-items-center">
+                            <i class="material-icons me-1">home</i> Home
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        <span class="text-primary">Administration</span>
+                    </li>
+                </ol>
+            </nav>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <i class="material-icons me-2">info</i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- User Management Section -->
+            <div class="card shadow-lg border-0 rounded-4 mb-4">
+                <div class="card-body p-4">
+                    <h2 class="card-title h4 mb-4 text-primary fw-bold">
+                        <i class="material-icons me-2">people</i> Manage Users
+                    </h2>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle caption-top mb-0">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">person</i> Username</th>
+                                        <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">email</i> Email</th>
+                                        <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">admin_panel_settings</i> Site Admin</th>
+                                        <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">how_to_reg</i> Approved Group Administrator</th>
+                                        <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">group</i> Admin Groups</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user_obj in users_to_promote %}
+                                    <tr>
+                                        <td>{{ user_obj.username }}</td>
+                                        <td>{{ user_obj.email }}</td>
+                                        <td>
+                                            <span class="badge {% if user_obj.is_superuser %}bg-success{% else %}bg-danger{% endif %} py-2 px-3 rounded-pill fw-normal">
+                                                {{ user_obj.is_superuser|yesno:"Yes,No" }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% with profile_form=user_profile_forms|get_item:user_obj.id %}
+                                                <div class="form-check form-switch form-check-lg">
+                                                    <label class="form-check-label" for="{{ profile_form.is_approved_organizer.id_for_label }}">Approved Organizer</label>
+                                                    {{ profile_form.is_approved_organizer|add_class:"form-check-input" }}
+                                                </div>
+                                            {% endwith %}
+                                        </td>
+                                        <td>
+                                            {% with profile_form=user_profile_forms|get_item:user_obj.id %}
+                                                {{ profile_form.allowed_groups|add_class:"tomselect-allowed-groups form-select form-select-sm" }}
+                                            {% endwith %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4 text-muted">
+                                            <i class="material-icons d-block mb-2 fs-1">person_off</i>
+                                            No users found.
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <button type="submit" name="promote_users_submit" class="btn btn-primary btn-lg rounded-pill px-4 shadow-sm">
+                                <i class="material-icons me-2">save</i> Update Approval Status
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Group Management Section -->
+            <div class="card shadow-lg border-0 rounded-4 mb-4">
+                <div class="card-body p-4">
+                    <h2 class="card-title h4 mb-4 text-primary fw-bold">
+                        <i class="material-icons me-2">groups</i> Manage Groups
+                    </h2>
+
+                    <!-- Create New Group Form -->
+                    <div class="card bg-light border-0 rounded-3 mb-4">
+                        <div class="card-body">
+                            <h3 class="h5 mb-3 text-secondary">
+                                <i class="material-icons me-2">add_circle</i> Create New Group
+                            </h3>
+                            <form method="post">
+                                {% csrf_token %}
+                                <div class="row g-3 align-items-center">
+                                    <div class="col-sm-auto flex-grow-1">
+                                        {{ group_form.name|add_class:"form-control form-control-lg"|attr:"placeholder:Enter group name" }}
+                                    </div>
+                                    <div class="col-sm-auto">
+                                        <button type="submit" name="create_group_submit" class="btn btn-success btn-lg rounded-pill px-4 shadow-sm">
+                                            <i class="material-icons me-2">add</i> Create Group
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Existing Groups Table -->
+                    <h3 class="h5 mb-3 text-secondary">
+                        <i class="material-icons me-2">list</i> Existing Groups
+                    </h3>
+                    {% if all_groups %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle caption-top mb-0">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">label</i> Group Name</th>
+                                        <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">edit</i> Rename</th>
+                                        <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">delete</i> Delete</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for group in all_groups %}
+                                    <tr>
+                                        <td><span class="badge bg-info text-dark py-2 px-3 rounded-pill fw-normal">{{ group.name }}</span></td>
+                                        <td>
+                                            <form method="post" class="d-flex gap-2">
+                                                {% csrf_token %}
+                                                {% with rename_form=rename_group_forms|get_item:group.id %}
+                                                    {{ rename_form.name|add_class:"form-control form-control-sm"|attr:"placeholder:Rename group" }}
+                                                {% endwith %}
+                                                <button type="submit" name="rename_group_{{ group.id }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                                    <i class="material-icons">edit</i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                        <td>
+                                            <form method="post" class="d-inline"
+                                                  onsubmit="return confirm('Are you sure you want to delete group \'{{ group.name }}\'?');">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="group_id" value="{{ group.id }}">
+                                                <button type="submit" name="delete_group_submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                                                    <i class="material-icons">delete</i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info border-0 rounded-3 text-muted">
+                            <i class="material-icons me-2">info</i>
+                            No groups created yet.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Ban Management Section -->
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-body p-4">
+                    <h2 class="card-title h4 mb-4 text-primary fw-bold">
+                        <i class="material-icons me-2">group_off</i> Manage Bans
+                    </h2>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle caption-top mb-0">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">person</i> Banned User</th>
+                                    <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">group</i> Group</th>
+                                    <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">admin_panel_settings</i> Banned By</th>
+                                    <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">description</i> Reason</th>
+                                    <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">event</i> Banned At</th>
+                                    <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">cancel</i> Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for banned_entry in all_banned_users %}
+                                <tr>
+                                    <td>{{ banned_entry.user.username }}</td>
+                                    <td>{{ banned_entry.group.name }}</td>
+                                    <td>{{ banned_entry.banned_by.username|default:"N/A" }}</td>
+                                    <td>{{ banned_entry.reason|default:"No reason provided" }}</td>
+                                    <td>{{ banned_entry.banned_at|date:"Y-m-d H:i" }}</td>
+                                    <td>
+                                        <form method="post" action="{% url 'ban_user' %}" class="d-inline" onsubmit="return confirm('Are you sure you want to unban {{ banned_entry.user.username }} from {{ banned_entry.group.name }}?');">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="user_id" value="{{ banned_entry.user.id }}">
+                                            <input type="hidden" name="group_id" value="{{ banned_entry.group.id }}">
+                                            <input type="hidden" name="action" value="unban">
+                                            <button type="submit" class="btn btn-sm btn-success rounded-pill px-3">
+                                                <i class="material-icons me-1">lock_open</i> Unban
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">No users currently banned.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM Content Loaded. Attempting to initialize TomSelect.');
+        const elements = document.querySelectorAll('select.tomselect-allowed-groups');
+        console.log(`Found ${elements.length} elements with class 'tomselect-allowed-groups'.`);
+        elements.forEach(function(element) {
+            console.log('Initializing TomSelect for element:', element);
+            new TomSelect(element, {
+                plugins: {
+                    remove_button: {
+                        title: 'Remove this item',
+                    }
+                },
+                dropdownParent: 'body',
+                create: false, // Prevent users from creating new options
+                onInitialize: function() {
+                    // Add modern styling to TomSelect elements
+                    this.wrapper.classList.add('form-select-sm', 'rounded-pill');
+                    this.control.classList.add('rounded-pill');
+                    this.dropdown.classList.add('shadow', 'rounded-3');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
+
+<style>
+    .breadcrumb {
+        font-size: 1.1rem;
+    }
+    
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: "›";
+        font-size: 1.5rem;
+        line-height: 1;
+        color: #6c757d;
+    }
+    
+    .breadcrumb-item a {
+        color: #6c757d;
+        transition: color 0.2s ease-in-out;
+    }
+    
+    .breadcrumb-item a:hover {
+        color: var(--primary-color);
+    }
+    
+    .breadcrumb-item.active {
+        color: var(--primary-color);
+    }
+</style>
