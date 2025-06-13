@@ -71,10 +71,13 @@ class EventForm(forms.ModelForm):
             # Check for assistant status
             assistant_groups = Group.objects.filter(
                 groupdelegation__delegated_user=user
-            ).distinct()
+            )
             
-            # Combine querysets
-            combined_groups = (allowed_groups | assistant_groups).distinct()
+            # Combine querysets with consistent distinct settings
+            combined_groups = Group.objects.filter(
+                id__in=allowed_groups.values_list('id', flat=True) | 
+                      assistant_groups.values_list('id', flat=True)
+            ).distinct()
             
             if combined_groups.exists():
                 self.fields['group'].queryset = combined_groups
