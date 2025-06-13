@@ -5,12 +5,38 @@ from django.contrib.auth.decorators import login_required
 from .forms import EventForm, RSVPForm
 from users.models import Profile, GroupDelegation, BannedUser
 from django.contrib import messages
+from django.db import models
 
 # Create your views here.
 
 def home(request):
-    events = Event.objects.order_by('date')
-    return render(request, 'events/home.html', {'events': events})
+    # Get sort parameters from request
+    sort_by = request.GET.get('sort', 'date')  # Default sort by date
+    sort_order = request.GET.get('order', 'asc')  # Default ascending order
+    
+    # Base queryset
+    events = Event.objects.all()
+    
+    # Apply sorting
+    if sort_by == 'date':
+        events = events.order_by('date' if sort_order == 'asc' else '-date')
+    elif sort_by == 'group':
+        events = events.order_by('group__name' if sort_order == 'asc' else '-group__name')
+    elif sort_by == 'organizer':
+        events = events.order_by('organizer__username' if sort_order == 'asc' else '-organizer__username')
+    elif sort_by == 'title':
+        events = events.order_by('title' if sort_order == 'asc' else '-title')
+    elif sort_by == 'rsvps':
+        events = events.annotate(rsvp_count=models.Count('rsvps')).order_by(
+            'rsvp_count' if sort_order == 'asc' else '-rsvp_count'
+        )
+    
+    context = {
+        'events': events,
+        'current_sort': sort_by,
+        'current_order': sort_order,
+    }
+    return render(request, 'events/home.html', context)
 
 def event_detail(request, event_id):
     event = get_object_or_404(Event, pk=event_id)

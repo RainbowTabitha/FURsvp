@@ -37,6 +37,56 @@
     <h2 class="mb-4">
         <i class="material-icons" style="vertical-align: middle; line-height: 1;">event</i> Upcoming Events
     </h2>
+    
+    <!-- Sorting Controls -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-auto mb-3 mb-md-0">
+                    <label class="form-label mb-0 fs-5 text-primary fw-bold">
+                        <i class="material-icons align-middle me-2">sort</i> Sort by:
+                    </label>
+                </div>
+                <div class="col-md-auto flex-grow-1">
+                    <div class="btn-group w-100" role="group">
+                        <a href="?sort=date&order={{ current_order }}" 
+                           class="btn btn-outline-primary flex-fill {% if current_sort == 'date' %}active{% endif %}">
+                            <i class="material-icons align-middle" style="font-size: 20px;">calendar_today</i> Date
+                        </a>
+                        <a href="?sort=group&order={{ current_order }}" 
+                           class="btn btn-outline-primary flex-fill {% if current_sort == 'group' %}active{% endif %}">
+                            <i class="material-icons align-middle" style="font-size: 20px;">group</i> Group
+                        </a>
+                        <a href="?sort=organizer&order={{ current_order }}" 
+                           class="btn btn-outline-primary flex-fill {% if current_sort == 'organizer' %}active{% endif %}">
+                            <i class="material-icons align-middle" style="font-size: 20px;">person</i> Organizer
+                        </a>
+                        <a href="?sort=title&order={{ current_order }}" 
+                           class="btn btn-outline-primary flex-fill {% if current_sort == 'title' %}active{% endif %}">
+                            <i class="material-icons align-middle" style="font-size: 20px;">title</i> Title
+                        </a>
+                        <a href="?sort=rsvps&order={{ current_order }}" 
+                           class="btn btn-outline-primary flex-fill {% if current_sort == 'rsvps' %}active{% endif %}">
+                            <i class="material-icons align-middle" style="font-size: 20px;">people</i> RSVPs
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-auto text-md-end mt-3 mt-md-0">
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="sortOrderDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="material-icons align-middle" style="font-size: 18px;">{% if current_order == 'desc' %}arrow_downward{% else %}arrow_upward{% endif %}</i>
+                            <span class="visually-hidden">Order: </span>{% if current_order == 'desc' %}Descending{% else %}Ascending{% endif %}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="sortOrderDropdown">
+                            <li><a class="dropdown-item {% if current_order == 'asc' %}active{% endif %}" href="?sort={{ current_sort }}&order=asc">Ascending (A-Z, 1-9)</a></li>
+                            <li><a class="dropdown-item {% if current_order == 'desc' %}active{% endif %}" href="?sort={{ current_sort }}&order=desc">Descending (Z-A, 9-1)</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         {% for event in events %}
         <div class="col-md-6 col-lg-4 mb-4">
