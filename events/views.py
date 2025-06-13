@@ -108,7 +108,11 @@ def create_event(request):
         # Handle case where user somehow doesn't have a profile (shouldn't happen with post_save signal or proper registration flow)
         return redirect('pending_approval')
 
-    if not profile.is_approved_organizer:
+    # Check if user is an approved organizer or an assistant for any groups
+    is_approved_organizer = profile.is_approved_organizer
+    is_assistant = GroupDelegation.objects.filter(delegated_user=request.user).exists()
+
+    if not (is_approved_organizer or is_assistant):
         return redirect('pending_approval')
 
     if request.method == 'POST':
