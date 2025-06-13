@@ -1,0 +1,13 @@
+[Unit]
+Description=fursvp daemon
+After=network.target
+
+[Service]
+User={username}
+Group={username}
+WorkingDirectory=/home/{username}/FURsvp/
+ExecStart=/usr/local/bin/gunicorn fursvp.wsgi:application
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
