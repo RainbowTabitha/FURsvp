@@ -48,21 +48,21 @@
                     </label>
                 </div>
                 <div class="col-md-auto flex-grow-1">
-                    <div class="btn-group w-100" role="group">
+                    <div class="btn-group" role="group">
                         <a href="?sort=date&order={{ current_order }}" 
-                           class="btn btn-outline-primary flex-fill {% if current_sort == 'date' %}active{% endif %}">
+                           class="btn btn-sm btn-outline-primary {% if current_sort == 'date' %}active{% endif %}">
                             <i class="material-icons align-middle" style="font-size: 20px;">calendar_today</i> Date
                         </a>
                         <a href="?sort=group&order={{ current_order }}" 
-                           class="btn btn-outline-primary flex-fill {% if current_sort == 'group' %}active{% endif %}">
+                           class="btn btn-sm btn-outline-primary {% if current_sort == 'group' %}active{% endif %}">
                             <i class="material-icons align-middle" style="font-size: 20px;">group</i> Group
                         </a>
                         <a href="?sort=title&order={{ current_order }}" 
-                           class="btn btn-outline-primary flex-fill {% if current_sort == 'title' %}active{% endif %}">
+                           class="btn btn-sm btn-outline-primary {% if current_sort == 'title' %}active{% endif %}">
                             <i class="material-icons align-middle" style="font-size: 20px;">title</i> Title
                         </a>
                         <a href="?sort=rsvps&order={{ current_order }}" 
-                           class="btn btn-outline-primary flex-fill {% if current_sort == 'rsvps' %}active{% endif %}">
+                           class="btn btn-sm btn-outline-primary {% if current_sort == 'rsvps' %}active{% endif %}">
                             <i class="material-icons align-middle" style="font-size: 20px;">people</i> RSVPs
                         </a>
                     </div>
