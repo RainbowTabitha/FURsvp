@@ -114,10 +114,8 @@ def event_detail(request, event_id):
     # Check if user is an organizer or has group access
     is_organizer = False
     if request.user.is_authenticated:
-        # Check if user is the event organizer
-        is_organizer = event.organizer_id == request.user.id
         # Check if user has access to the group through delegation
-        if not is_organizer and event.group:
+        if event.group:
             is_organizer = GroupDelegation.objects.filter(
                 delegated_user=request.user,
                 group=event.group
@@ -174,14 +172,16 @@ def edit_event(request, event_id):
     
     # Check permissions
     is_site_admin = request.user.is_superuser
-    is_organizer = event.organizer == request.user
-    is_delegated_assistant = GroupDelegation.objects.filter(
-        organizer=event.organizer,
-        delegated_user=request.user,
-        group=event.group
-    ).exists()
+    is_organizer = False
     
-    if not (is_site_admin or is_organizer or is_delegated_assistant):
+    # Check if user has access to the group through delegation
+    if event.group:
+        is_organizer = GroupDelegation.objects.filter(
+            delegated_user=request.user,
+            group=event.group
+        ).exists()
+    
+    if not (is_site_admin or is_organizer):
         messages.error(request, 'You do not have permission to edit this event.')
         return redirect('event_detail', event_id=event.id)
 
