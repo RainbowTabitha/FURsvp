@@ -1,4 +1,6 @@
-Django==5.0.6
-Pillow==10.3.0
+Django
+Pillow
 django-widget-tweaks
 django-tinymce
+gunicorn
+django-cors-headers
