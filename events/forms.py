@@ -56,14 +56,13 @@ class EventForm(forms.ModelForm):
                 if user.profile.is_approved_organizer:
                     self.fields['group'].queryset = user.profile.allowed_groups.all()
                 else:
-                    # Check if the user is an assistant for any groups
-                    assigned_groups = Group.objects.none()
-                    assignments_as_assistant = GroupDelegation.objects.filter(delegated_user=user)
-                    for assignment in assignments_as_assistant:
-                        assigned_groups |= Group.objects.filter(id=assignment.group.id)
+                    # Get groups where user is an assistant
+                    assigned_groups = Group.objects.filter(
+                        groupdelegation__delegated_user=user
+                    ).distinct()
 
                     if assigned_groups.exists():
-                        self.fields['group'].queryset = assigned_groups.distinct()
+                        self.fields['group'].queryset = assigned_groups
                     else:
                         self.fields['group'].queryset = Group.objects.none()
             else:
