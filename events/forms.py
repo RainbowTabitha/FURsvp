@@ -49,6 +49,7 @@ class EventForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
+        instance = kwargs.get('instance', None)
         super().__init__(*args, **kwargs)
 
         if user:
@@ -61,17 +62,34 @@ class EventForm(forms.ModelForm):
                 self.fields['group'].queryset = Group.objects.all()
                 return
             
-            # Check for approved organizer status
-            try:
-                if user.profile.is_approved_organizer:
-                    allowed_groups = user.profile.allowed_groups.all()
-            except Profile.DoesNotExist:
-                pass
-            
-            # Check for assistant status
-            assistant_groups = Group.objects.filter(
-                groupdelegation__delegated_user=user
-            )
+            # For editing an existing event
+            if instance:
+                # If user is the organizer, they can only select from their allowed groups
+                if instance.organizer == user:
+                    try:
+                        if user.profile.is_approved_organizer:
+                            allowed_groups = user.profile.allowed_groups.all()
+                    except Profile.DoesNotExist:
+                        pass
+                # If user is an assistant, they can only select from groups they're an assistant for
+                else:
+                    assistant_groups = Group.objects.filter(
+                        groupdelegation__delegated_user=user,
+                        groupdelegation__organizer=instance.organizer
+                    )
+            # For creating a new event
+            else:
+                # Check for approved organizer status
+                try:
+                    if user.profile.is_approved_organizer:
+                        allowed_groups = user.profile.allowed_groups.all()
+                except Profile.DoesNotExist:
+                    pass
+                
+                # Check for assistant status
+                assistant_groups = Group.objects.filter(
+                    groupdelegation__delegated_user=user
+                )
             
             # Combine querysets with consistent distinct settings
             combined_groups = Group.objects.filter(

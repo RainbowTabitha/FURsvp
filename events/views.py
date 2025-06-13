@@ -135,8 +135,17 @@ def create_event(request):
 @login_required
 def edit_event(request, event_id):
     event = get_object_or_404(Event, pk=event_id)
-    is_site_admin = request.user.is_authenticated and request.user.is_superuser
-    if not (event.organizer == request.user or is_site_admin):
+    
+    # Check permissions
+    is_site_admin = request.user.is_superuser
+    is_organizer = event.organizer == request.user
+    is_delegated_assistant = GroupDelegation.objects.filter(
+        organizer=event.organizer,
+        delegated_user=request.user,
+        group=event.group
+    ).exists()
+    
+    if not (is_site_admin or is_organizer or is_delegated_assistant):
         messages.error(request, 'You do not have permission to edit this event.')
         return redirect('event_detail', event_id=event.id)
 
