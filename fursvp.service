@@ -6,7 +6,7 @@ After=network.target
 User={username}
 Group={username}
 WorkingDirectory=/home/{username}/FURsvp/
-ExecStart=/usr/bin/gunicorn fursvp.wsgi:application
+ExecStart=/usr/bin/gunicorn fursvp.wsgi:application --bind 0.0.0.0:80
 Restart=always
 
 [Install]
