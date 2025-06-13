@@ -117,7 +117,7 @@ def event_detail(request, event_id):
         'rsvp_groups': rsvp_groups,
         'form': form,
         'user_rsvp': user_rsvp,
-        'is_organizer': event.organizer == request.user,
+        'is_organizer': request.user.is_authenticated and event.organizer_id == request.user.id,
         'is_site_admin': is_site_admin,
         'is_delegated_assistant': is_delegated_assistant,
         'can_view_contact_info': event.organizer == request.user or is_site_admin or is_delegated_assistant
