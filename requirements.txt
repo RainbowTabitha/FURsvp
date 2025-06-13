@@ -2,3 +2,5 @@ Django
 Pillow
 django-widget-tweaks
 django-tinymce
+gunicorn
+django-cors-headers
