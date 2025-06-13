@@ -154,7 +154,5 @@ TINYMCE_DEFAULT_CONFIG = {
     'promotion': False,
     'setup': 'function(editor) { editor.on("init", function() { editor.getContainer().style.transition = "border-color 0.15s ease-in-out"; }); }',
     'relative_urls': False,
-    'remove_script_host': False,
-    'convert_urls': True,
     'document_base_url': 'https://fursvp.org/',
 }

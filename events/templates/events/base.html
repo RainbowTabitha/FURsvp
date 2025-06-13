@@ -156,11 +156,13 @@
                                 <i class="material-icons" style="vertical-align: middle; line-height: 1; font-size: 20px;">person</i> Profile
                             </a>
                         </li>
+                        {% if user.is_superuser %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'administration' %}">
                                 <i class="material-icons" style="vertical-align: middle; line-height: 1; font-size: 20px;">admin_panel_settings</i> Administration
                             </a>
                         </li>
+                        {% endif %}
                         {% if user.profile.is_approved_organizer %}
                             <li class="nav-item">
                                 <a class="nav-link" href="{% url 'create_event' %}">

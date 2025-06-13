@@ -36,10 +36,19 @@
                     <h2 class="card-title h4 mb-4 text-primary fw-bold">
                         <i class="material-icons me-2">people</i> Manage Users
                     </h2>
+                    <!-- Search Bar for Users -->
+                    <div class="mb-4">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="material-icons">search</i>
+                            </span>
+                            <input type="text" id="userSearch" class="form-control" placeholder="Search users by username or email...">
+                        </div>
+                    </div>
                     <form method="post">
                         {% csrf_token %}
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle caption-top mb-0">
+                            <table class="table table-hover align-middle caption-top mb-0" id="usersTable">
                                 <thead>
                                     <tr>
                                         <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">person</i> Username</th>
@@ -99,7 +108,15 @@
                     <h2 class="card-title h4 mb-4 text-primary fw-bold">
                         <i class="material-icons me-2">groups</i> Manage Groups
                     </h2>
-
+                    <!-- Search Bar for Groups -->
+                    <div class="mb-4">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="material-icons">search</i>
+                            </span>
+                            <input type="text" id="groupSearch" class="form-control" placeholder="Search groups...">
+                        </div>
+                    </div>
                     <!-- Create New Group Form -->
                     <div class="card bg-light border-0 rounded-3 mb-4">
                         <div class="card-body">
@@ -128,7 +145,7 @@
                     </h3>
                     {% if all_groups %}
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle caption-top mb-0">
+                            <table class="table table-hover align-middle caption-top mb-0" id="groupsTable">
                                 <thead>
                                     <tr>
                                         <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">label</i> Group Name</th>
@@ -181,8 +198,17 @@
                     <h2 class="card-title h4 mb-4 text-primary fw-bold">
                         <i class="material-icons me-2">group_off</i> Manage Bans
                     </h2>
+                    <!-- Search Bar for Bans -->
+                    <div class="mb-4">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">
+                                <i class="material-icons">search</i>
+                            </span>
+                            <input type="text" id="banSearch" class="form-control" placeholder="Search banned users or groups...">
+                        </div>
+                    </div>
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle caption-top mb-0">
+                        <table class="table table-hover align-middle caption-top mb-0" id="bansTable">
                             <thead>
                                 <tr>
                                     <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">person</i> Banned User</th>
@@ -252,6 +278,78 @@
                 }
             });
         });
+
+        // Group search functionality
+        const groupSearch = document.getElementById('groupSearch');
+        const groupsTable = document.getElementById('groupsTable');
+        
+        if (groupSearch && groupsTable) {
+            groupSearch.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const rows = groupsTable.getElementsByTagName('tr');
+                
+                for (let i = 1; i < rows.length; i++) { // Start from 1 to skip header
+                    const row = rows[i];
+                    const groupName = row.querySelector('td:first-child').textContent.toLowerCase();
+                    const allowedGroupsSelect = row.querySelector('.tomselect-allowed-groups');
+                    let hasMatch = groupName.includes(searchTerm);
+                    
+                    // Search through the allowed groups select options
+                    if (allowedGroupsSelect) {
+                        const options = allowedGroupsSelect.options;
+                        for (let j = 0; j < options.length; j++) {
+                            if (options[j].text.toLowerCase().includes(searchTerm)) {
+                                hasMatch = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    row.style.display = hasMatch ? '' : 'none';
+                }
+            });
+        }
+
+        // Ban search functionality
+        const banSearch = document.getElementById('banSearch');
+        const bansTable = document.getElementById('bansTable');
+        
+        if (banSearch && bansTable) {
+            banSearch.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const rows = bansTable.getElementsByTagName('tr');
+                
+                for (let i = 1; i < rows.length; i++) { // Start from 1 to skip header
+                    const row = rows[i];
+                    const userCell = row.querySelector('td:first-child');
+                    const groupCell = row.querySelector('td:nth-child(2)');
+                    
+                    if (userCell && groupCell) {
+                        const userText = userCell.textContent.toLowerCase();
+                        const groupText = groupCell.textContent.toLowerCase();
+                        row.style.display = (userText.includes(searchTerm) || groupText.includes(searchTerm)) ? '' : 'none';
+                    }
+                }
+            });
+        }
+
+        // User search functionality
+        const userSearch = document.getElementById('userSearch');
+        const usersTable = document.getElementById('usersTable');
+        
+        if (userSearch && usersTable) {
+            userSearch.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const rows = usersTable.getElementsByTagName('tr');
+                
+                for (let i = 1; i < rows.length; i++) { // Start from 1 to skip header
+                    const row = rows[i];
+                    const username = row.querySelector('td:first-child').textContent.toLowerCase();
+                    const email = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                    row.style.display = (username.includes(searchTerm) || email.includes(searchTerm)) ? '' : 'none';
+                }
+            });
+        }
     });
 </script>
 {% endblock %}
