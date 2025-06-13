@@ -56,6 +56,11 @@ class EventForm(forms.ModelForm):
             allowed_groups = Group.objects.none()
             assistant_groups = Group.objects.none()
             
+            # Admins can see all groups
+            if user.is_superuser:
+                self.fields['group'].queryset = Group.objects.all()
+                return
+            
             # Check for approved organizer status
             try:
                 if user.profile.is_approved_organizer:
@@ -68,7 +73,7 @@ class EventForm(forms.ModelForm):
                 groupdelegation__delegated_user=user
             ).distinct()
             
-            # Combine both querysets
+            # Combine querysets
             combined_groups = (allowed_groups | assistant_groups).distinct()
             
             if combined_groups.exists():

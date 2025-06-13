@@ -102,17 +102,21 @@ def event_detail(request, event_id):
 
 @login_required
 def create_event(request):
-    # Check if user is an approved organizer or an assistant for any groups
+    # Check if user is an approved organizer, an assistant, or an admin
     is_approved_organizer = False
     is_assistant = False
     
-    try:
-        profile = request.user.profile
-        is_approved_organizer = profile.is_approved_organizer
-    except Profile.DoesNotExist:
-        pass
-    
-    is_assistant = GroupDelegation.objects.filter(delegated_user=request.user).exists()
+    # Admins can always create events
+    if request.user.is_superuser:
+        is_approved_organizer = True
+    else:
+        try:
+            profile = request.user.profile
+            is_approved_organizer = profile.is_approved_organizer
+        except Profile.DoesNotExist:
+            pass
+        
+        is_assistant = GroupDelegation.objects.filter(delegated_user=request.user).exists()
 
     if not (is_approved_organizer or is_assistant):
         return redirect('pending_approval')
