@@ -123,6 +123,9 @@ USE_I18N = True
 
 USE_TZ = True
 
+# Make sure Django sees the original IP address and protocol
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
