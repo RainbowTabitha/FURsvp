@@ -114,8 +114,16 @@ def event_detail(request, event_id):
     # Check if user is an organizer or has group access
     is_organizer = False
     if request.user.is_authenticated:
+        # Check if user is an approved organizer for this group
+        try:
+            profile = request.user.profile
+            if profile.is_approved_organizer and event.group in profile.allowed_groups.all():
+                is_organizer = True
+        except Profile.DoesNotExist:
+            pass
+
         # Check if user has access to the group through delegation
-        if event.group:
+        if not is_organizer and event.group:
             is_organizer = GroupDelegation.objects.filter(
                 delegated_user=request.user,
                 group=event.group
@@ -174,8 +182,16 @@ def edit_event(request, event_id):
     is_site_admin = request.user.is_superuser
     is_organizer = False
     
+    # Check if user is an approved organizer for this group
+    try:
+        profile = request.user.profile
+        if profile.is_approved_organizer and event.group in profile.allowed_groups.all():
+            is_organizer = True
+    except Profile.DoesNotExist:
+        pass
+    
     # Check if user has access to the group through delegation
-    if event.group:
+    if not is_organizer and event.group:
         is_organizer = GroupDelegation.objects.filter(
             delegated_user=request.user,
             group=event.group
