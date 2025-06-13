@@ -53,18 +53,19 @@ class EventForm(forms.ModelForm):
 
         if user:
             if hasattr(user, 'profile'):
-                if user.profile.is_approved_organizer:
-                    self.fields['group'].queryset = user.profile.allowed_groups.all()
+                # Get both allowed groups and assistant-assigned groups
+                allowed_groups = user.profile.allowed_groups.all() if user.profile.is_approved_organizer else Group.objects.none()
+                assistant_groups = Group.objects.filter(
+                    groupdelegation__delegated_user=user
+                ).distinct()
+                
+                # Combine both querysets
+                combined_groups = (allowed_groups | assistant_groups).distinct()
+                
+                if combined_groups.exists():
+                    self.fields['group'].queryset = combined_groups
                 else:
-                    # Get groups where user is an assistant
-                    assigned_groups = Group.objects.filter(
-                        groupdelegation__delegated_user=user
-                    ).distinct()
-
-                    if assigned_groups.exists():
-                        self.fields['group'].queryset = assigned_groups
-                    else:
-                        self.fields['group'].queryset = Group.objects.none()
+                    self.fields['group'].queryset = Group.objects.none()
             else:
                 self.fields['group'].queryset = Group.objects.none()
         else:

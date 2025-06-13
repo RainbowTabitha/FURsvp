@@ -163,7 +163,7 @@
                             </a>
                         </li>
                         {% endif %}
-                        {% if user.profile.is_approved_organizer %}
+                        {% if user.profile.is_approved_organizer or user.delegated_groups_as_delegate.exists %}
                             <li class="nav-item">
                                 <a class="nav-link" href="{% url 'create_event' %}">
                                     <i class="material-icons" style="vertical-align: middle; line-height: 1; font-size: 20px;">add_circle</i> Create Event
