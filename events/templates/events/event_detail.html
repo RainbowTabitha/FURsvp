@@ -22,7 +22,7 @@
     </div>
 
     <div class="row">
-        <div class="col-lg-8 {% if not (is_organizer or is_site_admin or is_delegated_assistant) %}col-12{% endif %}">
+        <div class="col-lg-8 {% if not is_organizer and not is_site_admin and not is_delegated_assistant %}col-12{% endif %}">
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
                     <h1 class="card-title display-5 mb-4">{{ event.title }}</h1>
