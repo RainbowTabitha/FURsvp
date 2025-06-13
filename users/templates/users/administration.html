@@ -93,6 +93,50 @@
                                 </tbody>
                             </table>
                         </div>
+                        <!-- User Pagination -->
+                        {% if users_to_promote.paginator.num_pages > 1 %}
+                        <nav aria-label="User list pagination" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                {% if users_to_promote.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?user_page=1{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}" aria-label="First">
+                                            <i class="material-icons">first_page</i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?user_page={{ users_to_promote.previous_page_number }}{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}" aria-label="Previous">
+                                            <i class="material-icons">chevron_left</i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+
+                                {% for num in users_to_promote.paginator.page_range %}
+                                    {% if users_to_promote.number == num %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ num }}</span>
+                                        </li>
+                                    {% elif num > users_to_promote.number|add:'-3' and num < users_to_promote.number|add:'3' %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?user_page={{ num }}{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}">{{ num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if users_to_promote.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?user_page={{ users_to_promote.next_page_number }}{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}" aria-label="Next">
+                                            <i class="material-icons">chevron_right</i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?user_page={{ users_to_promote.paginator.num_pages }}{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}" aria-label="Last">
+                                            <i class="material-icons">last_page</i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
                             <button type="submit" name="promote_users_submit" class="btn btn-primary btn-lg rounded-pill px-4 shadow-sm">
                                 <i class="material-icons me-2">save</i> Update Approval Status
@@ -183,6 +227,50 @@
                                 </tbody>
                             </table>
                         </div>
+                        <!-- Group Pagination -->
+                        {% if all_groups.paginator.num_pages > 1 %}
+                        <nav aria-label="Group list pagination" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                {% if all_groups.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?group_page=1{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}" aria-label="First">
+                                            <i class="material-icons">first_page</i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?group_page={{ all_groups.previous_page_number }}{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}" aria-label="Previous">
+                                            <i class="material-icons">chevron_left</i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+
+                                {% for num in all_groups.paginator.page_range %}
+                                    {% if all_groups.number == num %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ num }}</span>
+                                        </li>
+                                    {% elif num > all_groups.number|add:'-3' and num < all_groups.number|add:'3' %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?group_page={{ num }}{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}">{{ num }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if all_groups.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?group_page={{ all_groups.next_page_number }}{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}" aria-label="Next">
+                                            <i class="material-icons">chevron_right</i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?group_page={{ all_groups.paginator.num_pages }}{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}" aria-label="Last">
+                                            <i class="material-icons">last_page</i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
                     {% else %}
                         <div class="alert alert-info border-0 rounded-3 text-muted">
                             <i class="material-icons me-2">info</i>
@@ -204,7 +292,7 @@
                             <span class="input-group-text bg-light">
                                 <i class="material-icons">search</i>
                             </span>
-                            <input type="text" id="banSearch" class="form-control" placeholder="Search banned users or groups...">
+                            <input type="text" id="banSearch" class="form-control" placeholder="Search banned users...">
                         </div>
                     </div>
                     <div class="table-responsive">

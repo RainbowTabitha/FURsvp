@@ -9,6 +9,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
 # Create your views here.
 
@@ -191,9 +192,24 @@ def ban_user(request):
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def administration(request):
-    # Get all users including superusers
+    # Get all users including superusers with pagination
     all_users = User.objects.all().prefetch_related('profile')
+    user_paginator = Paginator(all_users, 20)
+    user_page = request.GET.get('user_page', 1)
+    try:
+        users_to_promote = user_paginator.page(user_page)
+    except (PageNotAnInteger, EmptyPage):
+        users_to_promote = user_paginator.page(1)
+
+    # Get all groups with pagination
     all_groups = Group.objects.all()
+    group_paginator = Paginator(all_groups, 20)
+    group_page = request.GET.get('group_page', 1)
+    try:
+        paginated_groups = group_paginator.page(group_page)
+    except (PageNotAnInteger, EmptyPage):
+        paginated_groups = group_paginator.page(1)
+
     group_form = GroupForm()
     rename_group_forms = {group.id: RenameGroupForm(instance=group) for group in all_groups}
     user_profile_forms = {user_obj.id: UserAdminProfileForm(instance=user_obj.profile, prefix=f'profile_{user_obj.id}') for user_obj in all_users}
@@ -221,31 +237,20 @@ def administration(request):
                 messages.success(request, f'Successfully updated {success_count} user profiles.', extra_tags='admin_notification')
             if error_count > 0:
                 messages.error(request, f'Failed to update {error_count} user profiles.', extra_tags='admin_notification')
-
-        elif 'assign_all_groups' in request.POST:
-            try:
-                # Assign all groups to all superusers
-                superusers = User.objects.filter(is_superuser=True)
-                for user in superusers:
-                    if not hasattr(user, 'profile'):
-                        Profile.objects.create(user=user)
-                    user.profile.allowed_groups.set(all_groups)
-                    user.profile.is_approved_organizer = True
-                    user.profile.save()
-                messages.success(request, 'All groups have been assigned to superusers.', extra_tags='admin_notification')
-            except Exception as e:
-                messages.error(request, f'Error assigning groups to superusers: {str(e)}', extra_tags='admin_notification')
-
+            
+            return redirect('administration')
+        
         elif 'create_group_submit' in request.POST:
             group_form = GroupForm(request.POST)
             if group_form.is_valid():
                 try:
                     group_form.save()
-                    messages.success(request, 'New group created successfully!', extra_tags='admin_notification')
+                    messages.success(request, 'Group created successfully!', extra_tags='admin_notification')
                 except Exception as e:
                     messages.error(request, f'Error creating group: {str(e)}', extra_tags='admin_notification')
             else:
                 messages.error(request, 'Error creating group: Invalid form data.', extra_tags='admin_notification')
+            return redirect('administration')
         
         elif any(f'rename_group_{group.id}' in request.POST for group in all_groups):
             for group in all_groups:
@@ -277,8 +282,8 @@ def administration(request):
         return redirect('administration')
 
     context = {
-        'users_to_promote': all_users,
-        'all_groups': all_groups,
+        'users_to_promote': users_to_promote,
+        'all_groups': paginated_groups,
         'group_form': group_form,
         'rename_group_forms': rename_group_forms,
         'user_profile_forms': user_profile_forms,
