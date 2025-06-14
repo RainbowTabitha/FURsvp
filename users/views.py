@@ -10,6 +10,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.db.models import Q
 
 # Create your views here.
 
@@ -125,69 +126,187 @@ def profile(request):
 
 @require_POST
 @csrf_protect
-@login_required
 def ban_user(request):
     if not request.user.is_authenticated:
         return JsonResponse({'status': 'error', 'message': 'Authentication required.'}, status=401)
 
-    target_user_id = request.POST.get('user_id')
-    group_id = request.POST.get('group_id')
-    action = request.POST.get('action') # 'ban' or 'unban'
-    reason = request.POST.get('reason', '')
-
-    if not target_user_id or not group_id or not action:
-        return JsonResponse({'status': 'error', 'message': 'Missing parameters.'}, status=400)
-
     try:
-        target_user = User.objects.get(id=target_user_id)
-        group = Group.objects.get(id=group_id)
-    except (User.DoesNotExist, Group.DoesNotExist):
-        return JsonResponse({'status': 'error', 'message': 'User or Group not found.'}, status=404)
+        target_user_id = request.POST.get('user_id')
+        group_id = request.POST.get('group_id') # Can be None for organizer-wide or sitewide bans
+        action = request.POST.get('action') # 'ban' or 'unban'
+        reason = request.POST.get('reason', '')
+        # New parameter to specify ban type (e.g., 'group', 'organizer', 'sitewide')
+        ban_type = request.POST.get('ban_type', 'group') # Default to 'group' for existing frontend
 
-    # Check for permissions (same as can_view_contact_info logic from event_detail)
-    is_site_admin = request.user.is_superuser
-    is_event_organizer_for_group = (request.user == group.event_set.first().organizer if group.event_set.first() else False)
-    is_delegated_assistant = GroupDelegation.objects.filter(
-        organizer=group.event_set.first().organizer if group.event_set.first() else None, 
-        delegated_user=request.user, 
-        group=group
-    ).exists()
-    
-    can_manage_bans = is_site_admin or is_event_organizer_for_group or is_delegated_assistant
+        if not target_user_id or not action:
+            return JsonResponse({'status': 'error', 'message': 'Missing parameters.'}, status=400)
 
-    if not can_manage_bans:
-        return JsonResponse({'status': 'error', 'message': 'Permission denied.'}, status=403)
-
-    # Determine the organizer for the ban
-    ban_organizer = None
-    if is_site_admin:
-        ban_organizer = request.user
-    elif is_event_organizer_for_group:
-        ban_organizer = group.event_set.first().organizer
-    elif is_delegated_assistant:
-        ban_organizer = GroupDelegation.objects.get(delegated_user=request.user, group=group).organizer
-
-    if action == 'ban':
-        if BannedUser.objects.filter(user=target_user, group=group).exists():
-            return JsonResponse({'status': 'info', 'message': f'{target_user.username} is already banned from {group.name}.'})
-        
-        # Remove existing RSVPs for the banned user in this group's events
-        target_user.rsvp_set.filter(event__group=group).delete()
-
-        BannedUser.objects.create(user=target_user, group=group, banned_by=request.user, organizer=ban_organizer, reason=reason)
-        messages.success(request, f'{target_user.username} has been banned from {group.name}.', extra_tags='admin_notification')
-        return JsonResponse({'status': 'success', 'message': f'{target_user.username} banned successfully.'})
-    
-    elif action == 'unban':
         try:
-            banned_entry = BannedUser.objects.get(user=target_user, group=group)
-            banned_entry.delete()
-            messages.success(request, f'{target_user.username} has been unbanned from {group.name}.', extra_tags='admin_notification')
-            return JsonResponse({'status': 'success', 'message': f'{target_user.username} unbanned successfully.'})
-        except BannedUser.DoesNotExist:
-            return JsonResponse({'status': 'info', 'message': f'{target_user.username} is not currently banned from {group.name}.'})
-    
-    return JsonResponse({'status': 'error', 'message': 'Invalid action.'}, status=400)
+            target_user = User.objects.get(id=target_user_id)
+        except User.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Target User not found.'}, status=404)
+
+        if action == 'ban' and request.user.id == target_user.id:
+            return JsonResponse({'status': 'error', 'message': 'You cannot ban yourself.'}, status=403)
+
+        # Permissions Check
+        is_site_admin = request.user.is_superuser
+        can_manage_group_ban = False
+        can_manage_organizer_ban = False
+        can_manage_sitewide_ban = is_site_admin # Only site admins can manage sitewide bans
+
+        group = None
+        if group_id: # If a group_id is provided, it's a group-specific action or relates to a specific group
+            try:
+                group = Group.objects.get(id=group_id)
+                # Check if current user is organizer or delegated for this specific group
+                user_profile = None
+                try:
+                    user_profile = request.user.profile
+                except Profile.DoesNotExist:
+                    pass
+                
+                is_approved_organizer_for_group = False
+                if user_profile and user_profile.is_approved_organizer and group in user_profile.allowed_groups.all():
+                    is_approved_organizer_for_group = True
+
+                is_delegated_assistant_for_group = GroupDelegation.objects.filter(
+                    delegated_user=request.user,
+                    group=group
+                ).exists()
+                can_manage_group_ban = is_site_admin or is_approved_organizer_for_group or is_delegated_assistant_for_group
+
+            except Group.DoesNotExist:
+                return JsonResponse({'status': 'error', 'message': 'Group not found.'}, status=404)
+
+        # Determine overall permission for the requested ban_type
+        permission_granted = False
+        if ban_type == 'group' and can_manage_group_ban:
+            permission_granted = True
+        elif ban_type == 'organizer' and is_site_admin: # Organizer-wide bans can only be issued by site admins via this view
+            permission_granted = True
+        elif ban_type == 'sitewide' and is_site_admin:
+            permission_granted = True
+
+        if not permission_granted:
+            return JsonResponse({'status': 'error', 'message': 'Permission denied.'}, status=403)
+
+        # Determine banned_by and organizer for the new ban entry
+        banned_by_user = request.user
+        organizer_user = None # Only set if it's an organizer-wide ban
+        
+        if ban_type == 'organizer':
+            # For an organizer-wide ban initiated by a site admin, organizer is the target_user
+            organizer_user = target_user # This means target_user is an organizer being banned from organizing for themselves
+            # This implies the target_user must be an organizer. This logic needs refinement if organizers can ban other organizers.
+
+        elif ban_type == 'group': # For a group ban, the organizer is implicitly the one who owns the group/delegation
+            if is_approved_organizer_for_group:
+                organizer_user = request.user
+            elif is_delegated_assistant_for_group:
+                delegation = GroupDelegation.objects.filter(delegated_user=request.user, group=group).first()
+                if delegation:
+                    organizer_user = delegation.organizer
+            # If site admin, no specific organizer for a group ban, as it's a direct group ban
+
+        # Action: Ban or Unban
+        if action == 'ban':
+            # Check for existing ban of any type to prevent duplicates/conflicts
+            existing_ban = None
+            if ban_type == 'group':
+                existing_ban = BannedUser.objects.filter(user=target_user, group=group, organizer__isnull=True).first()
+            elif ban_type == 'organizer':
+                # This is for banning a user from all events by a specific organizer
+                # The frontend needs to pass `organizer_id` in this case.
+                organizer_id = request.POST.get('organizer_id')
+                if not organizer_id:
+                    return JsonResponse({'status': 'error', 'message': 'Missing organizer_id for organizer ban.'}, status=400)
+                try:
+                    organizer_user = User.objects.get(id=organizer_id)
+                except User.DoesNotExist:
+                    return JsonResponse({'status': 'error', 'message': 'Organizer not found.'}, status=404)
+                existing_ban = BannedUser.objects.filter(user=target_user, organizer=organizer_user, group__isnull=True).first()
+            elif ban_type == 'sitewide':
+                existing_ban = BannedUser.objects.filter(user=target_user, organizer__isnull=True, group__isnull=True).first()
+
+            if existing_ban:
+                return JsonResponse({'status': 'info', 'message': f'{target_user.username} is already banned.'})
+
+            # Create ban entry based on ban_type
+            if ban_type == 'group':
+                if not group:
+                    return JsonResponse({'status': 'error', 'message': 'Group ID is required for a group ban.'}, status=400)
+                BannedUser.objects.create(
+                    user=target_user, 
+                    group=group, 
+                    banned_by=banned_by_user, 
+                    reason=reason,
+                    organizer=organizer_user
+                )
+                # Delete RSVPs for this user in this group's events
+                from events.models import RSVP
+                RSVP.objects.filter(user=target_user, event__group=group).delete()
+                return JsonResponse({'status': 'success', 'message': f'{target_user.username} has been banned from {group.name}.'})
+            elif ban_type == 'organizer':
+                if not organizer_user:
+                     return JsonResponse({'status': 'error', 'message': 'Organizer user is required for an organizer ban.'}, status=400)
+                BannedUser.objects.create(
+                    user=target_user, 
+                    organizer=organizer_user, 
+                    banned_by=banned_by_user, 
+                    reason=reason,
+                    group=None # Ensure group is null for organizer ban
+                )
+                # Delete RSVPs for this user in this organizer's events
+                from events.models import RSVP
+                RSVP.objects.filter(user=target_user, event__organizer=organizer_user).delete()
+                return JsonResponse({'status': 'success', 'message': f'{target_user.username} has been banned from all events by {organizer_user.username}.'})
+            elif ban_type == 'sitewide':
+                BannedUser.objects.create(
+                    user=target_user, 
+                    banned_by=banned_by_user, 
+                    reason=reason,
+                    group=None, # Ensure group is null for sitewide ban
+                    organizer=None # Ensure organizer is null for sitewide ban
+                )
+                # Delete all RSVPs for this user
+                from events.models import RSVP
+                RSVP.objects.filter(user=target_user).delete()
+                return JsonResponse({'status': 'success', 'message': f'{target_user.username} has been banned sitewide.'})
+            else:
+                return JsonResponse({'status': 'error', 'message': 'Unsupported ban type for this action.'}, status=400)
+
+        elif action == 'unban':
+            ban_query = Q(user=target_user)
+            if ban_type == 'group':
+                if not group:
+                    return JsonResponse({'status': 'error', 'message': 'Group ID is required to unban from a group.'}, status=400)
+                ban_query &= Q(group=group, organizer__isnull=True)
+            elif ban_type == 'organizer':
+                organizer_id = request.POST.get('organizer_id')
+                if not organizer_id:
+                    return JsonResponse({'status': 'error', 'message': 'Missing organizer_id for organizer unban.'}, status=400)
+                try:
+                    organizer_user = User.objects.get(id=organizer_id)
+                except User.DoesNotExist:
+                    return JsonResponse({'status': 'error', 'message': 'Organizer not found for unban.'}, status=404)
+                ban_query &= Q(organizer=organizer_user, group__isnull=True)
+            elif ban_type == 'sitewide':
+                ban_query &= Q(organizer__isnull=True, group__isnull=True)
+            else:
+                return JsonResponse({'status': 'error', 'message': 'Unsupported unban type for this action.'}, status=400)
+            
+            try:
+                banned_entry = BannedUser.objects.get(ban_query)
+                banned_entry.delete()
+                return JsonResponse({'status': 'success', 'message': f'{target_user.username} unbanned successfully.'})
+            except BannedUser.DoesNotExist:
+                return JsonResponse({'status': 'info', 'message': f'{target_user.username} is not currently banned for the specified type.'})
+        
+        return JsonResponse({'status': 'error', 'message': 'Invalid action.'}, status=400)
+    except Exception as e:
+        # Catch any unexpected errors and return a JSON error response
+        return JsonResponse({'status': 'error', 'message': f'An unexpected error occurred: {str(e)}'}, status=500)
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
@@ -213,7 +332,7 @@ def administration(request):
     group_form = GroupForm()
     rename_group_forms = {group.id: RenameGroupForm(instance=group) for group in all_groups}
     user_profile_forms = {user_obj.id: UserAdminProfileForm(instance=user_obj.profile, prefix=f'profile_{user_obj.id}') for user_obj in all_users}
-    all_banned_users = BannedUser.objects.all().select_related('user', 'group', 'banned_by', 'organizer').order_by('-banned_at')
+    all_banned_users = BannedUser.objects.all().select_related('user', 'group', 'banned_by', 'organizer').order_by('-banned_at') # Changed 'organizer' to 'organizer'
 
     if request.method == 'POST':
         if 'promote_users_submit' in request.POST:

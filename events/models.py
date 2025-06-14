@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from datetime import time
 
 class Group(models.Model):
     name = models.CharField(max_length=100)
@@ -10,8 +11,8 @@ class Event(models.Model):
     title = models.CharField(max_length=200)
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
     date = models.DateField()
-    start_time = models.TimeField()
-    end_time = models.TimeField()
+    start_time = models.TimeField(null=True, blank=True, default=time(0, 0, 0))
+    end_time = models.TimeField(null=True, blank=True, default=time(0, 0, 0))
     description = models.TextField(blank=True)
     organizer = models.ForeignKey(User, on_delete=models.CASCADE)
     def __str__(self):
