@@ -1,3 +1,14 @@
+pkill gunicorn
+pkill python3
+
+git pull
+
+# Check if git pull was successful
+if [ $? -ne 0 ]; then
+    echo "Git pull failed. Exiting startup script." >&2
+    exit 1
+fi
+
 GUNICORN_PATH="gunicorn"
 PYTHON_PATH="python3"
 MANAGE_PY="./manage.py"
@@ -18,4 +29,4 @@ nohup "$PYTHON_PATH" "$MANAGE_PY" qcluster >> qcluster.log 2>&1 &
 QCLUSTER_PID=$!
 echo "Django-Q cluster started with PID: $QCLUSTER_PID"
 
-echo "FursVP server and Django-Q cluster initiated." 
+echo "FursVP server and Django-Q cluster initiated."
