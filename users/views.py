@@ -278,10 +278,11 @@ def ban_user(request):
 
         elif action == 'unban':
             ban_query = Q(user=target_user)
+            
             if ban_type == 'group':
                 if not group:
                     return JsonResponse({'status': 'error', 'message': 'Group ID is required to unban from a group.'}, status=400)
-                ban_query &= Q(group=group, organizer__isnull=True)
+                ban_query &= Q(group=group)
             elif ban_type == 'organizer':
                 organizer_id = request.POST.get('organizer_id')
                 if not organizer_id:
@@ -290,17 +291,21 @@ def ban_user(request):
                     organizer_user = User.objects.get(id=organizer_id)
                 except User.DoesNotExist:
                     return JsonResponse({'status': 'error', 'message': 'Organizer not found for unban.'}, status=404)
-                ban_query &= Q(organizer=organizer_user, group__isnull=True)
+                # Check for any ban that includes this organizer, regardless of group
+                ban_query &= Q(organizer=organizer_user)
             elif ban_type == 'sitewide':
-                ban_query &= Q(organizer__isnull=True, group__isnull=True)
+                # For sitewide, check for any ban with no group or organizer
+                ban_query &= Q(group__isnull=True, organizer__isnull=True)
             else:
                 return JsonResponse({'status': 'error', 'message': 'Unsupported unban type for this action.'}, status=400)
             
-            try:
-                banned_entry = BannedUser.objects.get(ban_query)
-                banned_entry.delete()
+            # Get all matching bans
+            matching_bans = BannedUser.objects.filter(ban_query)
+            if matching_bans.exists():
+                # Delete all matching bans
+                matching_bans.delete()
                 return JsonResponse({'status': 'success', 'message': f'{target_user.username} unbanned successfully.'})
-            except BannedUser.DoesNotExist:
+            else:
                 return JsonResponse({'status': 'info', 'message': f'{target_user.username} is not currently banned for the specified type.'})
         
         return JsonResponse({'status': 'error', 'message': 'Invalid action.'}, status=400)
