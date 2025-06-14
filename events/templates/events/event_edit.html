@@ -131,10 +131,35 @@ document.addEventListener('DOMContentLoaded', function() {
         width: '100%',
         menubar: false,
         plugins: 'advlist,autolink,lists,link,image,charmap,preview,anchor,searchreplace,visualblocks,code,fullscreen,insertdatetime,media,table,code,help,wordcount',
-        toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
+        toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | image | removeformat | help',
         content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; }',
         branding: false,
         promotion: false,
+        images_upload_handler: function (blobInfo, success, failure) {
+            const MAX_SIZE_MB = 15;
+            const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
+
+            if (blobInfo.blob().size > MAX_SIZE_BYTES) {
+                failure(`Image size exceeds the maximum limit of ${MAX_SIZE_MB}MB.`);
+                return;
+            }
+
+            const acceptedImageTypes = ['image/jpeg', 'image/png'];
+            if (!acceptedImageTypes.includes(blobInfo.blob().type)) {
+                failure('Only JPEG and PNG images are allowed.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function() {
+                const base64data = reader.result;
+                success(base64data);
+            };
+            reader.onerror = function() {
+                failure('Could not read the image file.');
+            };
+            reader.readAsDataURL(blobInfo.blob());
+        },
         setup: function(editor) {
             editor.on('init', function() {
                 editor.getContainer().style.transition = 'border-color 0.15s ease-in-out';
