@@ -15,7 +15,7 @@ MANAGE_PY="./manage.py"
 
 # --- Start Gunicorn in the background ---
 echo "Starting Web Server (Gunicorn)..."
-nohup "$GUNICORN_PATH" FursVP.wsgi:application --bind 0.0.0.0:80 >> gunicorn.log 2>&1 &
+nohup "$GUNICORN_PATH" fursvp.wsgi:application --bind 0.0.0.0:80 >> gunicorn.log 2>&1 &
 
 # Get the PID of the last background command (Gunicorn)
 GUNICORN_PID=$!
