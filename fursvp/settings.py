@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'users',
     'widget_tweaks',
     'tinymce',
-    'corsheaders'
+    'corsheaders',
+    'django_q',
 ]
 
 MIDDLEWARE = [
@@ -155,4 +156,31 @@ TINYMCE_DEFAULT_CONFIG = {
     'setup': 'function(editor) { editor.on("init", function() { editor.getContainer().style.transition = "border-color 0.15s ease-in-out"; }); }',
     'relative_urls': False,
     'document_base_url': 'https://fursvp.org/',
+}
+
+# Django-Q Cluster Configuration
+Q_CLUSTER = {
+    'name': 'DjangORM',
+    'workers': 1,
+    'timeout': 90,
+    'compress': True,
+    'cpu_affinity': 1,
+    'recycle': 500,
+    'daemonize_workers': False,
+    'queue_limit': 50,
+    'orm': 'default',
+    'scheduler': {
+        'name': 'events.management.commands.delete_old_events',
+        'func': 'events.management.commands.delete_old_events.Command.handle',
+        'schedule_type': 'I',
+        'minutes': 5,
+        'args': '()',
+        'kwargs': '{}',
+        'q_options': '{}',
+        'cluster': 'default',
+        'hook': None,
+        'catch_up': True,
+        'fail_silently': False,
+        'repeats': -1,
+    },
 }

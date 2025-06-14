@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Event, RSVP
 from django.utils import timezone
+from datetime import timedelta, datetime
 from django.contrib.auth.decorators import login_required
 from .forms import EventForm, RSVPForm
 from users.models import Profile, GroupDelegation, BannedUser
@@ -14,16 +15,20 @@ def home(request):
     sort_by = request.GET.get('sort', 'date')  # Default sort by date
     sort_order = request.GET.get('order', 'asc')  # Default ascending order
     
-    # Base queryset
-    events = Event.objects.all()
+    # Base queryset - filter out events that have already passed
+    now = timezone.now()
+    events = Event.objects.filter(
+        models.Q(date__gt=now.date()) | 
+        (models.Q(date=now.date()) & models.Q(end_time__gt=now.time()))
+    )
     
     # Apply sorting
     if sort_by == 'date':
         events = events.order_by('date' if sort_order == 'asc' else '-date')
     elif sort_by == 'group':
-        events = events.order_by('group__name' if sort_order == 'asc' else '-group__name')
+        events = events.order_by(models.functions.Lower('group__name') if sort_order == 'asc' else models.functions.Lower('group__name').desc())
     elif sort_by == 'title':
-        events = events.order_by('title' if sort_order == 'asc' else '-title')
+        events = events.order_by(models.functions.Lower('title') if sort_order == 'asc' else models.functions.Lower('title').desc())
     elif sort_by == 'rsvps':
         events = events.annotate(rsvp_count=models.Count('rsvps')).order_by(
             'rsvp_count' if sort_order == 'asc' else '-rsvp_count'
@@ -40,6 +45,14 @@ def event_detail(request, event_id):
     event = get_object_or_404(Event, pk=event_id)
     rsvps = event.rsvps.all().select_related('user__profile')
     
+    # Calculate if event has passed
+    event_end_datetime = datetime.combine(event.date, event.end_time)
+    # Make event_end_datetime timezone-aware if USE_TZ is True in settings
+    if timezone.is_aware(timezone.now()):
+        event_end_datetime = timezone.make_aware(event_end_datetime, timezone.get_current_timezone())
+
+    event_has_passed = timezone.now() > event_end_datetime
+
     # Get user's RSVP if they're logged in
     user_rsvp = None
     is_site_admin = request.user.is_authenticated and request.user.is_superuser
@@ -65,7 +78,7 @@ def event_detail(request, event_id):
     if request.user.is_authenticated and event.group:
         is_banned_from_group = BannedUser.objects.filter(user=request.user, group=event.group).exists()
 
-    if request.method == 'POST' and request.user.is_authenticated:
+    if request.method == 'POST' and request.user.is_authenticated and not event_has_passed:
         # Prevent banned users from RSVPing
         if is_banned_by_organizer or is_banned_from_group:
             messages.error(request, 'You are banned from RSVPing to events by this organizer.', extra_tags='admin_notification')
@@ -138,7 +151,8 @@ def event_detail(request, event_id):
         'is_organizer': is_organizer,
         'is_site_admin': is_site_admin,
         'is_delegated_assistant': is_delegated_assistant,
-        'can_view_contact_info': is_organizer or is_site_admin or is_delegated_assistant
+        'can_view_contact_info': is_organizer or is_site_admin or is_delegated_assistant,
+        'event_has_passed': event_has_passed, # Pass the new flag to the template
     }
     return render(request, 'events/event_detail.html', context)
 

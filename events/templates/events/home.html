@@ -47,7 +47,7 @@
                         <i class="material-icons align-middle me-2">sort</i> Sort by:
                     </label>
                 </div>
-                <div class="col-md-auto flex-grow-1">
+                <div class="col-md-auto">
                     <div class="btn-group" role="group">
                         <a href="?sort=date&order={{ current_order }}" 
                            class="btn btn-sm btn-outline-primary {% if current_sort == 'date' %}active{% endif %}">
@@ -67,17 +67,11 @@
                         </a>
                     </div>
                 </div>
-                <div class="col-md-auto text-md-end mt-3 mt-md-0">
-                    <div class="dropdown">
-                        <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="sortOrderDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="material-icons align-middle" style="font-size: 18px;">{% if current_order == 'desc' %}arrow_downward{% else %}arrow_upward{% endif %}</i>
-                            <span class="visually-hidden">Order: </span>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="sortOrderDropdown">
-                            <li><a class="dropdown-item {% if current_order == 'asc' %}active{% endif %}" href="?sort={{ current_sort }}&order=asc">Ascending (A-Z, 1-9)</a></li>
-                            <li><a class="dropdown-item {% if current_order == 'desc' %}active{% endif %}" href="?sort={{ current_sort }}&order=desc">Descending (Z-A, 9-1)</a></li>
-                        </ul>
-                    </div>
+                <div class="col-md-auto ms-md-auto">
+                    <a href="?sort={{ current_sort }}&order={% if current_order == 'asc' %}desc{% else %}asc{% endif %}" class="btn btn-sm btn-light">
+                        <i class="material-icons align-middle" style="font-size: 18px;">{% if current_order == 'desc' %}arrow_downward{% else %}arrow_upward{% endif %}</i>
+                        <span class="visually-hidden">Order: </span>
+                    </a>
                 </div>
             </div>
         </div>
