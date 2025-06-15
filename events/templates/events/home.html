@@ -67,7 +67,7 @@
                         </a>
                     </div>
                 </div>
-                <div class="col-md-auto ms-md-auto">
+                <div class="col d-flex justify-content-end align-items-center">
                     <div class="btn-group" role="group">
                         <a href="?sort={{ current_sort }}&order={% if current_order == 'asc' %}desc{% else %}asc{% endif %}" class="btn btn-sm btn-light">
                             <i class="material-icons align-middle" style="font-size: 18px;">{% if current_order == 'desc' %}arrow_downward{% else %}arrow_upward{% endif %}</i>
@@ -78,6 +78,14 @@
                             <span class="visually-hidden">Toggle View</span>
                         </button>
                     </div>
+                </div>
+            </div>
+            <!-- Adult/Mature Toggle Button Centered Below Controls -->
+            <div class="row mt-3">
+                <div class="col text-left">
+                    <button type="button" id="toggleAdultEvents" class="btn btn-danger" style="min-width: 180px;">
+                        Hide 18+/21+
+                    </button>
                 </div>
             </div>
         </div>
@@ -177,11 +185,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const eventsGrid = document.getElementById('eventsGrid');
     const eventsList = document.getElementById('eventsList');
     const toggleIcon = viewToggle.querySelector('.material-icons');
-    
+    const toggleAdult = document.getElementById('toggleAdultEvents');
+
     // Set initial state
     let isListView = localStorage.getItem('eventViewPreference') === 'list';
+    let showAdult = localStorage.getItem('showAdultEvents') !== 'false'; // Default to true if not set
+
     updateView();
-    
+    updateToggleButton();
+    filterAdultEvents();
+
     function updateView() {
         if (isListView) {
             eventsGrid.style.display = 'none';
@@ -193,11 +206,53 @@ document.addEventListener('DOMContentLoaded', function() {
             toggleIcon.textContent = 'grid_view';
         }
     }
-    
+
+    function filterAdultEvents() {
+        const gridCards = eventsGrid.querySelectorAll('.card');
+        const listItems = eventsList.querySelectorAll('.list-group-item');
+        
+        gridCards.forEach(card => {
+            const badge = card.querySelector('.badge.bg-danger, .badge.bg-warning');
+            if (badge && !showAdult) {
+                card.parentElement.style.display = 'none';
+            } else {
+                card.parentElement.style.display = '';
+            }
+        });
+        
+        listItems.forEach(item => {
+            const badge = item.querySelector('.badge.bg-danger, .badge.bg-warning');
+            if (badge && !showAdult) {
+                item.style.display = 'none';
+            } else {
+                item.style.display = '';
+            }
+        });
+    }
+
+    function updateToggleButton() {
+        if (showAdult) {
+            toggleAdult.textContent = 'Hide 18+/21+';
+            toggleAdult.classList.remove('btn-primary');
+            toggleAdult.classList.add('btn-danger');
+        } else {
+            toggleAdult.textContent = 'Show 18+/21+';
+            toggleAdult.classList.remove('btn-danger');
+            toggleAdult.classList.add('btn-primary');
+        }
+    }
+
     viewToggle.addEventListener('click', function() {
         isListView = !isListView;
         localStorage.setItem('eventViewPreference', isListView ? 'list' : 'grid');
         updateView();
+    });
+
+    toggleAdult.addEventListener('click', function() {
+        showAdult = !showAdult;
+        localStorage.setItem('showAdultEvents', showAdult);
+        updateToggleButton();
+        filterAdultEvents();
     });
 });
 </script>
