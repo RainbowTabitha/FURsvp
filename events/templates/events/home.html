@@ -86,6 +86,7 @@
                         <a href="{% url 'event_detail' event.id %}" class="text-decoration-none text-primary">{{ event.title }}</a>
                     </h5>
                     <p class="card-text mb-1"><i class="material-icons me-1 align-middle">group</i> {{ event.group.name }}</p>
+                    <p class="card-text mb-1"><i class="material-icons me-1 align-middle">location_on</i> {{ event.city }}</p>
                     <p class="card-text mb-3"><i class="material-icons me-1 align-middle">calendar_today</i> {{ event.date }}</p>
                     <div class="mt-auto">
                         <span class="badge bg-primary rounded-pill py-2 px-3">

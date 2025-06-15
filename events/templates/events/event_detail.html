@@ -3,6 +3,15 @@
 {% block title %}{{ event.title }} - FURsvp{% endblock %}
 
 {% block content %}
+<style>
+    .card-body img {
+        max-width: 100% !important;
+        height: auto !important;
+        display: block;
+        margin: 1rem auto;
+        box-sizing: border-box;
+    }
+</style>
 <div class="container">
     <div class="row">
         <div class="col-12">
@@ -52,6 +61,13 @@
                             {% endif %}
                         </span>
                     </div>
+                    {% if event.address or event.city or event.state or event.country %}
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="material-icons text-primary me-2">location_on</i>
+                        <strong>Location:</strong>
+                        <span class="ms-2">{% if event.address %}{{ event.address }}{% endif %}{% if event.city %}{% if event.address %}, {% endif %}{{ event.city }}{% endif %}{% if event.state %}{% if event.city %}, {% endif %}{{ event.state }}{% endif %}{% if event.country and event.country != 'USA' and event.country != 'United States' %}{% if event.state %}, {% elif event.city %}, {% elif event.address %}, {% endif %}{{ event.country }}{% endif %}</span>
+                    </div>
+                    {% endif %}
                     <div class="mt-4">
                         <h5 class="mb-3">Description</h5>
                         <p class="card-text">{{ event.description|safe }}</p>
@@ -379,7 +395,8 @@
                 } else {
                     alert('Error: ' + data.message);
                 }
-            } catch (error) {
+            }
+            catch (error) {
                 console.error('Error:', error);
                 alert('An error occurred while processing your request.');
             }

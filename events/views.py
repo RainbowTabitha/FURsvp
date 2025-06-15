@@ -7,6 +7,7 @@ from .forms import EventForm, RSVPForm
 from users.models import Profile, GroupDelegation, BannedUser
 from django.contrib import messages
 from django.db import models
+from django.http import JsonResponse
 
 # Create your views here.
 
@@ -194,24 +195,26 @@ def edit_event(request, event_id):
     
     # Check permissions
     is_site_admin = request.user.is_superuser
-    is_organizer = False
-    
+    is_event_owner = (event.organizer == request.user)
+    is_organizer_for_group = False
+    is_delegated_assistant = False
+
     # Check if user is an approved organizer for this group
     try:
         profile = request.user.profile
         if profile.is_approved_organizer and event.group in profile.allowed_groups.all():
-            is_organizer = True
+            is_organizer_for_group = True
     except Profile.DoesNotExist:
         pass
     
     # Check if user has access to the group through delegation
-    if not is_organizer and event.group:
-        is_organizer = GroupDelegation.objects.filter(
+    if not is_organizer_for_group and event.group:
+        is_delegated_assistant = GroupDelegation.objects.filter(
             delegated_user=request.user,
             group=event.group
         ).exists()
     
-    if not (is_site_admin or is_organizer):
+    if not (is_site_admin or is_event_owner or is_organizer_for_group or is_delegated_assistant):
         messages.error(request, 'You do not have permission to edit this event.')
         return redirect('event_detail', event_id=event.id)
 
@@ -224,3 +227,4 @@ def edit_event(request, event_id):
     else:
         form = EventForm(instance=event, user=request.user)
     return render(request, 'events/event_edit.html', {'form': form, 'event': event})
+

@@ -14,6 +14,9 @@ class Event(models.Model):
     start_time = models.TimeField(null=True, blank=True, default=time(0, 0, 0))
     end_time = models.TimeField(null=True, blank=True, default=time(0, 0, 0))
     description = models.TextField(blank=True)
+    address = models.CharField(max_length=255, blank=True, null=True)
+    city = models.CharField(max_length=50, blank=True, null=True)
+    state = models.CharField(max_length=50, blank=True, null=True)
     organizer = models.ForeignKey(User, on_delete=models.CASCADE)
     def __str__(self):
         return self.title

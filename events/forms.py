@@ -16,37 +16,22 @@ class UserProfileForm(forms.ModelForm):
         fields = ['is_approved_organizer']
 
 class EventForm(forms.ModelForm):
-    description = forms.CharField(widget=forms.Textarea(attrs={
-        'class': 'form-control',
-        'id': 'event-description',
-        'rows': 15
-    }))
+    description = forms.CharField(widget=TinyMCE(attrs={'cols': 80, 'rows': 30}))
     
     class Meta:
         model = Event
-        fields = ['title', 'group', 'date', 'start_time', 'end_time', 'description']
+        fields = ['title', 'group', 'description', 'date', 'start_time', 'end_time', 'address', 'city', 'state']
         widgets = {
-            'title': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Enter event title'
-            }),
-            'group': forms.Select(attrs={
-                'class': 'form-select'
-            }),
-            'date': forms.DateInput(attrs={
-                'type': 'date',
-                'class': 'form-control'
-            }),
-            'start_time': forms.TimeInput(attrs={
-                'type': 'time',
-                'class': 'form-control'
-            }),
-            'end_time': forms.TimeInput(attrs={
-                'type': 'time',
-                'class': 'form-control'
-            }),
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Event Title'}),
+            'group': forms.Select(attrs={'class': 'form-select', 'placeholder': 'Select Group'}),
+            'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', 'placeholder': 'Event Date'}),
+            'start_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time', 'placeholder': 'Start Time'}),
+            'end_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time', 'placeholder': 'End Time'}),
+            'address': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Street Address'}),
+            'city': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'City/Town'}),
+            'state': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'State/Province'}),
         }
-    
+
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         instance = kwargs.get('instance', None)
@@ -103,6 +88,10 @@ class EventForm(forms.ModelForm):
                 self.fields['group'].queryset = Group.objects.none()
         else:
             self.fields['group'].queryset = Group.objects.none()
+
+    def clean(self):
+        cleaned_data = super().clean()
+        return cleaned_data
 
 class GroupForm(forms.ModelForm):
     class Meta:
