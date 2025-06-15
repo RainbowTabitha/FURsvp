@@ -68,6 +68,19 @@
                         <span class="ms-2">{% if event.address %}{{ event.address }}{% endif %}{% if event.city %}{% if event.address %}, {% endif %}{{ event.city }}{% endif %}{% if event.state %}{% if event.city %}, {% endif %}{{ event.state }}{% endif %}{% if event.country and event.country != 'USA' and event.country != 'United States' %}{% if event.state %}, {% elif event.city %}, {% elif event.address %}, {% endif %}{{ event.country }}{% endif %}</span>
                     </div>
                     {% endif %}
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="material-icons text-primary me-2">block</i>
+                        <strong>Age Restriction:</strong>
+                        <span class="ms-2">
+                            {% if event.age_restriction == 'adult' %}
+                                <span class="badge bg-danger">18+ (Adult)</span>
+                            {% elif event.age_restriction == 'mature' %}
+                                <span class="badge bg-danger">21+ (Mature)</span>
+                            {% else %}
+                                <span class="badge bg-success">No Age Limit</span>
+                            {% endif %}
+                        </span>
+                    </div>
                     <div class="mt-4">
                         <h5 class="mb-3">Description</h5>
                         <p class="card-text">{{ event.description|safe }}</p>

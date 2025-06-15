@@ -18,6 +18,18 @@ class Event(models.Model):
     city = models.CharField(max_length=50, blank=True, null=True)
     state = models.CharField(max_length=50, blank=True, null=True)
     organizer = models.ForeignKey(User, on_delete=models.CASCADE)
+    AGE_CHOICES = [
+        ('none', 'All ages'),
+        ('adult', '18+ (Adult)'),
+        ('mature', '21+ (Mature)'),
+    ]
+    age_restriction = models.CharField(
+        max_length=10,
+        choices=AGE_CHOICES,
+        default='none',
+        help_text="Age restriction for the event"
+    )
+    
     def __str__(self):
         return self.title
 

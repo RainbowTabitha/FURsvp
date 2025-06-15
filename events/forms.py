@@ -16,20 +16,35 @@ class UserProfileForm(forms.ModelForm):
         fields = ['is_approved_organizer']
 
 class EventForm(forms.ModelForm):
+    AGE_CHOICES = [
+        ('none', 'No age limit'),
+        ('adult', '18+ (Adult)'),
+        ('mature', '21+ (Mature)'),
+    ]
+    age_restriction = forms.ChoiceField(
+        choices=AGE_CHOICES,
+        required=True,
+        label='Age Restriction',
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
     description = forms.CharField(widget=TinyMCE(attrs={'cols': 80, 'rows': 30}))
     
     class Meta:
         model = Event
-        fields = ['title', 'group', 'description', 'date', 'start_time', 'end_time', 'address', 'city', 'state']
+        fields = [
+            'title', 'group', 'date', 'start_time', 'end_time',
+            'address', 'city', 'state', 'age_restriction', 'description'
+        ]
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Event Title'}),
             'group': forms.Select(attrs={'class': 'form-select', 'placeholder': 'Select Group'}),
-            'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', 'placeholder': 'Event Date'}),
-            'start_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time', 'placeholder': 'Start Time'}),
-            'end_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time', 'placeholder': 'End Time'}),
-            'address': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Street Address'}),
-            'city': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'City/Town'}),
-            'state': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'State/Province'}),
+            'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'start_time': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
+            'end_time': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
+            'address': forms.TextInput(attrs={'class': 'form-control'}),
+            'city': forms.TextInput(attrs={'class': 'form-control'}),
+            'state': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control'}),
         }
 
     def __init__(self, *args, **kwargs):
