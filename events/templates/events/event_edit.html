@@ -1,5 +1,6 @@
 {% extends 'events/base.html' %}
 {% block title %}Edit Event - FURsvp{% endblock %}
+{% load widget_tweaks %}
 
 {% block content %}
 <div class="container">
@@ -55,7 +56,7 @@
                                 <span class="input-group-text bg-light">
                                     <i class="material-icons text-primary">groups</i>
                                 </span>
-                                {{ form.group }}
+                                {{ form.group|add_class:'form-control' }}
                             </div>
                         </div>
                         <!-- Date/Time Fields -->
@@ -103,7 +104,10 @@
                                     <span class="input-group-text bg-light">
                                         <i class="material-icons text-primary">place</i>
                                     </span>
-                                    {{ form.address }}
+                                    {{ form.address|attr:'placeholder:Street address'|add_class:'rounded-0' }}
+                                    <button type="button" id="locationButton" class="btn btn-outline-primary rounded-end" tabindex="-1">
+                                        <i class="material-icons">my_location</i>
+                                    </button>
                                 </div>
                             </div>
                             <div class="row">
@@ -132,7 +136,12 @@
                                 <i class="material-icons align-middle me-1">block</i>
                                 Age Restriction
                             </label>
-                            {{ form.age_restriction }}
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="material-icons text-primary">block</i>
+                                </span>
+                                {{ form.age_restriction|add_class:'form-control' }}
+                            </div>
                         </div>
 
                         <!-- Description Field -->
@@ -208,20 +217,6 @@
         `;
         addressInput.parentElement.style.position = 'relative';
         addressInput.parentElement.appendChild(autocompleteContainer);
-
-        // Add a location button next to the address input
-        const locationButton = document.createElement('button');
-        locationButton.type = 'button';
-        locationButton.className = 'btn btn-outline-primary';
-        locationButton.innerHTML = '<i class="material-icons">my_location</i>';
-        locationButton.style.cssText = `
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            z-index: 1;
-        `;
-        addressInput.parentElement.appendChild(locationButton);
 
         // Handle address input
         addressInput.addEventListener('input', function () {
@@ -347,8 +342,7 @@
                             // Build the full address for display
                             fullAddress = streetAddress;
                             if (address.city || address.town || address.village) {
-                                fullAddress += ', ' + (address.city || address.town || address
-                                    .village);
+                                fullAddress += ', ' + (address.city || address.town || address.village);
                             }
                             if (address.state) {
                                 fullAddress += ', ' + address.state;
@@ -415,6 +409,7 @@
         });
 
         // Handle location button click
+        const locationButton = document.getElementById('locationButton');
         locationButton.addEventListener('click', (e) => {
             e.preventDefault();
 
@@ -531,7 +526,7 @@
             width: '100%',
             menubar: false,
             plugins: 'advlist autolink lists image charmap anchor searchreplace visualblocks code insertdatetime table help wordcount',
-            toolbar: 'undo redo | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | image | code | removeformat help',
+            toolbar: 'undo redo | bold italic strikethrough | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | image code | removeformat',
             branding: false,
             promotion: false,
             license_key: 'gpl',

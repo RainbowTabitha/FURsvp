@@ -1,5 +1,6 @@
 {% extends 'events/base.html' %}
 {% block title %}Create Event - FURsvp{% endblock %}
+{% load widget_tweaks %}
 
 {% block content %}
 <div class="container">
@@ -38,7 +39,7 @@
                                 <span class="input-group-text bg-light">
                                     <i class="material-icons text-primary">edit</i>
                                 </span>
-                                {{ form.title }}
+                                {{ form.title|attr:'placeholder:Event Title' }}
                             </div>
                             {% if form.title.help_text %}
                             <div class="form-text">{{ form.title.help_text }}</div>
@@ -60,7 +61,7 @@
                                 <span class="input-group-text bg-light">
                                     <i class="material-icons text-primary">groups</i>
                                 </span>
-                                {{ form.group }}
+                                {{ form.group|add_class:'form-control' }}
                             </div>
                             {% if form.group.help_text %}
                             <div class="form-text">{{ form.group.help_text }}</div>
@@ -84,7 +85,7 @@
                                         <span class="input-group-text bg-light">
                                             <i class="material-icons text-primary">event</i>
                                         </span>
-                                        {{ form.date }}
+                                        {{ form.date|attr:'placeholder:Select date' }}
                                     </div>
                                 </div>
                                 <div class="col-md-4">
@@ -92,7 +93,7 @@
                                         <span class="input-group-text bg-light">
                                             <i class="material-icons text-primary">schedule</i>
                                         </span>
-                                        {{ form.start_time }}
+                                        {{ form.start_time|attr:'placeholder:Start time' }}
                                     </div>
                                 </div>
                                 <div class="col-md-4">
@@ -100,7 +101,7 @@
                                         <span class="input-group-text bg-light">
                                             <i class="material-icons text-primary">schedule</i>
                                         </span>
-                                        {{ form.end_time }}
+                                        {{ form.end_time|attr:'placeholder:End time' }}
                                     </div>
                                 </div>
                             </div>
@@ -117,7 +118,10 @@
                                     <span class="input-group-text bg-light">
                                         <i class="material-icons text-primary">place</i>
                                     </span>
-                                    {{ form.address }}
+                                    {{ form.address|attr:'placeholder:Street address' }}
+                                    <button type="button" id="locationButton" class="btn btn-outline-primary rounded-end" tabindex="-1">
+                                        <i class="material-icons">my_location</i>
+                                    </button>
                                 </div>
                             </div>
                             <div class="row">
@@ -126,7 +130,7 @@
                                         <span class="input-group-text bg-light">
                                             <i class="material-icons text-primary">location_city</i>
                                         </span>
-                                        {{ form.city }}
+                                        {{ form.city|attr:'placeholder:City' }}
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -134,7 +138,7 @@
                                         <span class="input-group-text bg-light">
                                             <i class="material-icons text-primary">map</i>
                                         </span>
-                                        {{ form.state }}
+                                        {{ form.state|attr:'placeholder:State' }}
                                     </div>
                                 </div>
                             </div>
@@ -146,7 +150,12 @@
                                 <i class="material-icons align-middle me-1">block</i>
                                 Age Restriction
                             </label>
-                            {{ form.age_restriction }}
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="material-icons text-primary">block</i>
+                                </span>
+                                {{ form.age_restriction|add_class:'form-control' }}
+                            </div>
                         </div>
 
                         <!-- Description Field -->
@@ -224,20 +233,6 @@
         `;
         addressInput.parentElement.style.position = 'relative';
         addressInput.parentElement.appendChild(autocompleteContainer);
-
-        // Add a location button next to the address input
-        const locationButton = document.createElement('button');
-        locationButton.type = 'button';
-        locationButton.className = 'btn btn-outline-primary';
-        locationButton.innerHTML = '<i class="material-icons">my_location</i>';
-        locationButton.style.cssText = `
-        position: absolute;
-        right: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        z-index: 1;
-    `;
-        addressInput.parentElement.appendChild(locationButton);
 
         // Handle address input
         addressInput.addEventListener('input', function (e) {
@@ -431,6 +426,7 @@
         }
 
         // Handle location button click
+        const locationButton = document.getElementById('locationButton');
         locationButton.addEventListener('click', (e) => {
             e.preventDefault();
 
@@ -547,7 +543,7 @@
             width: '100%',
             menubar: false,
             plugins: 'advlist autolink lists image charmap anchor searchreplace visualblocks code insertdatetime table help wordcount',
-            toolbar: 'undo redo | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | image | code | removeformat help',
+            toolbar: 'undo redo | bold italic strikethrough | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | image code | removeformat',
             branding: false,
             promotion: false,
             license_key: 'gpl',
