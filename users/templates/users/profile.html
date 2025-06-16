@@ -6,8 +6,8 @@
 {% block content %}
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card shadow-sm">
+        <div class="col-lg-10">
+            <div class="card shadow-sm mb-4">
                 <div class="card-body p-4">
                     <div class="text-center mb-4">
                         <div class="position-relative d-inline-block">
@@ -26,154 +26,178 @@
                         <p class="text-muted">@{{ user.username }}</p>
                     </div>
 
-                    <form method="post" class="mb-4" id="main-profile-form" action="{% url 'profile' %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="submit_profile_changes" value="1">
-                        
-                        <div class="mb-3">
-                            <label for="{{ profile_form.display_name.id_for_label }}" class="form-label">
-                                <i class="material-icons align-middle me-1">badge</i>
-                                Display Name
-                            </label>
-                            {{ profile_form.display_name }}
-                            {% if profile_form.display_name.help_text %}
-                                <div class="form-text">{{ profile_form.display_name.help_text }}</div>
-                            {% endif %}
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="{{ profile_form.email.id_for_label }}" class="form-label">
-                                <i class="material-icons align-middle me-1">email</i>
-                                Email Address
-                            </label>
-                            {{ profile_form.email }}
-                            {% if profile_form.email.help_text %}
-                                <div class="form-text">{{ profile_form.email.help_text }}</div>
-                            {% endif %}
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="{{ profile_form.discord_username.id_for_label }}" class="form-label">
-                                <i class="material-icons align-middle me-1">chat</i>
-                                Discord Username
-                            </label>
-                            {{ profile_form.discord_username }}
-                            {% if profile_form.discord_username.help_text %}
-                                <div class="form-text">{{ profile_form.discord_username.help_text }}</div>
-                            {% endif %}
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="{{ profile_form.telegram_username.id_for_label }}" class="form-label">
-                                <i class="material-icons align-middle me-1">send</i>
-                                Telegram Username
-                            </label>
-                            {{ profile_form.telegram_username }}
-                            {% if profile_form.telegram_username.help_text %}
-                                <div class="form-text">{{ profile_form.telegram_username.help_text }}</div>
-                            {% endif %}
-                        </div>
-
-                        {{ profile_form.profile_picture_base64 }}
-
-                        {% if profile.is_approved_organizer %}
-                            <div class="mb-3">
-                                <label class="form-label">
-                                    <i class="material-icons align-middle me-1">star</i>
-                                    Approved Group Administrator
-                                </label>
-                                <p class="form-control-static">Yes</p>
-                            </div>
-                        {% else %}
-                            <div class="mb-3">
-                                <label class="form-label">
-                                    <i class="material-icons align-middle me-1">star</i>
-                                    Approved Group Administrator
-                                </label>
-                                <p class="form-control-static">No</p>
-                            </div>
-                        {% endif %}
-
-                        <div class="d-grid">
-                            <button type="button" class="btn btn-primary" id="main-profile-save-button">
-                                <i class="material-icons">save</i> Save Changes
+                    <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab" aria-controls="general" aria-selected="true">
+                                <i class="material-icons align-middle me-1">settings</i> General Settings
                             </button>
-                        </div>
-                    </form>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#password" type="button" role="tab" aria-controls="password" aria-selected="false">
+                                <i class="material-icons align-middle me-1">lock</i> Change Password
+                            </button>
+                        </li>
+                        {% if profile.is_approved_organizer %}
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="events-tab" data-bs-toggle="tab" data-bs-target="#events" type="button" role="tab" aria-controls="events" aria-selected="false">
+                                <i class="material-icons align-middle me-1">event</i> Your Events
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="assignments-tab" data-bs-toggle="tab" data-bs-target="#assignments" type="button" role="tab" aria-controls="assignments" aria-selected="false">
+                                <i class="material-icons align-middle me-1">groups</i> Assistant Assignments
+                            </button>
+                        </li>
+                        {% endif %}
+                    </ul>
 
-                    <div class="mt-5">
-                        <h2 class="h4 mb-4">
-                            <i class="material-icons">lock</i> Change Password
-                        </h2>
-                        <div class="card shadow-sm mb-4">
-                            <div class="card-body">
-                                <form method="post" action="{% url 'profile' %}">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="submit_password_changes" value="1">
-                                    {% for field in password_change_form %}
-                                        <div class="mb-3">
-                                            <label for="{{ field.id_for_label }}" class="form-label">
-                                                <i class="material-icons align-middle me-1">lock</i>
-                                                {{ field.label }}
-                                            </label>
-                                            {{ field }}
-                                            {% if field.help_text %}
-                                                <div class="form-text">{{ field.help_text }}</div>
-                                            {% endif %}
-                                            {% if field.errors %}
-                                                <div class="invalid-feedback d-block">{{ field.errors }}</div>
-                                            {% endif %}
-                                        </div>
-                                    {% endfor %}
-                                    <div class="d-grid">
-                                        <button type="submit" class="btn btn-primary">
-                                            <i class="material-icons">save</i> Change Password
-                                        </button>
+                    <div class="tab-content" id="profileTabsContent">
+                        <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
+                            <form method="post" class="mb-4" id="main-profile-form" action="{% url 'profile' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="submit_profile_changes" value="1">
+                                
+                                <div class="mb-3">
+                                    <label for="{{ profile_form.display_name.id_for_label }}" class="form-label">
+                                        <i class="material-icons align-middle me-1">badge</i>
+                                        Display Name
+                                    </label>
+                                    {{ profile_form.display_name }}
+                                    {% if profile_form.display_name.help_text %}
+                                        <div class="form-text">{{ profile_form.display_name.help_text }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ profile_form.email.id_for_label }}" class="form-label">
+                                        <i class="material-icons align-middle me-1">email</i>
+                                        Email Address
+                                    </label>
+                                    {{ profile_form.email }}
+                                    {% if profile_form.email.help_text %}
+                                        <div class="form-text">{{ profile_form.email.help_text }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ profile_form.discord_username.id_for_label }}" class="form-label">
+                                        <i class="material-icons align-middle me-1">chat</i>
+                                        Discord Username
+                                    </label>
+                                    {{ profile_form.discord_username }}
+                                    {% if profile_form.discord_username.help_text %}
+                                        <div class="form-text">{{ profile_form.discord_username.help_text }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ profile_form.telegram_username.id_for_label }}" class="form-label">
+                                        <i class="material-icons align-middle me-1">send</i>
+                                        Telegram Username
+                                    </label>
+                                    {{ profile_form.telegram_username }}
+                                    {% if profile_form.telegram_username.help_text %}
+                                        <div class="form-text">{{ profile_form.telegram_username.help_text }}</div>
+                                    {% endif %}
+                                </div>
+
+                                {{ profile_form.profile_picture_base64 }}
+
+                                {% if profile.is_approved_organizer %}
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            <i class="material-icons align-middle me-1">star</i>
+                                            Approved Group Administrator
+                                        </label>
+                                        <p class="form-control-static">Yes</p>
                                     </div>
-                                </form>
+                                {% else %}
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            <i class="material-icons align-middle me-1">star</i>
+                                            Approved Group Administrator
+                                        </label>
+                                        <p class="form-control-static">No</p>
+                                    </div>
+                                {% endif %}
+
+                                <div class="d-grid">
+                                    <button type="button" class="btn btn-primary" id="main-profile-save-button">
+                                        <i class="material-icons">save</i> Save Changes
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="tab-pane fade" id="password" role="tabpanel" aria-labelledby="password-tab">
+                            <h2 class="h4 mb-4">
+                                <i class="material-icons">lock</i> Change Password
+                            </h2>
+                            <div class="card shadow-sm mb-4">
+                                <div class="card-body">
+                                    <form method="post" action="{% url 'profile' %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="submit_password_changes" value="1">
+                                        {% for field in password_change_form %}
+                                            <div class="mb-3">
+                                                <label for="{{ field.id_for_label }}" class="form-label">
+                                                    <i class="material-icons align-middle me-1">lock</i>
+                                                    {{ field.label }}
+                                                </label>
+                                                {{ field }}
+                                                {% if field.help_text %}
+                                                    <div class="form-text">{{ field.help_text }}</div>
+                                                {% endif %}
+                                                {% if field.errors %}
+                                                    <div class="invalid-feedback d-block">{{ field.errors }}</div>
+                                                {% endif %}
+                                            </div>
+                                        {% endfor %}
+                                        <div class="d-grid">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="material-icons">save</i> Change Password
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
-                    {% if profile.is_approved_organizer %}
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h2 class="h4 mb-0">
+                        {% if profile.is_approved_organizer %}
+                        <div class="tab-pane fade" id="events" role="tabpanel" aria-labelledby="events-tab">
+                            <h2 class="h4 mb-4">
                                 <i class="material-icons">event</i> Your Events
                             </h2>
                             <a href="{% url 'create_event' %}" class="btn btn-primary">
                                 <i class="material-icons">add_circle</i> Create New Event
                             </a>
-                        </div>
 
-                        <div class="row">
-                            {% for event in user_events %}
-                            <div class="col-md-6 col-lg-4 mb-4">
-                                <div class="card shadow-sm h-100">
-                                    <div class="card-body d-flex flex-column">
-                                        <h5 class="card-title text-primary">
-                                            <a href="{% url 'event_detail' event.id %}" class="text-decoration-none text-primary">{{ event.title }}</a>
-                                        </h5>
-                                        <p class="card-text mb-1"><i class="material-icons me-1 align-middle">group</i> {{ event.group.name }}</p>
-                                        <p class="card-text mb-3"><i class="material-icons me-1 align-middle">calendar_today</i> {{ event.date }}</p>
-                                        <div class="mt-auto">
-                                            <span class="badge bg-primary rounded-pill py-2 px-3">
-                                                <i class="material-icons me-1 align-middle">people</i> {{ event.rsvps.count }} RSVPs
-                                            </span>
+                            <div class="row">
+                                {% for event in user_events %}
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="card shadow-sm h-100">
+                                        <div class="card-body d-flex flex-column">
+                                            <h5 class="card-title text-primary">
+                                                <a href="{% url 'event_detail' event.id %}" class="text-decoration-none text-primary">{{ event.title }}</a>
+                                            </h5>
+                                            <p class="card-text mb-1"><i class="material-icons me-1 align-middle">group</i> {{ event.group.name }}</p>
+                                            <p class="card-text mb-3"><i class="material-icons me-1 align-middle">calendar_today</i> {{ event.date }}</p>
+                                            <div class="mt-auto">
+                                                <span class="badge bg-primary rounded-pill py-2 px-3">
+                                                    <i class="material-icons me-1 align-middle">people</i> {{ event.rsvps.count }} RSVPs
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            {% empty %}
-                            <div class="col-12">
-                                <div class="alert alert-info text-center" role="alert">
-                                    <i class="material-icons align-middle me-2">info</i> You haven't created any events yet.
+                                {% empty %}
+                                <div class="col-12">
+                                    <div class="alert alert-info text-center" role="alert">
+                                        <i class="material-icons align-middle me-2">info</i> You haven't created any events yet.
+                                    </div>
                                 </div>
+                                {% endfor %}
                             </div>
-                            {% endfor %}
                         </div>
-
-                        <!-- Assistant Assignments Section -->
-                        <div class="mt-5">
+                        <div class="tab-pane fade" id="assignments" role="tabpanel" aria-labelledby="assignments-tab">
                             <h2 class="h4 mb-4">
                                 <i class="material-icons">groups</i> Assistant Assignments
                             </h2>
@@ -252,7 +276,8 @@
                             </div>
                             {% endif %}
                         </div>
-                    {% endif %}
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
