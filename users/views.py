@@ -72,10 +72,7 @@ def profile(request):
                     messages.success(request, 'Profile picture removed successfully!', extra_tags='admin_notification')
                 
                 # Save profile settings
-                profile = profile_form.save(commit=False)
-                print("Profile before save:", profile.__dict__)  # Debug print
-                profile.save()
-                print("Profile after save:", profile.__dict__)  # Debug print
+                profile = profile_form.save()
                 messages.success(request, 'Profile settings updated successfully!', extra_tags='admin_notification')
                 return redirect('profile')
             else:

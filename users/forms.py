@@ -46,6 +46,10 @@ class UserProfileForm(forms.ModelForm):
 
 class UserPublicProfileForm(forms.ModelForm):
     clear_profile_picture = forms.BooleanField(required=False, label="Remove Profile Picture")
+    email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Enter your email address'
+    }))
 
     class Meta:
         model = Profile
@@ -70,6 +74,17 @@ class UserPublicProfileForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.profile_picture_base64:
             self.initial['profile_picture_base64'] = self.instance.profile_picture_base64
+        if self.instance and self.instance.user:
+            self.initial['email'] = self.instance.user.email
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if commit:
+            instance.save()
+            if 'email' in self.cleaned_data:
+                instance.user.email = self.cleaned_data['email']
+                instance.user.save()
+        return instance
 
 class UserAdminProfileForm(forms.ModelForm):
     class Meta:
