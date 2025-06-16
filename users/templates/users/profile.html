@@ -48,6 +48,11 @@
                                 <i class="material-icons align-middle me-1">groups</i> Assistant Assignments
                             </button>
                         </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="banned-users-tab" data-bs-toggle="tab" data-bs-target="#banned-users" type="button" role="tab" aria-controls="banned-users" aria-selected="false">
+                                <i class="material-icons align-middle me-1">gavel</i> Banned Users
+                            </button>
+                        </li>
                         {% endif %}
                     </ul>
 
@@ -276,6 +281,51 @@
                             </div>
                             {% endif %}
                         </div>
+                        <div class="tab-pane fade" id="banned-users" role="tabpanel" aria-labelledby="banned-users-tab">
+                            <h2 class="h4 mb-4">
+                                <i class="material-icons">gavel</i> Banned Users in Your Groups
+                            </h2>
+                            {% if banned_users_in_groups %}
+                            <div class="card shadow-sm">
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Banned User</th>
+                                                    <th>Group</th>
+                                                    <th>Reason</th>
+                                                    <th>Banned At</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for banned_entry in banned_users_in_groups %}
+                                                <tr>
+                                                    <td>{{ banned_entry.user.profile.get_display_name }}</td>
+                                                    <td>{{ banned_entry.group.name }}</td>
+                                                    <td>{{ banned_entry.reason|default:"No reason provided" }}</td>
+                                                    <td>{{ banned_entry.banned_at|date:"Y-m-d H:i" }}</td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-sm btn-success rounded-pill px-3 unban-from-group-btn"
+                                                                data-user-id="{{ banned_entry.user.id }}"
+                                                                data-group-id="{{ banned_entry.group.id }}">
+                                                            <i class="material-icons me-1">lock_open</i> Unban
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-info text-center" role="alert">
+                                <i class="material-icons align-middle me-2">info</i> No users currently banned from your groups.
+                            </div>
+                            {% endif %}
+                        </div>
                         {% endif %}
                     </div>
                 </div>
@@ -418,6 +468,61 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log("Attempting to submit main profile form..."); // New debug log
             mainProfileForm.submit();
         });
+    }
+
+    // Handle unban from group buttons
+    document.querySelectorAll('.unban-from-group-btn').forEach(button => {
+        button.addEventListener('click', async function() {
+            const userId = this.dataset.userId;
+            const groupId = this.dataset.groupId;
+            
+            if (!confirm('Are you sure you want to unban this user from this group?')) {
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('user_id', userId);
+            formData.append('group_id', groupId);
+            formData.append('action', 'unban');
+            formData.append('ban_type', 'group'); // Specify ban type as 'group'
+
+            try {
+                const response = await fetch('{% url "ban_user" %}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(data.message);
+                    location.reload(); // Reload the page to reflect changes
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while processing your request.');
+            }
+        });
+    });
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
     }
 });
 </script>

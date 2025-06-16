@@ -43,6 +43,13 @@ def profile(request):
     existing_assignments = GroupDelegation.objects.filter(organizer=request.user).order_by('group__name', 'delegated_user__username')
     password_change_form = UserPasswordChangeForm(user=request.user)
 
+    banned_users_in_groups = []
+    if request.user.profile.is_approved_organizer:
+        # Get all groups where the current user is an approved organizer
+        organizer_groups = request.user.profile.allowed_groups.all()
+        # Filter BannedUser entries for these groups
+        banned_users_in_groups = BannedUser.objects.filter(group__in=organizer_groups).select_related('user__profile', 'group', 'banned_by').order_by('group__name', 'user__username')
+
     if request.method == 'POST':
         print("Raw POST data received:", request.POST) # <- NEW DEBUG PRINT
         if 'submit_pfp_changes' in request.POST: # Handle profile picture upload
@@ -129,6 +136,7 @@ def profile(request):
         'existing_assignments': existing_assignments,
         'profile_form': profile_form, # Ensure profile_form is always in context
         'password_change_form': password_change_form,
+        'banned_users_in_groups': banned_users_in_groups, # Add this to context
     }
     return render(request, 'users/profile.html', context)
 
