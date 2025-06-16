@@ -228,41 +228,54 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function hideLoading() {
         loadingSpinner.style.display = 'none';
-    }
-
-    function updateView() {
         if (isListView) {
-            eventsGrid.style.display = 'none';
             eventsList.style.display = 'block';
-            toggleIcon.textContent = 'view_list';
         } else {
             eventsGrid.style.display = 'flex';
-            eventsList.style.display = 'none';
-            toggleIcon.textContent = 'grid_view';
         }
     }
 
+    function updateView() {
+        showLoading();
+        setTimeout(() => {
+            if (isListView) {
+                eventsGrid.style.display = 'none';
+                eventsList.style.display = 'block';
+                toggleIcon.textContent = 'view_list';
+            } else {
+                eventsGrid.style.display = 'flex';
+                eventsList.style.display = 'none';
+                toggleIcon.textContent = 'grid_view';
+            }
+            hideLoading();
+        }, 100);
+    }
+
     function filterAdultEvents() {
-        const gridCards = eventsGrid.querySelectorAll('.col-md-6'); /* Target the column directly */
-        const listItems = eventsList.querySelectorAll('.list-group-item');
-        
-        gridCards.forEach(card => {
-            const badge = card.querySelector('.badge.bg-danger, .badge.bg-warning');
-            if (badge && !showAdult) {
-                card.style.display = 'none'; /* Hide the column */
-            } else {
-                card.style.display = '';
-            }
-        });
-        
-        listItems.forEach(item => {
-            const badge = item.querySelector('.badge.bg-danger, .badge.bg-warning');
-            if (badge && !showAdult) {
-                item.style.display = 'none';
-            } else {
-                item.style.display = '';
-            }
-        });
+        showLoading();
+        setTimeout(() => {
+            const gridCards = eventsGrid.querySelectorAll('.col-md-6');
+            const listItems = eventsList.querySelectorAll('.list-group-item');
+            
+            gridCards.forEach(card => {
+                const badge = card.querySelector('.badge.bg-danger, .badge.bg-warning');
+                if (badge && !showAdult) {
+                    card.style.display = 'none';
+                } else {
+                    card.style.display = '';
+                }
+            });
+            
+            listItems.forEach(item => {
+                const badge = item.querySelector('.badge.bg-danger, .badge.bg-warning');
+                if (badge && !showAdult) {
+                    item.style.display = 'none';
+                } else {
+                    item.style.display = '';
+                }
+            });
+            hideLoading();
+        }, 100);
     }
 
     function updateToggleButton() {
@@ -278,25 +291,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     viewToggle.addEventListener('click', function() {
-        showLoading();
         isListView = !isListView;
         localStorage.setItem('eventViewPreference', isListView ? 'list' : 'grid');
-        setTimeout(() => {
-            updateView();
-            filterAdultEvents();
-            hideLoading();
-        }, 100);
+        updateView();
+        filterAdultEvents();
     });
 
     toggleAdult.addEventListener('click', function() {
-        showLoading();
         showAdult = !showAdult;
         localStorage.setItem('showAdultEvents', showAdult);
-        setTimeout(() => {
-            updateToggleButton();
-            filterAdultEvents();
-            hideLoading();
-        }, 100);
+        updateToggleButton();
+        filterAdultEvents();
     });
 });
 </script>
