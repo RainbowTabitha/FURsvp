@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Your State - FURsvp</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f0f2f5;
+            font-family: Arial, sans-serif;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        .modal-content {
+            border-radius: 15px;
+        }
+        .modal-header {
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container d-flex justify-content-center align-items-center vh-100">
+        <div class="card shadow-lg p-4" style="width: 100%; max-width: 400px;">
+            <h1 class="text-center mb-4">Select Your State</h1>
+            <div class="mb-3">
+                <label for="stateSelect" class="form-label">Choose a State:</label>
+                <select class="form-select" id="stateSelect">
+                    <option value="" disabled>Select a state...</option>
+                    <option value="new-jersey">New Jersey</option>
+                    <option value="rhode-island">Rhode Island</option>
+                </select>
+            </div>
+            <button id="proceedButton" class="btn btn-primary w-100">Proceed</button>
+        </div>
+    </div>
+
+    <!-- Welcome Dialog Modal -->
+    <div class="modal fade" id="welcomeModal" tabindex="-1" aria-labelledby="welcomeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="welcomeModalLabel">Welcome to the New FurSVP!</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h6 class="mb-3">Important Changes You Should Know:</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <strong>🔄 Complete Rebuild:</strong><br>
+                            Our developer, Tabitha, has rebuilt the service from the ground up to modernize the code and design.
+                        </li>
+                        <li class="mb-3">
+                            <strong>🌐 New Hosting System:</strong><br>
+                            Each state now has a "host" who supplies server space and bandwidth, helping to spread operational costs evenly.
+                        </li>
+                        <li class="mb-3">
+                            <strong>📋 Beta Testing:</strong><br>
+                            Currently, only New Jersey and Rhode Island are available as we work through beta testing. More states will be added as hosts become available.
+                        </li>
+                        <li>
+                            <strong>💡 Interested in Hosting?</strong><br>
+                            If your state isn't listed and you're interested in hosting, please reach out to us for more information.
+                        </li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Got it!</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Cookie management functions
+        function setCookie(name, value, days) {
+            let expires = "";
+            if (days) {
+                const date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "") + expires + "; path=/";
+        }
+
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for(let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+
+        // Show welcome modal when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize and show the welcome modal
+            const modalElement = document.getElementById('welcomeModal');
+            const modal = new bootstrap.Modal(modalElement, {
+                backdrop: 'static',
+                keyboard: false
+            });
+            modal.show();
+
+            // Set the last selected state from cookie
+            const lastState = getCookie('lastSelectedState');
+            if (lastState) {
+                document.getElementById('stateSelect').value = lastState;
+            }
+        });
+
+        document.getElementById('proceedButton').addEventListener('click', function() {
+            var state = document.getElementById('stateSelect').value;
+            if (state === 'new-jersey') {
+                setCookie('lastSelectedState', 'new-jersey', 365); // Remember for 1 year
+                window.location.href = 'https://nj.fursvp.org';
+            } else if (state === 'rhode-island') {
+                setCookie('lastSelectedState', 'rhode-island', 365); // Remember for 1 year
+                window.location.href = 'https://ri.fursvp.org';
+            } else {
+                alert('Please select a valid state.');
+            }
+        });
+    </script>
+</body>
+</html> 
