@@ -101,6 +101,40 @@
                         </div>
                     </form>
 
+                    <div class="mt-5">
+                        <h2 class="h4 mb-4">
+                            <i class="material-icons">lock</i> Change Password
+                        </h2>
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-body">
+                                <form method="post" action="{% url 'profile' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="submit_password_changes" value="1">
+                                    {% for field in password_change_form %}
+                                        <div class="mb-3">
+                                            <label for="{{ field.id_for_label }}" class="form-label">
+                                                <i class="material-icons align-middle me-1">lock</i>
+                                                {{ field.label }}
+                                            </label>
+                                            {{ field }}
+                                            {% if field.help_text %}
+                                                <div class="form-text">{{ field.help_text }}</div>
+                                            {% endif %}
+                                            {% if field.errors %}
+                                                <div class="invalid-feedback d-block">{{ field.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="material-icons">save</i> Change Password
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
                     {% if profile.is_approved_organizer %}
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h2 class="h4 mb-0">

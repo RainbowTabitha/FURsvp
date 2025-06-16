@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.models import User
-from .forms import UserRegisterForm, UserProfileForm, AssistantAssignmentForm, UserPublicProfileForm, UserAdminProfileForm
+from .forms import UserRegisterForm, UserProfileForm, AssistantAssignmentForm, UserPublicProfileForm, UserAdminProfileForm, UserPasswordChangeForm
 from events.models import Group
 from events.forms import GroupForm, RenameGroupForm
 from .models import Profile, GroupDelegation, BannedUser
@@ -41,6 +41,7 @@ def profile(request):
     profile_form = UserPublicProfileForm(instance=request.user.profile)
     assistant_assignment_form = AssistantAssignmentForm(organizer_profile=request.user.profile)
     existing_assignments = GroupDelegation.objects.filter(organizer=request.user).order_by('group__name', 'delegated_user__username')
+    password_change_form = UserPasswordChangeForm(user=request.user)
 
     if request.method == 'POST':
         print("Raw POST data received:", request.POST) # <- NEW DEBUG PRINT
@@ -79,6 +80,15 @@ def profile(request):
                 print("Form errors:", profile_form.errors)  # Debug print
                 messages.error(request, f'Error updating profile settings: {profile_form.errors}', extra_tags='admin_notification')
         
+        elif 'submit_password_changes' in request.POST: # Handle password change
+            password_change_form = UserPasswordChangeForm(user=request.user, data=request.POST)
+            if password_change_form.is_valid():
+                password_change_form.save()
+                messages.success(request, 'Your password was successfully updated!', extra_tags='admin_notification')
+                return redirect('profile') # Redirect to clear the POST data and display message
+            else:
+                messages.error(request, f'Error changing password: {password_change_form.errors}', extra_tags='admin_notification')
+
         elif 'create_assignment_submit' in request.POST: # Handle creating assistant assignment
             if request.user.profile.is_approved_organizer:
                 assistant_assignment_form = AssistantAssignmentForm(request.POST, organizer_profile=request.user.profile)
@@ -118,6 +128,7 @@ def profile(request):
         'assistant_assignment_form': assistant_assignment_form,
         'existing_assignments': existing_assignments,
         'profile_form': profile_form, # Ensure profile_form is always in context
+        'password_change_form': password_change_form,
     }
     return render(request, 'users/profile.html', context)
 
