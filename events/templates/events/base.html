@@ -466,24 +466,24 @@
         // Removed console.log('Base template script loaded.');
         // Removed console.log('Attempting to get notification elements within base.html...');
 
-        const notificationsDropdown = document.getElementById('notificationsDropdown');
-        const unreadBadge = document.getElementById('unread-notifications-badge');
-        const notificationsList = document.getElementById('notifications-list');
-        const noNotificationsMessage = document.getElementById('no-notifications-message');
-        const clearNotificationsBtn = document.getElementById('clear-notifications-btn');
-
-        // Removed console.log('notificationsDropdown (base.html):', notificationsDropdown);
-        // Removed console.log('unreadBadge (base.html):', unreadBadge);
-        // Removed console.log('notificationsList (base.html):', notificationsList);
-        // Removed console.log('noNotificationsMessage (base.html):', noNotificationsMessage);
-
+        // Moved these declarations inside DOMContentLoaded for proper scoping
         document.addEventListener('DOMContentLoaded', function() {
-            // Removed console.log('DOMContentLoaded fired in base.html script.');
+            const notificationsDropdown = document.getElementById('notificationsDropdown');
+            const unreadBadge = document.getElementById('unread-notifications-badge');
+            const notificationsList = document.getElementById('notifications-list');
+            const noNotificationsMessageItem = document.getElementById('no-notifications-message-item');
+            const clearNotificationsBtnElement = document.getElementById('clear-notifications-btn');
+
+            // Removed console.log('notificationsDropdown (base.html):', notificationsDropdown);
+            // Removed console.log('unreadBadge (base.html):', unreadBadge);
+            // Removed console.log('notificationsList (base.html):', notificationsList);
+            // Removed console.log('noNotificationsMessage (base.html):', noNotificationsMessage);
+
             // Original notification logic (now inside DOMContentLoaded)
             // Function to fetch and display notifications
             async function fetchNotifications() {
                 try {
-                    const response = await fetch('/notifications/get_unread/');
+                    const response = await fetch('/accounts/notifications/');
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
@@ -491,24 +491,19 @@
                     const notifications = data.notifications;
                     const unreadCount = data.unread_count;
 
-                    const notificationsList = document.getElementById('notifications-list');
-                    const unreadBadge = document.getElementById('unread-notifications-badge');
-                    const noNotificationsMessageItem = document.getElementById('no-notifications-message-item');
-
-                    // Clear existing notifications (except header and footer)
-                    Array.from(notificationsList.children).forEach(child => {
-                        if (!child.classList.contains('dropdown-header') && !child.classList.contains('dropdown-divider') && !child.classList.contains('notification-footer')) {
-                            child.remove();
-                        }
+                    // Clear existing dynamically added notifications
+                    Array.from(notificationsList.querySelectorAll('.notification-item')).forEach(item => {
+                        item.remove();
                     });
 
                     if (notifications && notifications.length > 0) {
+                        console.log("Notifications found, displaying...");
                         noNotificationsMessageItem.style.display = 'none';
                         notifications.forEach(notification => {
                             const notificationItem = document.createElement('li');
                             notificationItem.classList.add('notification-item');
                             notificationItem.setAttribute('data-notification-id', notification.id);
-                            if (!notification.read) {
+                            if (!notification.is_read) {
                                 notificationItem.classList.add('unread');
                             }
 
@@ -543,19 +538,19 @@
                     }
 
                 } catch (error) {
-                    console.error('Error fetching notifications:', error);
                 }
             }
 
             // Function to mark notification as read
             async function markNotificationAsRead(notificationId) {
                 try {
-                    const response = await fetch(`/notifications/mark_as_read/${notificationId}/`, {
+                    const response = await fetch('/accounts/notifications/mark_as_read/', {
                         method: 'POST',
                         headers: {
                             'X-CSRFToken': getCookie('csrftoken'),
                             'Content-Type': 'application/json'
-                        }
+                        },
+                        body: JSON.stringify({ notification_ids: [notificationId] })
                     });
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
@@ -584,7 +579,12 @@
                     return;
                 }
                 try {
-                    const response = await fetch('/notifications/clear_all/', {
+                    // Re-get references to ensure they are available within this function's scope
+                    const notificationsList = document.getElementById('notifications-list');
+                    const unreadBadge = document.getElementById('unread-notifications-badge');
+                    const noNotificationsMessageItem = document.getElementById('no-notifications-message-item');
+
+                    const response = await fetch('/accounts/notifications/purge_read/', {
                         method: 'POST',
                         headers: {
                             'X-CSRFToken': getCookie('csrftoken'),
@@ -595,13 +595,10 @@
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     // Clear notifications from UI
-                    const notificationsList = document.getElementById('notifications-list');
-                    const noNotificationsMessageItem = document.getElementById('no-notifications-message-item');
-                    Array.from(notificationsList.children).forEach(child => {
-                        if (!child.classList.contains('dropdown-header') && !child.classList.contains('dropdown-divider') && !child.classList.contains('notification-footer')) {
-                            child.remove();
-                        }
+                    Array.from(notificationsList.querySelectorAll('.notification-item')).forEach(item => {
+                        item.remove();
                     });
+
                     noNotificationsMessageItem.style.display = 'block';
                     unreadBadge.style.display = 'none';
                     unreadBadge.textContent = '0';
@@ -627,12 +624,10 @@
             }
 
             // Event listener for dropdown show to fetch latest notifications
-            const notificationsDropdown = document.getElementById('notificationsDropdown');
             notificationsDropdown.addEventListener('shown.bs.dropdown', fetchNotifications);
 
             // Event listener for clear all button
-            const clearNotificationsBtn = document.getElementById('clear-notifications-btn');
-            clearNotificationsBtn.addEventListener('click', clearAllNotifications);
+            clearNotificationsBtnElement.addEventListener('click', clearAllNotifications);
 
             // Initial fetch on page load (optional, if you want notifications to be loaded immediately)
             fetchNotifications();

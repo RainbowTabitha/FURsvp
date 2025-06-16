@@ -175,14 +175,14 @@ def event_detail(request, event_id):
                         rsvp.event = event
                         rsvp.user = request.user
                         rsvp.save()
-                        create_notification(request.user, f'Your RSVP status has been updated to {rsvp.get_status_display()}.', link=event.get_absolute_url())
+                        create_notification(request.user, f'Your RSVP status has been updated to {rsvp.get_status_display()!s}.', link=event.get_absolute_url())
                         # If a new confirmed spot was taken, no need to promote here as current user took it.
             else: # If status is 'maybe' or 'not_attending'
                 if user_rsvp and user_rsvp.status == 'confirmed': # If changing from confirmed to maybe/not_attending
                     with transaction.atomic():
                         user_rsvp.status = new_status
                         user_rsvp.save()
-                        create_notification(request.user, f'Your RSVP status has been updated to {user_rsvp.get_status_display()}.', link=event.get_absolute_url())
+                        create_notification(request.user, f'Your RSVP status has been updated to {user_rsvp.get_status_display()!s}.', link=event.get_absolute_url())
                         # If a confirmed spot opened up, synchronously promote oldest waitlisted
                         if event.waitlist_enabled and event.capacity is not None:
                             current_confirmed_count_after_change = event.rsvps.filter(status='confirmed').count()
@@ -201,7 +201,7 @@ def event_detail(request, event_id):
                     rsvp.event = event
                     rsvp.user = request.user
                     rsvp.save()
-                    create_notification(request.user, f'Your RSVP status has been updated to {rsvp.get_status_display()}.', link=event.get_absolute_url())
+                    create_notification(request.user, f'Your RSVP status has been updated to {rsvp.get_status_display()!s}.', link=event.get_absolute_url())
             
             return redirect('event_detail', event_id=event.id)
         else:
@@ -226,7 +226,7 @@ def event_detail(request, event_id):
                 rsvp_to_update.save()
 
                 message = f"{rsvp_to_update.user.username}'s RSVP updated to {rsvp_to_update.get_status_display()}."
-                messages.success(request, message, extra_tags='admin_notification')
+                create_notification(request.user, message, link=event.get_absolute_url())
                 # Send a notification to the user whose RSVP was updated
                 if rsvp_to_update.user:
                     create_notification(rsvp_to_update.user, f'Your RSVP for {event.title} has been updated to {rsvp_to_update.get_status_display()}. (by {request.user.username})', link=event.get_absolute_url())

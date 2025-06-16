@@ -12,6 +12,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Q
 from django.db import models, transaction
+import json # Added import
 
 # Create your views here.
 
@@ -443,22 +444,49 @@ def user_search_autocomplete(request):
 
 @login_required
 def get_notifications(request):
-    notifications = Notification.objects.filter(user=request.user, is_read=False).order_by('-timestamp')
+    notifications = Notification.objects.filter(user=request.user).order_by('-timestamp')
+    unread_count = notifications.filter(is_read=False).count()
     notification_list = []
     for notification in notifications:
         notification_list.append({
             'id': notification.id,
             'message': notification.message,
+            'is_read': notification.is_read,
             'timestamp': notification.timestamp.isoformat(), # ISO format for easy JS parsing
             'link': notification.link
         })
-    return JsonResponse({'notifications': notification_list})
+    return JsonResponse({'notifications': notification_list, 'unread_count': unread_count})
 
 @login_required
 @require_POST
 def mark_notifications_as_read(request):
-    notification_ids = request.POST.getlist('notification_ids[]') # Get list of IDs from frontend
-    if notification_ids:
-        Notification.objects.filter(user=request.user, id__in=notification_ids).update(is_read=True)
-        return JsonResponse({'status': 'success', 'message': 'Notifications marked as read.'})
-    return JsonResponse({'status': 'error', 'message': 'No notification IDs provided.'})
+    try:
+        data = json.loads(request.body)
+        notification_ids = data.get('notification_ids', [])
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON.'}, status=400)
+
+    if not isinstance(notification_ids, list):
+        return JsonResponse({'status': 'error', 'message': 'notification_ids must be a list.'}, status=400)
+
+    # If no specific IDs are provided, mark all unread notifications for the user as read
+    if not notification_ids:
+        Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+        return JsonResponse({'status': 'success', 'message': 'All notifications marked as read.'})
+    
+    # Mark specific notifications as read
+    Notification.objects.filter(user=request.user, id__in=notification_ids).update(is_read=True)
+    return JsonResponse({'status': 'success', 'message': 'Notifications marked as read.'})
+
+@login_required
+@require_POST
+@csrf_protect
+def purge_read_notifications(request):
+    """
+    Deletes all read notifications for the authenticated user.
+    """
+    try:
+        deleted_count, _ = Notification.objects.filter(user=request.user, is_read=True).delete()
+        return JsonResponse({'status': 'success', 'message': f'Successfully purged {deleted_count} read notifications.'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': f'Failed to purge notifications: {str(e)}'}, status=500)
