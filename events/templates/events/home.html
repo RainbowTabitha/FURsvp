@@ -135,24 +135,14 @@
     <div class="list-group shadow-sm" id="eventsList" style="display: none;">
         {% for event in events %}
         <a href="{% url 'event_detail' event.id %}" class="list-group-item list-group-item-action p-0">
-            <div class="d-flex w-100 p-3">
+            <div class="d-flex w-100 p-3 align-items-center">
                 <div class="flex-grow-1">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="d-flex align-items-start mb-2">
                         <div>
                             <h5 class="mb-1 text-primary">{{ event.title }}</h5>
                             <small class="text-muted d-block"><i class="material-icons me-1 align-middle" style="font-size: 18px;">calendar_today</i> {{ event.date }}{% if event.start_time %} at {{ event.start_time|time:"P" }}{% endif %}{% if event.end_time %} - {{ event.end_time|time:"P" }}{% endif %}</small>
                         </div>
-                        <div>
-                            {% if event.age_restriction == 'mature' %}
-                            <span class="badge bg-danger rounded-pill py-2 px-3 ms-2">
-                                <i class="material-icons me-1 align-middle" style="font-size: 16px;">warning</i> 21+
-                            </span>
-                            {% elif event.age_restriction == 'adult' %}
-                            <span class="badge bg-warning text-dark rounded-pill py-2 px-3 ms-2">
-                                <i class="material-icons me-1 align-middle" style="font-size: 16px;">warning</i> 18+
-                            </span>
-                            {% endif %}
-                        </div>
+                        
                     </div>
                     <div class="d-flex flex-wrap gap-3 text-muted mb-3">
                         <div class="d-flex align-items-center">
@@ -170,6 +160,21 @@
                         </span>
                     </div>
                 </div>
+
+                {% if event.age_restriction == 'mature' %}
+                <div class="ms-auto align-self-center">
+                    <span class="badge bg-danger rounded-pill py-2 px-3">
+                        <i class="material-icons me-1 align-middle" style="font-size: 16px;">warning</i> 21+
+                    </span>
+                </div>
+                {% elif event.age_restriction == 'adult' %}
+                <div class="ms-auto align-self-center">
+                    <span class="badge bg-warning text-dark rounded-pill py-2 px-3">
+                        <i class="material-icons me-1 align-middle" style="font-size: 16px;">warning</i> 18+
+                    </span>
+                </div>
+                {% endif %}
+
                 <div class="ms-3 d-flex align-items-center">
                     <i class="material-icons text-primary">chevron_right</i>
                 </div>
