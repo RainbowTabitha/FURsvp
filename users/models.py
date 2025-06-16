@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
-from events.models import Group
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 # Create your models here.
 
@@ -8,7 +9,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     profile_picture_base64 = models.TextField(blank=True, null=True)
     is_approved_organizer = models.BooleanField(default=False)
-    allowed_groups = models.ManyToManyField(Group, blank=True)
+    allowed_groups = models.ManyToManyField('events.Group', blank=True)
     display_name = models.CharField(max_length=50, blank=True, null=True)
     discord_username = models.CharField(max_length=50, blank=True, null=True)
     telegram_username = models.CharField(max_length=50, blank=True, null=True)
@@ -45,7 +46,7 @@ class Profile(models.Model):
 class GroupDelegation(models.Model):
     organizer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='delegated_groups_as_organizer')
     delegated_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='delegated_groups_as_delegate')
-    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    group = models.ForeignKey('events.Group', on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ('organizer', 'delegated_user', 'group')
@@ -57,7 +58,7 @@ class GroupDelegation(models.Model):
 
 class BannedUser(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='banned_entries')
-    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    group = models.ForeignKey('events.Group', on_delete=models.CASCADE)
     banned_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='initiated_group_bans')
     organizer = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='initiated_all_bans')
     reason = models.TextField(blank=True, null=True)
@@ -70,3 +71,24 @@ class BannedUser(models.Model):
 
     def __str__(self):
         return f'{self.user.username} banned from {self.group.name}'
+
+@receiver(post_save, sender=User)
+def create_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_profile(sender, instance, **kwargs):
+    instance.profile.save()
+
+# The m2m_changed signal logic will be moved to signals.py
+# @receiver(m2m_changed, sender=Profile.allowed_groups)
+# def update_approved_organizer_status(sender, instance, action, **kwargs):
+#     if action == 'post_add':
+#         if not instance.is_approved_organizer:
+#             instance.is_approved_organizer = True
+#             instance.save()
+#     elif action == 'post_remove':
+#         if not instance.allowed_groups.exists() and instance.is_approved_organizer:
+#             instance.is_approved_organizer = False
+#             instance.save()

@@ -54,27 +54,18 @@
                                         <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">person</i> Username</th>
                                         <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">email</i> Email</th>
                                         <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">admin_panel_settings</i> Site Admin</th>
-                                        <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">how_to_reg</i> Approved Group Administrator</th>
                                         <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">group</i> Admin Groups</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for user_obj in users_to_promote %}
                                     <tr>
-                                        <td>{{ user_obj.username }}</td>
+                                        <td>{{ user_obj.profile.get_display_name }}</td>
                                         <td>{{ user_obj.email }}</td>
                                         <td>
                                             <span class="badge {% if user_obj.is_superuser %}bg-success{% else %}bg-danger{% endif %} py-2 px-3 rounded-pill fw-normal">
                                                 {{ user_obj.is_superuser|yesno:"Yes,No" }}
                                             </span>
-                                        </td>
-                                        <td>
-                                            {% with profile_form=user_profile_forms|get_item:user_obj.id %}
-                                                <div class="form-check form-switch form-check-lg">
-                                                    <label class="form-check-label" for="{{ profile_form.is_approved_organizer.id_for_label }}">Approved Organizer</label>
-                                                    {{ profile_form.is_approved_organizer|add_class:"form-check-input" }}
-                                                </div>
-                                            {% endwith %}
                                         </td>
                                         <td>
                                             {% with profile_form=user_profile_forms|get_item:user_obj.id %}
@@ -84,7 +75,7 @@
                                     </tr>
                                     {% empty %}
                                     <tr>
-                                        <td colspan="5" class="text-center py-4 text-muted">
+                                        <td colspan="4" class="text-center py-4 text-muted">
                                             <i class="material-icons d-block mb-2 fs-1">person_off</i>
                                             No users found.
                                         </td>
@@ -310,13 +301,13 @@
                             <tbody>
                                 {% for banned_entry in all_banned_users %}
                                 <tr>
-                                    <td>{{ banned_entry.user.username }}</td>
+                                    <td>{{ banned_entry.user.profile.get_display_name }}</td>
                                     <td>{{ banned_entry.group.name }}</td>
                                     <td>{{ banned_entry.banned_by.username|default:"N/A" }}</td>
                                     <td>{{ banned_entry.reason|default:"No reason provided" }}</td>
                                     <td>{{ banned_entry.banned_at|date:"Y-m-d H:i" }}</td>
                                     <td>
-                                        <form method="post" action="{% url 'ban_user' %}" class="d-inline" onsubmit="return confirm('Are you sure you want to unban {{ banned_entry.user.username }} from {{ banned_entry.group.name }}?');">
+                                        <form method="post" action="{% url 'ban_user' %}" class="d-inline" onsubmit="return confirm('Are you sure you want to unban {{ banned_entry.user.profile.get_display_name }} from {{ banned_entry.group.name }}?');">
                                             {% csrf_token %}
                                             <input type="hidden" name="user_id" value="{{ banned_entry.user.id }}">
                                             <input type="hidden" name="group_id" value="{{ banned_entry.group.id }}">

@@ -74,11 +74,8 @@ class UserPublicProfileForm(forms.ModelForm):
 class UserAdminProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ['is_approved_organizer', 'allowed_groups']
+        fields = ['allowed_groups']
         widgets = {
-            'is_approved_organizer': forms.CheckboxInput(attrs={
-                'class': 'form-check-input',
-            }),
             'allowed_groups': forms.SelectMultiple(attrs={
                 'class': 'form-select tomselect-allowed-groups',
                 'placeholder': 'Select groups'
@@ -89,6 +86,24 @@ class UserAdminProfileForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.allowed_groups.exists():
             self.initial['allowed_groups'] = self.instance.allowed_groups.all()
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        # Save the instance first to ensure it has a primary key if it's new
+        if commit:
+            instance.save()
+
+        # Manually handle the m2m field
+        if 'allowed_groups' in self.cleaned_data:
+            instance.allowed_groups.set(self.cleaned_data['allowed_groups'])
+        
+        # Update is_approved_organizer based on whether any groups are assigned
+        new_is_approved_organizer_status = instance.allowed_groups.exists()
+        if instance.is_approved_organizer != new_is_approved_organizer_status:
+            instance.is_approved_organizer = new_is_approved_organizer_status
+            instance.save() # Save again to update the boolean field
+            
+        return instance
 
 class EventForm(forms.ModelForm):
     class Meta:
