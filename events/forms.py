@@ -140,13 +140,24 @@ class RSVPForm(forms.ModelForm):
         self.event = kwargs.pop('event', None)
         super().__init__(*args, **kwargs)
         
-        # Get the base choices
-        choices = self.fields['status'].choices
+        # Get the base choices and filter out any existing empty choices
+        base_choices = [choice for choice in list(self.fields['status'].choices) if choice[0] != '']
+        
+        # Add a custom empty choice at the beginning
+        choices = [('', '--- Select RSVP Status ---')] + base_choices
         
         # If event doesn't have waitlist enabled or capacity set, remove waitlisted option
         if self.event and (not self.event.waitlist_enabled or self.event.capacity is None):
             choices = [choice for choice in choices if choice[0] != 'waitlisted']
-            self.fields['status'].choices = choices
+            
+        self.fields['status'].choices = choices
+        
+        # Explicitly set empty_label to None to prevent Django from adding another blank choice
+        self.fields['status'].empty_label = None
+        
+        # Set initial value to empty string if no existing RSVP instance or status
+        if not self.instance or not self.instance.status:
+            self.initial['status'] = ''
 
     class Meta:
         model = RSVP

@@ -60,17 +60,31 @@ def event_detail(request, event_id):
     user_rsvp = None
     is_site_admin = request.user.is_authenticated and request.user.is_superuser
     is_delegated_assistant = False
+    is_organizer = False # Initialize is_organizer here
+
     if request.user.is_authenticated:
         user_rsvp = event.rsvps.filter(user=request.user).first()
         
-        # Check if user is a delegated assistant for this event's group
-        if event.group:
+        # Check if user is an approved organizer for this group
+        try:
+            profile = request.user.profile
+            if profile.is_approved_organizer and event.group in profile.allowed_groups.all():
+                is_organizer = True
+        except Profile.DoesNotExist:
+            pass
+
+        # Check if user has access to the group through delegation
+        if not is_organizer and event.group:
             is_delegated_assistant = GroupDelegation.objects.filter(
-                organizer=event.organizer, 
-                delegated_user=request.user, 
+                delegated_user=request.user,
                 group=event.group
             ).exists()
-    
+            # If user is a delegated assistant, they are considered an organizer for this context
+            if is_delegated_assistant:
+                is_organizer = True
+
+    can_ban_user = is_organizer or is_site_admin or is_delegated_assistant
+
     # Check if the user is banned by this event's organizer (for any group)
     is_banned_by_organizer = False
     if request.user.is_authenticated and event.organizer:
@@ -90,7 +104,7 @@ def event_detail(request, event_id):
     if event.capacity is not None:
         if confirmed_rsvps_count >= event.capacity:
             is_event_full = True
-            if event.waitlist_enabled and event.capacity is not None:
+            if event.waitlist_enabled:
                 can_join_waitlist = True
 
     if request.method == 'POST' and request.user.is_authenticated and not event_has_passed:
@@ -118,7 +132,7 @@ def event_detail(request, event_id):
                 messages.error(request, 'You do not have an RSVP to remove.', extra_tags='admin_notification')
             return redirect('event_detail', event_id=event.id)
         
-        if 'delete_event' in request.POST and (event.organizer == request.user or is_site_admin or is_delegated_assistant):
+        if 'delete_event' in request.POST and can_ban_user:
             event_title = event.title
             event.delete()
             messages.success(request, f'Event "{event_title}" has been deleted.')
@@ -142,7 +156,7 @@ def event_detail(request, event_id):
                     current_confirmed_count = event.rsvps.filter(status='confirmed').count()
 
                     if event.capacity is not None and current_confirmed_count >= event.capacity:
-                        if event.waitlist_enabled and event.capacity is not None:
+                        if event.waitlist_enabled:
                             rsvp = form.save(commit=False)
                             rsvp.status = 'waitlisted' # Force status to waitlisted
                             rsvp.event = event
@@ -185,7 +199,7 @@ def event_detail(request, event_id):
             messages.error(request, f'Error updating RSVP: {form.errors}', extra_tags='admin_notification')
 
     elif 'update_rsvp_status_by_organizer' in request.POST:
-        if not (event.organizer == request.user or is_site_admin or is_delegated_assistant):
+        if not can_ban_user: # Use the new flag
             return JsonResponse({'status': 'error', 'message': 'Permission denied.'}, status=403)
         
         rsvp_id = request.POST.get('rsvp_id')
@@ -260,23 +274,35 @@ def event_detail(request, event_id):
     maybe_rsvps = [r for r in all_rsvps_data if r['rsvp'].status == 'maybe']
     not_attending_rsvps = [r for r in all_rsvps_data if r['rsvp'].status == 'not_attending']
 
-    # Check if user is an organizer or has group access
-    is_organizer = False
-    if request.user.is_authenticated:
-        # Check if user is an approved organizer for this group
-        try:
-            profile = request.user.profile
-            if profile.is_approved_organizer and event.group in profile.allowed_groups.all():
-                is_organizer = True
-        except Profile.DoesNotExist:
-            pass
+    # Calculate location parts for display
+    # location_parts = []
+    # if event.address:
+    #     location_parts.append(event.address)
+    # if event.city:
+    #     location_parts.append(event.city)
+    # if event.state:
+    #     location_parts.append(event.state)
+    # if event.country and event.country not in ['USA', 'United States']:
+    #     location_parts.append(event.country)
 
-        # Check if user has access to the group through delegation
-        if not is_organizer and event.group:
-            is_organizer = GroupDelegation.objects.filter(
-                delegated_user=request.user,
-                group=event.group
-            ).exists()
+    # Construct a well-formatted location string
+    location_components = []
+    if event.address:
+        location_components.append(event.address)
+    
+    city_state_parts = []
+    if event.city:
+        city_state_parts.append(event.city)
+    if event.state:
+        city_state_parts.append(event.state)
+    
+    if city_state_parts:
+        location_components.append(", ".join(city_state_parts))
+    
+    location_display_string = ", ".join(filter(None, location_components)) # filter(None, ...) removes empty strings
+
+    # Check if user is an organizer or has group access
+    # (is_organizer is already calculated above)
 
     context = {
         'event': event,
@@ -292,6 +318,8 @@ def event_detail(request, event_id):
         'waitlisted_rsvps_count': waitlisted_rsvps_count,
         'is_event_full': is_event_full,
         'can_join_waitlist': can_join_waitlist,
+        'can_ban_user': can_ban_user,
+        'location_display_string': location_display_string, # Pass formatted location string to context
         'rsvp_groups': {
             'confirmed': confirmed_rsvps,
             'waitlisted': waitlisted_rsvps,
