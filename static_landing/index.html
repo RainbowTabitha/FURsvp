@@ -41,7 +41,6 @@
                 <select class="form-select" id="stateSelect">
                     <option value="" disabled>Select a state...</option>
                     <option value="new-jersey">New Jersey</option>
-                    <option value="rhode-island">Rhode Island</option>
                 </select>
             </div>
             <button id="proceedButton" class="btn btn-primary w-100">Proceed</button>
@@ -69,7 +68,7 @@
                         </li>
                         <li class="mb-3">
                             <strong>📋 Beta Testing:</strong><br>
-                            Currently, only New Jersey and Rhode Island are available as we work through beta testing. More states will be added as hosts become available.
+                            Currently, only New Jersey is available as we work through early-beta testing. More states will be added as hosts become available.
                         </li>
                         <li>
                             <strong>💡 Interested in Hosting?</strong><br>
@@ -130,9 +129,9 @@
             if (state === 'new-jersey') {
                 setCookie('lastSelectedState', 'new-jersey', 365); // Remember for 1 year
                 window.location.href = 'https://nj.fursvp.org';
-            } else if (state === 'rhode-island') {
-                setCookie('lastSelectedState', 'rhode-island', 365); // Remember for 1 year
-                window.location.href = 'https://ri.fursvp.org';
+            // } else if (state === 'rhode-island') {
+            //    setCookie('lastSelectedState', 'rhode-island', 365); // Remember for 1 year
+            //    window.location.href = 'https://ri.fursvp.org';
             } else {
                 alert('Please select a valid state.');
             }
