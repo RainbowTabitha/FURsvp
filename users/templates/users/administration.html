@@ -307,15 +307,11 @@
                                     <td>{{ banned_entry.reason|default:"No reason provided" }}</td>
                                     <td>{{ banned_entry.banned_at|date:"Y-m-d H:i" }}</td>
                                     <td>
-                                        <form method="post" action="{% url 'ban_user' %}" class="d-inline" onsubmit="return confirm('Are you sure you want to unban {{ banned_entry.user.profile.get_display_name }} from {{ banned_entry.group.name }}?');">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="user_id" value="{{ banned_entry.user.id }}">
-                                            <input type="hidden" name="group_id" value="{{ banned_entry.group.id }}">
-                                            <input type="hidden" name="action" value="unban">
-                                            <button type="submit" class="btn btn-sm btn-success rounded-pill px-3">
-                                                <i class="material-icons me-1">lock_open</i> Unban
-                                            </button>
-                                        </form>
+                                        <button type="button" class="btn btn-sm btn-success rounded-pill px-3 unban-btn" 
+                                                data-user-id="{{ banned_entry.user.id }}"
+                                                data-group-id="{{ banned_entry.group.id }}">
+                                            <i class="material-icons me-1">lock_open</i> Unban
+                                        </button>
                                     </td>
                                 </tr>
                                 {% empty %}
@@ -428,6 +424,61 @@
                     row.style.display = (username.includes(searchTerm) || email.includes(searchTerm)) ? '' : 'none';
                 }
             });
+        }
+
+        // Handle unban buttons
+        document.querySelectorAll('.unban-btn').forEach(button => {
+            button.addEventListener('click', async function() {
+                const userId = this.dataset.userId;
+                const groupId = this.dataset.groupId;
+                
+                if (!confirm('Are you sure you want to unban this user?')) {
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('user_id', userId);
+                formData.append('group_id', groupId);
+                formData.append('action', 'unban');
+                formData.append('ban_type', 'group');
+
+                try {
+                    const response = await fetch('{% url "ban_user" %}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: formData
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred while processing your request.');
+                }
+            });
+        });
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
         }
     });
 </script>
