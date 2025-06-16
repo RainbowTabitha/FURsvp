@@ -145,12 +145,6 @@ def event_detail(request, event_id):
             
         form = RSVPForm(request.POST, instance=user_rsvp, event=event)
         if form.is_valid():
-            print(f"[DEBUG] Form is valid. New status from form: {form.cleaned_data['status']}")
-            if user_rsvp:
-                print(f"[DEBUG] Existing user_rsvp status: {user_rsvp.status}")
-            else:
-                print("[DEBUG] No existing user_rsvp.")
-
             new_status = form.cleaned_data['status']
 
             # If user is already confirmed and tries to RSVP again, just update other fields.
