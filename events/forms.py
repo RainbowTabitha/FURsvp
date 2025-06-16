@@ -17,7 +17,7 @@ class UserProfileForm(forms.ModelForm):
 
 class EventForm(forms.ModelForm):
     AGE_CHOICES = [
-        ('none', 'No age limit'),
+        ('none', 'No age restriction'),
         ('adult', '18+ (Adult)'),
         ('mature', '21+ (Mature)'),
     ]
