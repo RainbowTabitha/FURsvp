@@ -52,13 +52,15 @@ def profile(request):
         banned_users_in_groups = BannedUser.objects.filter(group__in=organizer_groups).select_related('user__profile', 'group', 'banned_by').order_by('group__name', 'user__username')
 
     if request.method == 'POST':
-        print("Raw POST data received:", request.POST) # <- NEW DEBUG PRINT
         if 'submit_pfp_changes' in request.POST: # Handle profile picture upload
             base64_image = request.POST.get('profile_picture_base64')
-            if base64_image:  # Only update if there's actually an image
+            if base64_image:  # Update with new image
                 request.user.profile.profile_picture_base64 = base64_image
-                request.user.profile.save()
                 messages.success(request, 'Profile picture updated successfully!', extra_tags='admin_notification')
+            else:  # Clear existing image
+                request.user.profile.profile_picture_base64 = None
+                messages.success(request, 'Profile picture removed successfully!', extra_tags='admin_notification')
+            request.user.profile.save()
             return redirect('profile')
         
         elif 'submit_profile_changes' in request.POST: # Handle general profile settings update
