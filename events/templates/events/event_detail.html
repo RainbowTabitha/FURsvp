@@ -200,6 +200,30 @@
                                     {{ form.status }}
                                 </div>
                             </form>
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    const rsvpSelect = document.querySelector('#{{ form.status.id_for_label }}');
+                                    const confirmedCount = {{ confirmed_rsvps_count }};
+                                    const capacity = {{ event.capacity|default:"null" }};
+                                    const waitlistEnabled = {{ event.waitlist_enabled|yesno:"true,false" }};
+                                    
+                                    function updateRSVPOptions() {
+                                        const options = rsvpSelect.options;
+                                        for (let i = 0; i < options.length; i++) {
+                                            const option = options[i];
+                                            if (option.value === 'confirmed') {
+                                                // Disable confirmed option if event is full
+                                                option.disabled = capacity !== null && confirmedCount >= capacity;
+                                            } else if (option.value === 'waitlisted') {
+                                                // Disable waitlisted option if event is not full or waitlist is not enabled
+                                                option.disabled = !waitlistEnabled || (capacity !== null && confirmedCount < capacity);
+                                            }
+                                        }
+                                    }
+                                    
+                                    updateRSVPOptions();
+                                });
+                            </script>
                         {% endif %}
 
                         {% if user_rsvp %}
