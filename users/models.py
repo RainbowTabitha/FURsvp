@@ -72,6 +72,21 @@ class BannedUser(models.Model):
     def __str__(self):
         return f'{self.user.username} banned from {self.group.name}'
 
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    link = models.CharField(max_length=255, blank=True, null=True) # Optional link for the notification
+
+    class Meta:
+        ordering = ['-timestamp']
+        verbose_name = "Notification"
+        verbose_name_plural = "Notifications"
+
+    def __str__(self):
+        return f'Notification for {self.user.username}: {self.message[:50]}...'
+
 @receiver(post_save, sender=User)
 def create_profile(sender, instance, created, **kwargs):
     if created:

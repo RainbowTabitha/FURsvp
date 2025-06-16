@@ -143,6 +143,7 @@
             box-shadow: 0 0 0 0.2rem rgba(42, 63, 170, 0.25);
         }
 
+
         .breadcrumb {
             font-size: 1.1rem;
         }
@@ -230,6 +231,17 @@
                         </a>
                     </li>
                     {% if user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link d-flex align-items-center" href="#" id="notificationsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="material-icons" style="vertical-align: middle; line-height: 1; font-size: 20px;">notifications</i>
+                            <span class="badge bg-danger rounded-pill ms-1" id="unread-notifications-badge" style="font-size: 0.7em; position: relative; top: -5px; right: 5px; display: none;">0</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="notificationsDropdown" id="notifications-list" style="max-height: 300px; overflow-y: auto; width: 300px;">
+                            <li><h6 class="dropdown-header">Notifications</h6></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-center text-muted" href="#" id="no-notifications-message">No new notifications</a></li>
+                        </ul>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'profile' %}">
                             <i class="material-icons"
@@ -351,7 +363,109 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    {% block extra_js %}{% endblock %}
+    {% block extra_js %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const notificationsDropdown = document.getElementById('notificationsDropdown');
+            const unreadBadge = document.getElementById('unread-notifications-badge');
+            const notificationsList = document.getElementById('notifications-list');
+            const noNotificationsMessage = document.getElementById('no-notifications-message');
+
+            // Function to fetch notifications
+            function fetchNotifications() {
+                fetch('{% url "get_notifications" %}')
+                    .then(response => response.json())
+                    .then(data => {
+                        const notifications = data.notifications;
+                        let unreadCount = 0;
+                        notificationsList.innerHTML = '<li><h6 class="dropdown-header">Notifications</h6></li><li><hr class="dropdown-divider"></li>';
+
+                        if (notifications.length === 0) {
+                            notificationsList.innerHTML += '<li><a class="dropdown-item text-center text-muted" href="#" id="no-notifications-message">No new notifications</a></li>';
+                        } else {
+                            notifications.forEach(notification => {
+                                if (!notification.is_read) {
+                                    unreadCount++;
+                                }
+
+                                const listItem = document.createElement('li');
+                                const link = document.createElement('a');
+                                link.classList.add('dropdown-item');
+                                if (!notification.is_read) {
+                                    link.classList.add('fw-bold'); // Highlight unread notifications
+                                }
+                                link.href = notification.link || '#';
+                                link.textContent = notification.message + ' - ' + notification.timestamp;
+                                link.dataset.notificationId = notification.id;
+                                link.addEventListener('click', function(e) {
+                                    if (!notification.is_read) {
+                                        markNotificationAsRead(notification.id);
+                                    }
+                                });
+                                listItem.appendChild(link);
+                                notificationsList.appendChild(listItem);
+                            });
+                        }
+
+                        // Update unread count badge
+                        if (unreadCount > 0) {
+                            unreadBadge.textContent = unreadCount;
+                            unreadBadge.style.display = 'inline-block';
+                        } else {
+                            unreadBadge.style.display = 'none';
+                        }
+                    })
+                    .catch(error => console.error('Error fetching notifications:', error));
+            }
+
+            // Function to mark a notification as read
+            function markNotificationAsRead(notificationId) {
+                const formData = new FormData();
+                formData.append('notification_ids[]', notificationId);
+
+                fetch('{% url "mark_notifications_as_read" %}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Re-fetch notifications to update the list and count
+                        fetchNotifications();
+                    } else {
+                        console.error('Error marking notification as read:', data.message);
+                    }
+                })
+                .catch(error => console.error('Error marking notification as read:', error));
+            }
+
+            // Helper function to get CSRF token
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+
+            // Fetch notifications when the dropdown is shown
+            notificationsDropdown.addEventListener('show.bs.dropdown', fetchNotifications);
+
+            // Initial fetch of notifications on page load (optional, can be removed if only needed on dropdown open)
+            fetchNotifications();
+        });
+    </script>
+    {% endblock %}
 </body>
 
 </html>

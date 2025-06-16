@@ -4,13 +4,14 @@ from django.contrib.auth.models import User
 from .forms import UserRegisterForm, UserProfileForm, AssistantAssignmentForm, UserPublicProfileForm, UserAdminProfileForm, UserPasswordChangeForm
 from events.models import Group, RSVP
 from events.forms import GroupForm, RenameGroupForm
-from .models import Profile, GroupDelegation, BannedUser
+from .models import Profile, GroupDelegation, BannedUser, Notification
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Q
+from django.db import models, transaction
 
 # Create your views here.
 
@@ -437,3 +438,25 @@ def user_search_autocomplete(request):
         results = [{'id': user['id'], 'text': f"{user['username']} ({user['email']})", 'username': user['username']} for user in users]
         return JsonResponse({'results': results})
     return JsonResponse({'results': []})
+
+@login_required
+def get_notifications(request):
+    notifications = Notification.objects.filter(user=request.user, is_read=False).order_by('-timestamp')
+    notification_list = []
+    for notification in notifications:
+        notification_list.append({
+            'id': notification.id,
+            'message': notification.message,
+            'timestamp': notification.timestamp.isoformat(), # ISO format for easy JS parsing
+            'link': notification.link
+        })
+    return JsonResponse({'notifications': notification_list})
+
+@login_required
+@require_POST
+def mark_notifications_as_read(request):
+    notification_ids = request.POST.getlist('notification_ids[]') # Get list of IDs from frontend
+    if notification_ids:
+        Notification.objects.filter(user=request.user, id__in=notification_ids).update(is_read=True)
+        return JsonResponse({'status': 'success', 'message': 'Notifications marked as read.'})
+    return JsonResponse({'status': 'error', 'message': 'No notification IDs provided.'})
