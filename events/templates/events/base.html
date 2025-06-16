@@ -38,6 +38,9 @@
 
         .navbar-brand img {
             height: 70px;
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
         }
 
         .nav-link {
@@ -167,6 +170,8 @@
         .footer-logo {
             height: 50px;
             width: auto;
+            display: block;
+            margin: 0 auto 1rem auto;
         }
 
         .footer-links a {
@@ -302,11 +307,10 @@
     <footer class="footer">
         <div class="container text-center">
             {% if request.get_host == 'nj.fursvp.org' %}
-            <img src="{% static 'fursvp-nj.png' %}" alt="FURsvp Logo">
+            <img src="{% static 'fursvp-nj.png' %}" alt="FURsvp Logo" class="footer-logo">
             {% else %}
-            <img src="{% static 'fursvp-logo.png' %}" alt="FURsvp Logo">
+            <img src="{% static 'fursvp-logo.png' %}" alt="FURsvp Logo" class="footer-logo">
             {% endif %}
-            </a>
             <p class="text-muted"
                 style="max-width: 48em; font-size: 1.08rem; margin: 0 auto 1.5rem auto; color: #335588 !important;">
                 Dedicated to helping event organizers of all sizes within the furry community. A quick-and-dirty
