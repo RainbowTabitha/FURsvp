@@ -412,132 +412,132 @@
 {% endblock %}
 
 {% block extra_js %}
-    {{ block.super }} {# Include JavaScript from the base template #}
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const contactInfoModal = new bootstrap.Modal(document.getElementById('contactInfoModal'));
-            const modalContactDisplayName = document.getElementById('modalContactDisplayName');
-            const modalContactDiscord = document.getElementById('modalContactDiscord');
-            const modalContactTelegram = document.getElementById('modalContactTelegram');
-            const modalBanUserBtn = document.getElementById('modalBanUserBtn');
-            const eventGroupId = "{{ event.group.id }}"; // Get event's group ID
+{{ block.super }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const contactInfoModal = new bootstrap.Modal(document.getElementById('contactInfoModal'));
+        const modalContactDisplayName = document.getElementById('modalContactDisplayName');
+        const modalContactDiscord = document.getElementById('modalContactDiscord');
+        const modalContactTelegram = document.getElementById('modalContactTelegram');
+        const modalBanUserBtn = document.getElementById('modalBanUserBtn');
+        const eventGroupId = "{{ event.group.id }}"; // Get event's group ID
 
-            // Handle opening contact info modal
-            document.querySelectorAll('.js-open-contact-modal').forEach(item => {
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const displayName = this.dataset.displayName;
-                    const discord = this.dataset.discord || 'Not provided';
-                    const telegram = this.dataset.telegram || 'Not provided';
-                    const userId = this.dataset.userId;
+        // Handle opening contact info modal
+        document.querySelectorAll('.js-open-contact-modal').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                const displayName = this.dataset.displayName;
+                const discord = this.dataset.discord || 'Not provided';
+                const telegram = this.dataset.telegram || 'Not provided';
+                const userId = this.dataset.userId;
 
-                    modalContactDisplayName.textContent = displayName;
-                    modalContactDiscord.textContent = discord;
-                    modalContactTelegram.textContent = telegram;
+                modalContactDisplayName.textContent = displayName;
+                modalContactDiscord.textContent = discord;
+                modalContactTelegram.textContent = telegram;
 
-                    // Show ban button if user can ban and attendee is a registered user
-                    if (modalBanUserBtn && userId) { // Check if userId exists
-                        modalBanUserBtn.style.display = 'block';
-                        modalBanUserBtn.dataset.userId = userId;
-                        modalBanUserBtn.dataset.groupId = eventGroupId;
-                    } else if (modalBanUserBtn) {
-                        modalBanUserBtn.style.display = 'none';
-                    }
-
-                    contactInfoModal.show();
-                });
-            });
-
-            // Event listener for the ban button inside the modal
-            if (modalBanUserBtn) {
-                modalBanUserBtn.addEventListener('click', function() {
-                    const userId = this.dataset.userId;
-                    const groupId = this.dataset.groupId;
-                    if (confirm('Are you sure you want to ban this user from the group?')) {
-                        performBan(userId, groupId, 'group');
-                    }
-                });
-            }
-
-            function getCookie(name) {
-                let cookieValue = null;
-                if (document.cookie && document.cookie !== '') {
-                    const cookies = document.cookie.split(';');
-                    for (let i = 0; i < cookies.length; i++) {
-                        const cookie = cookies[i].trim();
-                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                            break;
-                        }
-                    }
+                // Show ban button if user can ban and attendee is a registered user
+                if (modalBanUserBtn && userId) { // Check if userId exists
+                    modalBanUserBtn.style.display = 'block';
+                    modalBanUserBtn.dataset.userId = userId;
+                    modalBanUserBtn.dataset.groupId = eventGroupId;
+                } else if (modalBanUserBtn) {
+                    modalBanUserBtn.style.display = 'none';
                 }
-                return cookieValue;
-            }
 
-            function performBan(userId, groupId, banType) {
-                const formData = new FormData();
-                formData.append('user_id', userId);
-                formData.append('group_id', groupId);
-                formData.append('ban_type', banType);
-                formData.append('action', 'ban');
-                formData.append('reason', 'Banned from event group');
-
-                fetch('{% url "ban_user" %}', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': getCookie('csrftoken')
-                    },
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        alert(data.message);
-                        location.reload(); 
-                    } else {
-                        alert('Error: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred while trying to ban the user.');
-                });
-            }
-
-            // Initialize any TomSelect elements present (if not removed for datalist)
-            document.querySelectorAll('.tomselect-allowed-groups').forEach(function(element) {
-                new TomSelect(element, {
-                    plugins: { remove_button: { title: 'Remove this item' } },
-                    dropdownParent: 'body',
-                    create: false,
-                    onInitialize: function() {
-                        this.wrapper.classList.add('form-select-sm', 'rounded-pill');
-                        this.control.classList.add('rounded-pill');
-                        this.dropdown.classList.add('shadow', 'rounded-3');
-                    }
-                });
+                contactInfoModal.show();
             });
-
-            const rsvpSelect = document.querySelector('#{{ form.status.id_for_label }}');
-            const confirmedCount = {{ confirmed_rsvps_count }};
-            const capacity = {{ event.capacity|default:"null" }};
-            const waitlistEnabled = {{ event.waitlist_enabled|yesno:"true,false" }};
-            
-            function updateRSVPOptions() {
-                const options = rsvpSelect.options;
-                for (let i = 0; i < options.length; i++) {
-                    const option = options[i];
-                    if (option.value === 'confirmed') {
-                        // Disable confirmed option if event is full
-                        option.disabled = capacity !== null && confirmedCount >= capacity;
-                    } else if (option.value === 'waitlisted') {
-                        // Disable waitlisted option if event is not full or waitlist is not enabled
-                        option.disabled = !waitlistEnabled || (capacity !== null && confirmedCount < capacity);
-                    }
-                }
-            }
-            
-            updateRSVPOptions();
         });
-    </script>
+
+        // Event listener for the ban button inside the modal
+        if (modalBanUserBtn) {
+            modalBanUserBtn.addEventListener('click', function() {
+                const userId = this.dataset.userId;
+                const groupId = this.dataset.groupId;
+                if (confirm('Are you sure you want to ban this user from the group?')) {
+                    performBan(userId, groupId, 'group');
+                }
+            });
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function performBan(userId, groupId, banType) {
+            const formData = new FormData();
+            formData.append('user_id', userId);
+            formData.append('group_id', groupId);
+            formData.append('ban_type', banType);
+            formData.append('action', 'ban');
+            formData.append('reason', 'Banned from event group');
+
+            fetch('{% url "ban_user" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(data.message);
+                    location.reload(); 
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while trying to ban the user.');
+            });
+        }
+
+        // Initialize any TomSelect elements present (if not removed for datalist)
+        document.querySelectorAll('.tomselect-allowed-groups').forEach(function(element) {
+            new TomSelect(element, {
+                plugins: { remove_button: { title: 'Remove this item' } },
+                dropdownParent: 'body',
+                create: false,
+                onInitialize: function() {
+                    this.wrapper.classList.add('form-select-sm', 'rounded-pill');
+                    this.control.classList.add('rounded-pill');
+                    this.dropdown.classList.add('shadow', 'rounded-3');
+                }
+            });
+        });
+
+        const rsvpSelect = document.querySelector('#{{ form.status.id_for_label }}');
+        const confirmedCount = {{ confirmed_rsvps_count }};
+        const capacity = {{ event.capacity|default:"null" }};
+        const waitlistEnabled = {{ event.waitlist_enabled|yesno:"true,false" }};
+        
+        function updateRSVPOptions() {
+            const options = rsvpSelect.options;
+            for (let i = 0; i < options.length; i++) {
+                const option = options[i];
+                if (option.value === 'confirmed') {
+                    // Disable confirmed option if event is full
+                    option.disabled = capacity !== null && confirmedCount >= capacity;
+                } else if (option.value === 'waitlisted') {
+                    // Disable waitlisted option if event is not full or waitlist is not enabled
+                    option.disabled = !waitlistEnabled || (capacity !== null && confirmedCount < capacity);
+                }
+            }
+        }
+        
+        updateRSVPOptions();
+    });
+</script>
 {% endblock %} 

@@ -219,6 +219,7 @@
 {% endblock %}
 
 {% block extra_js %}
+{{ block.super }}
 {{ form.media }}
 <script src="https://cdn.jsdelivr.net/npm/tinymce@7.9.1/tinymce.min.js" crossorigin="anonymous"
     referrerpolicy="no-referrer"></script>

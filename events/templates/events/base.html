@@ -201,6 +201,110 @@
             color: white;
             border-color: var(--primary-color);
         }
+
+        .notification-bell-container {
+            position: fixed;
+            top: 30px;
+            right: 20px;
+            z-index: 1050; /* Ensure it's above other elements */
+        }
+
+        .notification-bell-icon {
+            background-color: var(--primary-color);
+            color: white !important;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            font-size: 24px; /* Larger icon */
+            position: relative; /* For badge positioning */
+        }
+
+        .notification-bell-icon:hover {
+            background-color: #1a2f9a;
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .unread-notifications-badge {
+            font-size: 0.75em;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            padding: .3em .6em;
+            border-radius: 50%;
+            background-color: #dc3545; /* Bootstrap danger color */
+            color: white;
+            display: none;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+            }
+        }
+
+        .notification-item {
+            display: flex;
+            flex-direction: column;
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
+            white-space: normal; /* Allow text to wrap */
+        }
+
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+
+        .notification-item:hover {
+            background-color: #f8f9fa;
+            cursor: pointer;
+        }
+
+        .notification-item-text {
+            font-size: 0.95rem;
+            color: #333;
+            margin-bottom: 3px;
+        }
+
+        .notification-item-date {
+            font-size: 0.8rem;
+            color: #777;
+            align-self: flex-end; /* Align date to the right */
+        }
+
+        .notification-header {
+            font-weight: 600;
+            color: var(--primary-color);
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
+            font-size: 1.1rem;
+        }
+
+        .notification-footer {
+            padding: 10px 15px;
+            text-align: center;
+        }
+
+        .dropdown-menu.notifications-dropdown {
+            min-width: 320px;
+            max-height: 400px;
+            overflow-y: auto;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+            padding: 0;
+        }
     </style>
     <!-- TomSelect CSS -->
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
@@ -231,16 +335,16 @@
                         </a>
                     </li>
                     {% if user.is_authenticated %}
-                    <li class="nav-item dropdown" style="position: fixed; top: 30px; right: 20px; z-index: 1000;">
-                        <a class="nav-link d-flex align-items-center justify-content-center rounded-circle" href="#" id="notificationsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false"
-                           style="background-color: var(--primary-color); color: white !important; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); width: 40px; height: 40px;">
-                            <i class="material-icons" style="font-size: 20px;">notifications</i>
-                            <span class="badge bg-danger rounded-pill" id="unread-notifications-badge" style="font-size: 0.7em; position: absolute; top: -5px; right: -5px; display: none;">0</span>
+                    <li class="nav-item dropdown notification-bell-container">
+                        <a class="nav-link notification-bell-icon" href="#" id="notificationsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="material-icons">notifications</i>
+                            <span class="badge rounded-pill unread-notifications-badge" id="unread-notifications-badge">0</span>
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="notificationsDropdown" id="notifications-list" style="max-height: 300px; overflow-y: auto; width: 250px;">
-                            <li><h6 class="dropdown-header">Notifications</h6></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-center text-muted" href="#" id="no-notifications-message">No new notifications</a></li>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 notifications-dropdown" aria-labelledby="notificationsDropdown" id="notifications-list">
+                            <li><h6 class="dropdown-header notification-header">Notifications</h6></li>
+                            <li id="no-notifications-message-item"><a class="dropdown-item text-center text-muted" href="#" id="no-notifications-message" style="padding: 15px;">No new notifications</a></li>
+                            <li><hr class="dropdown-divider my-0"></li>
+                            <li><button class="dropdown-item text-center text-primary notification-footer" id="clear-notifications-btn">Clear All Notifications</button></li>
                         </ul>
                     </li>
                     <li class="nav-item">
@@ -366,6 +470,7 @@
         const unreadBadge = document.getElementById('unread-notifications-badge');
         const notificationsList = document.getElementById('notifications-list');
         const noNotificationsMessage = document.getElementById('no-notifications-message');
+        const clearNotificationsBtn = document.getElementById('clear-notifications-btn');
 
         // Removed console.log('notificationsDropdown (base.html):', notificationsDropdown);
         // Removed console.log('unreadBadge (base.html):', unreadBadge);
@@ -375,87 +480,137 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Removed console.log('DOMContentLoaded fired in base.html script.');
             // Original notification logic (now inside DOMContentLoaded)
-            // Function to fetch notifications
-            function fetchNotifications() {
-                // Removed console.log('fetchNotifications function called.'); // Debugging log
+            // Function to fetch and display notifications
+            async function fetchNotifications() {
+                try {
+                    const response = await fetch('/notifications/get_unread/');
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    const notifications = data.notifications;
+                    const unreadCount = data.unread_count;
 
-                // Clear existing notifications and add headers
-                notificationsList.innerHTML = '<li><h6 class="dropdown-header">Notifications</h6></li><li><hr class="dropdown-divider"></li>';
+                    const notificationsList = document.getElementById('notifications-list');
+                    const unreadBadge = document.getElementById('unread-notifications-badge');
+                    const noNotificationsMessageItem = document.getElementById('no-notifications-message-item');
 
-                // Original fetch logic (now re-enabled)
-                fetch('{% url "get_notifications" %}')
-                    .then(response => response.json())
-                    .then(data => {
-                        const notifications = data.notifications;
-                        let unreadCount = 0;
-                        // Removed hardcoded test notification injection
-
-                        if (notifications.length === 0) {
-                            notificationsList.innerHTML += '<li><a class="dropdown-item text-center text-muted" href="#" id="no-notifications-message">No new notifications</a></li>';
-                        } else {
-                            notifications.forEach(notification => {
-                                if (!notification.is_read) {
-                                    unreadCount++;
-                                }
-
-                                const listItem = document.createElement('li');
-                                const link = document.createElement('a');
-                                link.classList.add('dropdown-item');
-                                if (!notification.is_read) {
-                                    link.classList.add('fw-bold');
-                                }
-                                link.href = notification.link || '#';
-                                const date = new Date(notification.timestamp);
-                                const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-                                link.textContent = notification.message + ' - ' + date.toLocaleDateString(undefined, options);
-                                link.dataset.notificationId = notification.id;
-                                link.addEventListener('click', function(e) {
-                                    if (!notification.is_read) {
-                                        markNotificationAsRead(notification.id);
-                                    }
-                                });
-                                listItem.appendChild(link);
-                                notificationsList.appendChild(listItem);
-                            });
+                    // Clear existing notifications (except header and footer)
+                    Array.from(notificationsList.children).forEach(child => {
+                        if (!child.classList.contains('dropdown-header') && !child.classList.contains('dropdown-divider') && !child.classList.contains('notification-footer')) {
+                            child.remove();
                         }
+                    });
 
-                        // Update unread count badge
-                        if (unreadCount > 0) {
-                            unreadBadge.textContent = unreadCount;
-                            unreadBadge.style.display = 'inline-block';
-                        } else {
+                    if (notifications && notifications.length > 0) {
+                        noNotificationsMessageItem.style.display = 'none';
+                        notifications.forEach(notification => {
+                            const notificationItem = document.createElement('li');
+                            notificationItem.classList.add('notification-item');
+                            notificationItem.setAttribute('data-notification-id', notification.id);
+                            if (!notification.read) {
+                                notificationItem.classList.add('unread');
+                            }
+
+                            const notificationText = document.createElement('div');
+                            notificationText.classList.add('notification-item-text');
+                            notificationText.textContent = notification.message;
+                            notificationItem.appendChild(notificationText);
+
+                            const notificationDate = document.createElement('div');
+                            notificationDate.classList.add('notification-item-date');
+                            notificationDate.textContent = new Date(notification.timestamp).toLocaleString();
+                            notificationItem.appendChild(notificationDate);
+
+                            // Add click event listener to mark as read and redirect
+                            notificationItem.addEventListener('click', async () => {
+                                await markNotificationAsRead(notification.id);
+                                if (notification.link) {
+                                    window.location.href = notification.link;
+                                }
+                            });
+                            notificationsList.insertBefore(notificationItem, noNotificationsMessageItem);
+                        });
+                    } else {
+                        noNotificationsMessageItem.style.display = 'block';
+                    }
+
+                    if (unreadCount > 0) {
+                        unreadBadge.textContent = unreadCount;
+                        unreadBadge.style.display = 'block';
+                    } else {
+                        unreadBadge.style.display = 'none';
+                    }
+
+                } catch (error) {
+                    console.error('Error fetching notifications:', error);
+                }
+            }
+
+            // Function to mark notification as read
+            async function markNotificationAsRead(notificationId) {
+                try {
+                    const response = await fetch(`/notifications/mark_as_read/${notificationId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken'),
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    // Update UI: remove unread class and decrement badge
+                    const notificationItem = document.querySelector(`[data-notification-id="${notificationId}"]`);
+                    if (notificationItem) {
+                        notificationItem.classList.remove('unread');
+                    }
+                    let currentUnreadCount = parseInt(unreadBadge.textContent);
+                    if (currentUnreadCount > 0) {
+                        currentUnreadCount--;
+                        unreadBadge.textContent = currentUnreadCount;
+                        if (currentUnreadCount === 0) {
                             unreadBadge.style.display = 'none';
                         }
-                    })
-                    .catch(error => console.error('Error fetching notifications:', error));
-            }
-
-            // Function to mark a notification as read
-            function markNotificationAsRead(notificationId) {
-                // Removed console.log(`Attempting to mark notification ${notificationId} as read (Test mode)`);
-                // Re-enable actual fetch call for marking as read
-                const formData = new FormData();
-                formData.append('notification_ids[]', notificationId);
-
-                fetch('{% url "mark_notifications_as_read" %}', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': getCookie('csrftoken')
-                    },
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        fetchNotifications(); // Re-fetch to update
-                    } else {
-                        console.error('Error marking notification as read:', data.message);
                     }
-                })
-                .catch(error => console.error('Error marking notification as read:', error));
+                } catch (error) {
+                    console.error('Error marking notification as read:', error);
+                }
             }
 
-            // Helper function to get CSRF token
+            // Function to clear all notifications
+            async function clearAllNotifications() {
+                if (!confirm('Are you sure you want to clear all notifications?')) {
+                    return;
+                }
+                try {
+                    const response = await fetch('/notifications/clear_all/', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken'),
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    // Clear notifications from UI
+                    const notificationsList = document.getElementById('notifications-list');
+                    const noNotificationsMessageItem = document.getElementById('no-notifications-message-item');
+                    Array.from(notificationsList.children).forEach(child => {
+                        if (!child.classList.contains('dropdown-header') && !child.classList.contains('dropdown-divider') && !child.classList.contains('notification-footer')) {
+                            child.remove();
+                        }
+                    });
+                    noNotificationsMessageItem.style.display = 'block';
+                    unreadBadge.style.display = 'none';
+                    unreadBadge.textContent = '0';
+                } catch (error) {
+                    console.error('Error clearing notifications:', error);
+                }
+            }
+
+            // Get CSRF token
             function getCookie(name) {
                 let cookieValue = null;
                 if (document.cookie && document.cookie !== '') {
@@ -471,10 +626,15 @@
                 return cookieValue;
             }
 
-            // Fetch notifications when the dropdown is shown
-            notificationsDropdown.addEventListener('show.bs.dropdown', fetchNotifications);
+            // Event listener for dropdown show to fetch latest notifications
+            const notificationsDropdown = document.getElementById('notificationsDropdown');
+            notificationsDropdown.addEventListener('shown.bs.dropdown', fetchNotifications);
 
-            // Initial fetch of notifications on page load (optional, can be removed if only needed on dropdown open)
+            // Event listener for clear all button
+            const clearNotificationsBtn = document.getElementById('clear-notifications-btn');
+            clearNotificationsBtn.addEventListener('click', clearAllNotifications);
+
+            // Initial fetch on page load (optional, if you want notifications to be loaded immediately)
             fetchNotifications();
         });
     </script>
