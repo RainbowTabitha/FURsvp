@@ -21,6 +21,8 @@ def home(request):
     events = Event.objects.filter(
         models.Q(date__gt=now.date()) | 
         (models.Q(date=now.date()) & models.Q(end_time__gt=now.time()))
+    ).annotate(
+        confirmed_count=models.Count('rsvps', filter=models.Q(rsvps__status='confirmed'))
     )
     
     # Apply sorting
@@ -88,7 +90,7 @@ def event_detail(request, event_id):
     if event.capacity is not None:
         if confirmed_rsvps_count >= event.capacity:
             is_event_full = True
-            if event.waitlist_enabled:
+            if event.waitlist_enabled and event.capacity is not None:
                 can_join_waitlist = True
 
     if request.method == 'POST' and request.user.is_authenticated and not event_has_passed:
@@ -122,7 +124,7 @@ def event_detail(request, event_id):
             messages.success(request, f'Event "{event_title}" has been deleted.')
             return redirect('home')
             
-        form = RSVPForm(request.POST, instance=user_rsvp)
+        form = RSVPForm(request.POST, instance=user_rsvp, event=event)
         if form.is_valid():
             new_status = form.cleaned_data['status']
 
@@ -140,7 +142,7 @@ def event_detail(request, event_id):
                     current_confirmed_count = event.rsvps.filter(status='confirmed').count()
 
                     if event.capacity is not None and current_confirmed_count >= event.capacity:
-                        if event.waitlist_enabled:
+                        if event.waitlist_enabled and event.capacity is not None:
                             rsvp = form.save(commit=False)
                             rsvp.status = 'waitlisted' # Force status to waitlisted
                             rsvp.event = event
@@ -230,7 +232,7 @@ def event_detail(request, event_id):
         return JsonResponse(response_data, status=status_code)
 
     else:
-        form = RSVPForm(instance=user_rsvp)
+        form = RSVPForm(instance=user_rsvp, event=event)
 
     # Get ban status for each RSVP user (for initial rendering)
     # And filter by status for display

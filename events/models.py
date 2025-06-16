@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from datetime import time
+from django.core.exceptions import ValidationError
 
 class Group(models.Model):
     name = models.CharField(max_length=100)
@@ -31,6 +32,15 @@ class Event(models.Model):
     )
     capacity = models.IntegerField(null=True, blank=True, help_text="Maximum number of attendees. Leave blank for no limit.")
     waitlist_enabled = models.BooleanField(default=False, help_text="Enable a waitlist if capacity is reached.")
+    
+    def clean(self):
+        if self.waitlist_enabled and self.capacity is None:
+            raise ValidationError({
+                'waitlist_enabled': 'Capacity must be set when waitlist is enabled.',
+                'capacity': 'Capacity must be set when waitlist is enabled.'
+            })
+        if not self.waitlist_enabled and self.capacity is not None:
+            self.waitlist_enabled = True  # Automatically enable waitlist when capacity is set
     
     def __str__(self):
         return self.title

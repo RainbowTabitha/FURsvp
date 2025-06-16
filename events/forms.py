@@ -109,7 +109,25 @@ class EventForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
+        waitlist_enabled = cleaned_data.get('waitlist_enabled')
+        capacity = cleaned_data.get('capacity')
+
+        if waitlist_enabled and not capacity:
+            self.add_error('waitlist_enabled', 'Capacity must be set when waitlist is enabled.')
+            self.add_error('capacity', 'Capacity must be set when waitlist is enabled.')
+        
+        # If capacity is set but waitlist is not enabled, automatically enable waitlist
+        if capacity and not waitlist_enabled:
+            cleaned_data['waitlist_enabled'] = True
+
         return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        instance.clean()  # Call the model's clean method
+        if commit:
+            instance.save()
+        return instance
 
 class GroupForm(forms.ModelForm):
     class Meta:
@@ -122,6 +140,18 @@ class RenameGroupForm(forms.ModelForm):
         fields = ['name']
 
 class RSVPForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        self.event = kwargs.pop('event', None)
+        super().__init__(*args, **kwargs)
+        
+        # Get the base choices
+        choices = self.fields['status'].choices
+        
+        # If event doesn't have waitlist enabled or capacity set, remove waitlisted option
+        if self.event and (not self.event.waitlist_enabled or self.event.capacity is None):
+            choices = [choice for choice in choices if choice[0] != 'waitlisted']
+            self.fields['status'].choices = choices
+
     class Meta:
         model = RSVP
         fields = ['status']
