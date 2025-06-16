@@ -121,7 +121,7 @@
                             {% if event.capacity %}
                                 {{ event.confirmed_count }} / {{ event.capacity }} RSVPs
                             {% else %}
-                                {{ event.rsvps.count }} RSVPs
+                                {{ event.confirmed_count }} RSVPs
                             {% endif %}
                         </span>
                     </div>
@@ -165,7 +165,7 @@
                             {% if event.capacity %}
                                 {{ event.confirmed_count }} / {{ event.capacity }} RSVPs
                             {% else %}
-                                {{ event.rsvps.count }} RSVPs
+                                {{ event.confirmed_count }} RSVPs
                             {% endif %}
                         </span>
                     </div>
