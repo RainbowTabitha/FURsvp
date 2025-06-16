@@ -29,6 +29,8 @@ class Event(models.Model):
         default='none',
         help_text="Age restriction for the event"
     )
+    capacity = models.IntegerField(null=True, blank=True, help_text="Maximum number of attendees. Leave blank for no limit.")
+    waitlist_enabled = models.BooleanField(default=False, help_text="Enable a waitlist if capacity is reached.")
     
     def __str__(self):
         return self.title
@@ -39,14 +41,15 @@ class RSVP(models.Model):
     name = models.CharField(max_length=100, null=True, blank=True)  # Keep for backward compatibility
     timestamp = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=[
-        ('attending', 'Attending'),
+        ('confirmed', 'Confirmed'),
+        ('waitlisted', 'Waitlisted'),
         ('maybe', 'Maybe'),
         ('not_attending', 'Not Attending')
-    ], null=True, blank=True)
+    ], default='confirmed', null=True, blank=True)
 
     class Meta:
         unique_together = ['event', 'user']
-        ordering = ['-timestamp']
+        ordering = ['timestamp'] # Order by timestamp for waitlist purposes
 
     def __str__(self):
         if self.user:

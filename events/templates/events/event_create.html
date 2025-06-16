@@ -158,6 +158,40 @@
                             </div>
                         </div>
 
+                        <!-- Event Capacity Field -->
+                        <div class="mb-4">
+                            <label for="{{ form.capacity.id_for_label }}" class="form-label fw-bold">
+                                Event Capacity
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="material-icons text-primary">people_alt</i>
+                                </span>
+                                {{ form.capacity|add_class:'form-control'|attr:'placeholder:Enter event capacity (optional)' }}
+                            </div>
+                            {% if form.capacity.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.capacity.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Waitlist Enabled Field -->
+                        <div class="mb-4 form-check form-switch">
+                            {{ form.waitlist_enabled|add_class:'form-check-input' }}
+                            <label class="form-check-label fw-bold" for="{{ form.waitlist_enabled.id_for_label }}">
+                                <i class="material-icons align-middle me-1">add_box</i> Enable Waitlist
+                            </label>
+                            {% if form.waitlist_enabled.help_text %}
+                            <div class="form-text">{{ form.waitlist_enabled.help_text }}</div>
+                            {% endif %}
+                            {% if form.waitlist_enabled.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.waitlist_enabled.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+
                         <!-- Description Field -->
                         <div class="mb-4">
                             <label for="{{ form.description.id_for_label }}" class="form-label fw-bold">
@@ -365,8 +399,8 @@
                             }
                             // Add city and state to the full address only
                             if (address.city || address.town || address.village) {
-                                fullAddress += ', ' + (address.city || address.town || address
-                                    .village);
+                                fullAddress += ', ' + (address.city || address.town ||
+                                    address.village);
                             }
                             if (address.state) {
                                 fullAddress += ', ' + address.state;
