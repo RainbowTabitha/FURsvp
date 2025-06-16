@@ -101,7 +101,7 @@
 
         .footer {
             background-color: var(--secondary-color);
-            padding: 3rem 0 1.5rem;
+            padding: 3rem 0;
             margin-top: auto;
         }
 
@@ -193,15 +193,6 @@
             background-color: var(--primary-color);
             color: white;
             border-color: var(--primary-color);
-        }
-
-        .footer-copyright-bar .footer-meta {
-            text-align: center;
-        }
-        @media (max-width: 991.98px) {
-            .footer-copyright-bar .footer-meta {
-                text-align: left !important;
-            }
         }
     </style>
     <!-- TomSelect CSS -->
@@ -296,39 +287,23 @@
     </div>
 
     <footer class="footer">
-        <div class="container">
-            <div class="row g-4 align-items-start justify-content-center">
-                <div class="col-12 text-center text-lg-center justify-content-center">
-                    {% if request.get_host == 'nj.fursvp.org' %}
-                        <img src="{% static 'fursvp-nj.png' %}" alt="FURsvp Logo" class="footer-logo mb-4">
-                    {% else %}
-                        <img src="{% static 'fursvp-logo.png' %}" alt="FURsvp Logo" class="footer-logo mb-4">
-                    {% endif %}
-                </div>
+        <div class="container text-center">
+            <img src="{% static 'fursvp-logo.png' %}" alt="FURsvp Logo" class="footer-logo d-block mx-auto mb-4">
+            <p class="text-muted" style="max-width: 48em; font-size: 1.08rem; margin: 0 auto 1.5rem auto; color: #335588 !important;">
+                Dedicated to helping organizers of events of all sizes in the furry community. A quick-and-dirty solution to get a head count, or as a free and hassle-free alternative to mainstream event services.
+                FURsvp is an open-source project created to serve the furry community. We're always looking for feedback and contributions to make the platform better.
+            </p>
+            <div class="d-flex gap-2 justify-content-center mb-4">
+                <a href="mailto:info@tabithahanegan.com" class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn">
+                    <i class="material-icons me-1">email</i> Contact Us
+                </a>
+                <a href="https://github.com/furconnect/fursvp" target="_blank" class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn">
+                    <i class="material-icons me-1">code</i> GitHub
+                </a>
             </div>
-            <div class="row g-4 align-items-start justify-content-center">
-                <div class="col-lg-8 mb-4 mb-lg-0 text-center">
-                    <p class="text-muted mb-3" style="max-width: 48em; font-size: 1.08rem; margin: 0 auto;">
-                        Dedicated to helping organizers of events of all sizes in the furry community. A quick-and-dirty solution to get a head count, or as a free and hassle-free alternative to mainstream event services.
-                        FURsvp is an open-source project created to serve the furry community. We're always looking for feedback and contributions to make the platform better.
-                    </p>
-                    <div class="d-flex gap-2 justify-content-center mb-4">
-                        <a href="mailto:info@tabithahanegan.com" class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn">
-                            <i class="material-icons me-1">email</i> Contact Us
-                        </a>
-                        <a href="https://github.com/furconnect/fursvp" target="_blank" class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn">
-                            <i class="material-icons me-1">code</i> GitHub
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="footer-copyright-bar w-100 mt-3" style="background: #b3d1f7; padding: 1rem 0 0.5rem;">
-            <div class="container">
-                <div class="footer-meta text-muted" style="font-size: 1.1rem; font-weight: 600; color: #5a5a5a; text-align: center;">
-                    <div>© 2010-{% now "Y" %} FURsvp. All rights reserved.</div>
-                    <div style="font-size: 1.05rem; font-weight: 500; color: #7a7a7a;">Made with <i class="material-icons mx-1" style="font-size: 1.2rem; color: #e25555; vertical-align: middle;">favorite</i> by furtabs</div>
-                </div>
+            <div class="footer-meta" style="font-size: 1.1rem; font-weight: 600; text-align: center;">
+                <div>© 2010-{% now "Y" %} FURsvp. All rights reserved.</div>
+                <div style="font-size: 1.05rem; font-weight: 500;">Made with <i class="material-icons mx-1" style="font-size: 1.2rem; color: #e25555; vertical-align: middle;">favorite</i> by furtabs</div>
             </div>
         </div>
     </footer>
