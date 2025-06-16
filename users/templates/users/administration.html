@@ -14,7 +14,7 @@
             <ul class="nav nav-tabs mb-4" id="adminTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="organizers-tab" data-bs-toggle="tab" data-bs-target="#organizers" type="button" role="tab" aria-controls="organizers" aria-selected="true">
-                        <i class="material-icons align-middle me-1">manage_accounts</i> Promote/Demote Organizers
+                        <i class="material-icons align-middle me-1">manage_accounts</i> Users
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
@@ -32,7 +32,7 @@
             <div class="tab-content" id="adminTabsContent">
                 <div class="tab-pane fade show active" id="organizers" role="tabpanel" aria-labelledby="organizers-tab">
                     <h2 class="card-title h4 mb-4 text-primary fw-bold">
-                        <i class="material-icons me-2">people</i> Promote/Demote Organizers
+                        <i class="material-icons me-2">people</i> Users
                     </h2>
                     <!-- Search Bar for Users -->
                     <div class="mb-4">
@@ -40,7 +40,8 @@
                             <span class="input-group-text bg-light">
                                 <i class="material-icons">search</i>
                             </span>
-                            <input type="text" id="userSearch" class="form-control" placeholder="Search users by username or email...">
+                            <input type="text" id="userSearchInput" class="form-control" placeholder="Search users by username or email..." list="userSuggestions">
+                            <datalist id="userSuggestions"></datalist>
                         </div>
                     </div>
                     <form method="post">
@@ -57,7 +58,7 @@
                                 </thead>
                                 <tbody>
                                     {% for user_obj in users_to_promote %}
-                                    <tr>
+                                    <tr data-user-id="{{ user_obj.id }}">
                                         <td>{{ user_obj.profile.get_display_name }}</td>
                                         <td>{{ user_obj.email }}</td>
                                         <td>
@@ -274,6 +275,39 @@
                     <h2 class="card-title h4 mb-4 text-primary fw-bold">
                         <i class="material-icons me-2">group_off</i> Manage Bans
                     </h2>
+
+                    <!-- Site-wide Ban Form -->
+                    <div class="card bg-light border-0 rounded-3 mb-4">
+                        <div class="card-body">
+                            <h3 class="h5 mb-3 text-secondary">
+                                <i class="material-icons me-2">gavel</i> Apply Site-wide Ban
+                            </h3>
+                            <form method="post" id="sitewideBanForm">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="ban">
+                                <input type="hidden" name="ban_type" value="sitewide">
+                                <div class="mb-3">
+                                    <label for="banUsernameInput" class="form-label">
+                                        <i class="material-icons align-middle me-1">person</i> User to Ban (Username)
+                                    </label>
+                                    <select class="form-control" id="banUsernameInput" name="user_id" placeholder="Search for a user..." required></select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="banReasonInput" class="form-label">
+                                        <i class="material-icons align-middle me-1">description</i> Reason (Optional)
+                                    </label>
+                                    <textarea class="form-control" id="banReasonInput" name="reason" rows="3" placeholder="Enter reason for ban"></textarea>
+                                </div>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-danger btn-lg rounded-pill px-4 shadow-sm">
+                                        <i class="material-icons me-2">gavel</i> Apply Site-wide Ban
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+
                     <!-- Search Bar for Bans -->
                     <div class="mb-4">
                         <div class="input-group">
@@ -288,7 +322,7 @@
                             <thead>
                                 <tr>
                                     <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">person</i> Banned User</th>
-                                    <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">group</i> Group</th>
+                                    <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">group</i> Group/Type</th>
                                     <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">admin_panel_settings</i> Banned By</th>
                                     <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">description</i> Reason</th>
                                     <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">event</i> Banned At</th>
@@ -299,14 +333,24 @@
                                 {% for banned_entry in all_banned_users %}
                                 <tr>
                                     <td>{{ banned_entry.user.profile.get_display_name }}</td>
-                                    <td>{{ banned_entry.group.name }}</td>
+                                    <td>
+                                        {% if banned_entry.group %}
+                                            {{ banned_entry.group.name }}
+                                        {% elif banned_entry.organizer %}
+                                            Organizer: {{ banned_entry.organizer.username }}
+                                        {% else %}
+                                            Site-wide
+                                        {% endif %}
+                                    </td>
                                     <td>{{ banned_entry.banned_by.username|default:"N/A" }}</td>
                                     <td>{{ banned_entry.reason|default:"No reason provided" }}</td>
                                     <td>{{ banned_entry.banned_at|date:"Y-m-d H:i" }}</td>
                                     <td>
-                                        <button type="button" class="btn btn-sm btn-success rounded-pill px-3 unban-btn" 
+                                        <button type="button" class="btn btn-sm btn-success rounded-pill px-3 unban-btn"
                                                 data-user-id="{{ banned_entry.user.id }}"
-                                                data-group-id="{{ banned_entry.group.id }}">
+                                                data-group-id="{{ banned_entry.group.id|default:"" }}"
+                                                data-organizer-id="{{ banned_entry.organizer.id|default:"" }}"
+                                                data-ban-type="{% if banned_entry.group %}group{% elif banned_entry.organizer %}organizer{% else %}sitewide{% endif %}">
                                             <i class="material-icons me-1">lock_open</i> Unban
                                         </button>
                                     </td>
@@ -365,21 +409,7 @@
                 for (let i = 1; i < rows.length; i++) { // Start from 1 to skip header
                     const row = rows[i];
                     const groupName = row.querySelector('td:first-child').textContent.toLowerCase();
-                    const allowedGroupsSelect = row.querySelector('.tomselect-allowed-groups');
-                    let hasMatch = groupName.includes(searchTerm);
-                    
-                    // Search through the allowed groups select options
-                    if (allowedGroupsSelect) {
-                        const options = allowedGroupsSelect.options;
-                        for (let j = 0; j < options.length; j++) {
-                            if (options[j].text.toLowerCase().includes(searchTerm)) {
-                                hasMatch = true;
-                                break;
-                            }
-                        }
-                    }
-                    
-                    row.style.display = hasMatch ? '' : 'none';
+                    row.style.display = groupName.includes(searchTerm) ? '' : 'none';
                 }
             });
         }
@@ -407,29 +437,134 @@
             });
         }
 
-        // User search functionality
-        const userSearch = document.getElementById('userSearch');
-        const usersTable = document.getElementById('usersTable');
-        
-        if (userSearch && usersTable) {
-            userSearch.addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase();
-                const rows = usersTable.getElementsByTagName('tr');
-                
-                for (let i = 1; i < rows.length; i++) { // Start from 1 to skip header
-                    const row = rows[i];
-                    const username = row.querySelector('td:first-child').textContent.toLowerCase();
-                    const email = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
-                    row.style.display = (username.includes(searchTerm) || email.includes(searchTerm)) ? '' : 'none';
-                }
+        // User search autocomplete for site-wide ban
+        new TomSelect('#banUsernameInput', {
+            valueField: 'id',
+            labelField: 'text',
+            searchField: 'text',
+            create: false,
+            load: function(query, callback) {
+                if (!query.length) return callback();
+                fetch('{% url "user_search_autocomplete" %}?q=' + encodeURIComponent(query))
+                    .then(response => response.json())
+                    .then(data => {
+                        callback(data.results);
+                    }).catch(() => {
+                        callback();
+                    });
+            },
+            onInitialize: function() {
+                this.dropdown.classList.add('shadow', 'rounded-3');
+            }
+        });
+
+        // Remove TomSelect for userSearch and use native datalist with dynamic population
+        const userSearchInput = document.getElementById('userSearchInput');
+        const userSuggestionsDatalist = document.getElementById('userSuggestions');
+        const usersTable = document.getElementById('usersTable'); // Get the users table
+
+        if (userSearchInput && userSuggestionsDatalist && usersTable) {
+            let debounceTimeout;
+            userSearchInput.addEventListener('input', function() {
+                clearTimeout(debounceTimeout);
+                debounceTimeout = setTimeout(() => {
+                    const query = this.value.toLowerCase(); // Convert query to lowercase for case-insensitive search
+                    
+                    // Filter the table rows based on the query
+                    const rows = usersTable.getElementsByTagName('tr');
+                    for (let i = 1; i < rows.length; i++) { // Start from 1 to skip header
+                        const row = rows[i];
+                        const usernameCell = row.querySelector('td:first-child');
+                        const emailCell = row.querySelector('td:nth-child(2)');
+
+                        if (usernameCell || emailCell) {
+                            const usernameText = usernameCell ? usernameCell.textContent.toLowerCase() : '';
+                            const emailText = emailCell ? emailCell.textContent.toLowerCase() : '';
+                            
+                            // Show row if username or email contains the query
+                            if (usernameText.includes(query) || emailText.includes(query)) {
+                                row.style.display = '';
+                            } else {
+                                row.style.display = 'none';
+                            }
+                        }
+                    }
+
+                    // Also populate datalist for suggestions (optional, but good for discovery)
+                    if (query.length > 2) { 
+                        fetch('{% url "user_search_autocomplete" %}?q=' + encodeURIComponent(query))
+                            .then(response => response.json())
+                            .then(data => {
+                                userSuggestionsDatalist.innerHTML = ''; // Clear previous suggestions
+                                data.results.forEach(user => {
+                                    const option = document.createElement('option');
+                                    option.value = user.username + ' (' + user.email + ')'; // Display both username and email
+                                    // No need to store user ID in datalist option if we are filtering directly from table
+                                    userSuggestionsDatalist.appendChild(option);
+                                });
+                            })
+                            .catch(error => console.error('Error fetching user suggestions:', error));
+                    } else {
+                        userSuggestionsDatalist.innerHTML = ''; // Clear suggestions if query is too short
+                    }
+                }, 300); // Debounce search to prevent too many requests
             });
         }
+
+        // User search autocomplete for organizer-wide ban (User to Ban)
+        new TomSelect('#organizerBanUserInput', {
+            valueField: 'id',
+            labelField: 'text',
+            searchField: 'text',
+            create: false,
+            load: function(query, callback) {
+                if (!query.length) return callback();
+                fetch('{% url "user_search_autocomplete" %}?q=' + encodeURIComponent(query) + '&exclude_current=true') // Exclude current user from suggestions
+                    .then(response => response.json())
+                    .then(data => {
+                        callback(data.results);
+                    }).catch(() => {
+                        callback();
+                    });
+            },
+            onInitialize: function() {
+                this.wrapper.classList.add('rounded-pill');
+                this.control.classList.add('rounded-pill');
+                this.dropdown.classList.add('shadow', 'rounded-3');
+            }
+        });
+
+        // Organizer search autocomplete for organizer-wide ban (Organizer)
+        new TomSelect('#organizerBanOrganizerInput', {
+            valueField: 'id',
+            labelField: 'text',
+            searchField: 'text',
+            create: false,
+            load: function(query, callback) {
+                if (!query.length) return callback();
+                // Fetch only approved organizers
+                fetch('{% url "user_search_autocomplete" %}?q=' + encodeURIComponent(query) + '&is_organizer=true')
+                    .then(response => response.json())
+                    .then(data => {
+                        callback(data.results);
+                    }).catch(() => {
+                        callback();
+                    });
+            },
+            onInitialize: function() {
+                this.wrapper.classList.add('rounded-pill');
+                this.control.classList.add('rounded-pill');
+                this.dropdown.classList.add('shadow', 'rounded-3');
+            }
+        });
 
         // Handle unban buttons
         document.querySelectorAll('.unban-btn').forEach(button => {
             button.addEventListener('click', async function() {
                 const userId = this.dataset.userId;
                 const groupId = this.dataset.groupId;
+                const organizerId = this.dataset.organizerId;
+                const banType = this.dataset.banType;
                 
                 if (!confirm('Are you sure you want to unban this user?')) {
                     return;
@@ -438,8 +573,9 @@
                 const formData = new FormData();
                 formData.append('user_id', userId);
                 formData.append('group_id', groupId);
+                formData.append('organizer_id', organizerId);
                 formData.append('action', 'unban');
-                formData.append('ban_type', 'group');
+                formData.append('ban_type', banType);
 
                 try {
                     const response = await fetch('{% url "ban_user" %}', {

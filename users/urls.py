@@ -11,4 +11,5 @@ urlpatterns = [
     path('profile/', views.profile, name='profile'),
     path('administration/', views.administration, name='administration'),
     path('ban_user/', views.ban_user, name='ban_user'),
+    path('user_search_autocomplete/', views.user_search_autocomplete, name='user_search_autocomplete'),
 ] 
