@@ -8,6 +8,7 @@ from users.models import Profile, GroupDelegation, BannedUser, Notification
 from django.contrib import messages
 from django.db import models, transaction
 from django.http import JsonResponse
+from users.utils import create_notification
 
 # Create your views here.
 
@@ -114,7 +115,7 @@ def event_detail(request, event_id):
                 with transaction.atomic():
                     was_confirmed = (user_rsvp.status == 'confirmed')
                     user_rsvp.delete()
-                    messages.success(request, 'You have removed your RSVP for this event.')
+                    create_notification(request.user, 'You have removed your RSVP for this event.', link=event.get_absolute_url())
 
                     # If a confirmed spot opened up and waitlist is enabled, promote oldest waitlisted
                     if was_confirmed and event.waitlist_enabled and event.capacity is not None:
@@ -127,12 +128,7 @@ def event_detail(request, event_id):
                             oldest_waitlisted_rsvp.status = 'confirmed'
                             oldest_waitlisted_rsvp.timestamp = timezone.now()
                             oldest_waitlisted_rsvp.save()
-                            messages.info(request, f'{oldest_waitlisted_rsvp.user.username} has been moved from the waitlist to confirmed for {event.title}!', extra_tags='admin_notification')
-                            Notification.objects.create(
-                                user=oldest_waitlisted_rsvp.user,
-                                message=f'You have been moved from the waitlist to confirmed for {event.title}!',
-                                link=event.get_absolute_url()
-                            )
+                            create_notification(oldest_waitlisted_rsvp.user, f'You have been moved from the waitlist to confirmed for {event.title}!', link=event.get_absolute_url())
             else:
                 messages.error(request, 'You do not have an RSVP to remove.', extra_tags='admin_notification')
             return redirect('event_detail', event_id=event.id)
@@ -140,7 +136,7 @@ def event_detail(request, event_id):
         if 'delete_event' in request.POST and can_ban_user:
             event_title = event.title
             event.delete()
-            messages.success(request, f'Event "{event_title}" has been deleted.')
+            create_notification(request.user, f'Event "{event_title}" has been deleted.', link='/') # Link to home since event is deleted
             return redirect('home')
             
         form = RSVPForm(request.POST, instance=user_rsvp, event=event)
@@ -154,7 +150,7 @@ def event_detail(request, event_id):
                 rsvp.event = event
                 rsvp.user = request.user
                 rsvp.save()
-                messages.success(request, 'Your RSVP has been updated.')
+                create_notification(request.user, 'Your RSVP has been updated.', link=event.get_absolute_url())
             elif new_status == 'confirmed':
                 with transaction.atomic():
                     # Re-check counts inside transaction to prevent race conditions
@@ -168,7 +164,7 @@ def event_detail(request, event_id):
                             rsvp.event = event
                             rsvp.user = request.user
                             rsvp.save()
-                            messages.info(request, "The event is full, but you've been added to the waitlist!", extra_tags='admin_notification')
+                            create_notification(request.user, "The event is full, but you've been added to the waitlist!", link=event.get_absolute_url())
                         else:
                             messages.error(request, 'The event is full and waitlist is not enabled.', extra_tags='admin_notification')
                             return redirect('event_detail', event_id=event.id)
@@ -179,49 +175,33 @@ def event_detail(request, event_id):
                         rsvp.event = event
                         rsvp.user = request.user
                         rsvp.save()
-                        messages.success(request, f'Your RSVP status has been updated to {rsvp.get_status_display()}.')
+                        create_notification(request.user, f'Your RSVP status has been updated to {rsvp.get_status_display()}.', link=event.get_absolute_url())
                         # If a new confirmed spot was taken, no need to promote here as current user took it.
             else: # If status is 'maybe' or 'not_attending'
                 if user_rsvp and user_rsvp.status == 'confirmed': # If changing from confirmed to maybe/not_attending
                     with transaction.atomic():
-                        print(f"[DEBUG] User {request.user.username} changing RSVP from confirmed for event {event.id}")
                         user_rsvp.status = new_status
                         user_rsvp.save()
-                        messages.success(request, f'Your RSVP status has been updated to {user_rsvp.get_status_display()}.')
+                        create_notification(request.user, f'Your RSVP status has been updated to {user_rsvp.get_status_display()}.', link=event.get_absolute_url())
                         # If a confirmed spot opened up, synchronously promote oldest waitlisted
                         if event.waitlist_enabled and event.capacity is not None:
-                            print(f"[DEBUG] Event waitlist enabled and capacity set. Event ID: {event.id}, Capacity: {event.capacity}")
                             current_confirmed_count_after_change = event.rsvps.filter(status='confirmed').count()
-                            print(f"[DEBUG] Confirmed count after user changed RSVP: {current_confirmed_count_after_change}")
                             if current_confirmed_count_after_change < event.capacity:
-                                print(f"[DEBUG] Spot opened up! Looking for oldest waitlisted user.")
                                 oldest_waitlisted_rsvp = event.rsvps.filter(
                                     status='waitlisted'
                                 ).order_by('timestamp').first()
 
                                 if oldest_waitlisted_rsvp:
-                                    print(f"[DEBUG] Found oldest waitlisted user: {oldest_waitlisted_rsvp.user.username}")
                                     oldest_waitlisted_rsvp.status = 'confirmed'
                                     oldest_waitlisted_rsvp.timestamp = timezone.now()
                                     oldest_waitlisted_rsvp.save()
-                                    messages.info(request, f'{oldest_waitlisted_rsvp.user.username} has been moved from the waitlist to confirmed for {event.title}!', extra_tags='admin_notification')
-                                    Notification.objects.create(
-                                        user=oldest_waitlisted_rsvp.user,
-                                        message=f'You have been moved from the waitlist to confirmed for {event.title}!',
-                                        link=event.get_absolute_url()
-                                    )
-                                else:
-                                    print("[DEBUG] No waitlisted users found to promote.")
-                            else:
-                                print("[DEBUG] No spot opened up or still full after change.")
-                        else:
-                            print("[DEBUG] Waitlist not enabled or capacity not set for event.")
-                else: # If not currently confirmed, or creating a new maybe/not_attending RSVP
+                                    create_notification(oldest_waitlisted_rsvp.user, f'You have been moved from the waitlist to confirmed for {event.title}!', link=event.get_absolute_url())
+                else:
                     rsvp = form.save(commit=False)
                     rsvp.event = event
                     rsvp.user = request.user
                     rsvp.save()
-                    messages.success(request, f'Your RSVP status has been updated to {rsvp.get_status_display()}.')
+                    create_notification(request.user, f'Your RSVP status has been updated to {rsvp.get_status_display()}.', link=event.get_absolute_url())
             
             return redirect('event_detail', event_id=event.id)
         else:
@@ -246,6 +226,10 @@ def event_detail(request, event_id):
                 rsvp_to_update.save()
 
                 message = f"{rsvp_to_update.user.username}'s RSVP updated to {rsvp_to_update.get_status_display()}."
+                messages.success(request, message, extra_tags='admin_notification')
+                # Send a notification to the user whose RSVP was updated
+                if rsvp_to_update.user:
+                    create_notification(rsvp_to_update.user, f'Your RSVP for {event.title} has been updated to {rsvp_to_update.get_status_display()}. (by {request.user.username})', link=event.get_absolute_url())
 
                 # If a confirmed spot was freed up and new status is NOT confirmed
                 if old_status == 'confirmed' and new_status != 'confirmed':
@@ -259,18 +243,12 @@ def event_detail(request, event_id):
                             oldest_waitlisted_rsvp.status = 'confirmed'
                             oldest_waitlisted_rsvp.timestamp = timezone.now()
                             oldest_waitlisted_rsvp.save()
-                            messages.info(request, f'{oldest_waitlisted_rsvp.user.username} has been moved from the waitlist to confirmed for {event.title}!', extra_tags='admin_notification')
-                            Notification.objects.create(
-                                user=oldest_waitlisted_rsvp.user,
-                                message=f'You have been moved from the waitlist to confirmed for {event.title}!',
-                                link=event.get_absolute_url()
-                            )
+                            create_notification(oldest_waitlisted_rsvp.user, f'You have been moved from the waitlist to confirmed for {event.title}!', link=event.get_absolute_url())
                 
                 # If changing from waitlisted to confirmed
                 elif old_status == 'waitlisted' and new_status == 'confirmed':
                     pass # Logic already handles the count update by saving
 
-                messages.success(request, message, extra_tags='admin_notification')
                 response_data = {'status': 'success', 'message': message}
                 status_code = 200
 
@@ -395,62 +373,29 @@ def create_event(request):
 @login_required
 def edit_event(request, event_id):
     event = get_object_or_404(Event, pk=event_id)
-    
-    # Check permissions
-    is_site_admin = request.user.is_superuser
-    is_event_owner = (event.organizer == request.user)
-    is_organizer_for_group = False
-    is_delegated_assistant = False
+    if request.user != event.organizer and not request.user.is_superuser:
+        messages.error(request, "You are not authorized to edit this event.")
+        return redirect('event_detail', event_id=event.id)
 
-    # Check if user is an approved organizer for this group
-    try:
-        profile = request.user.profile
-        if profile.is_approved_organizer and event.group in profile.allowed_groups.all():
-            is_organizer_for_group = True
-    except Profile.DoesNotExist:
-        pass
+    # Check if user is an approved organizer for this group or a delegated assistant
+    is_delegated_assistant = False
+    if request.user.is_authenticated and event.group:
+        is_delegated_assistant = GroupDelegation.objects.filter(delegated_user=request.user, group=event.group, organizer=event.organizer).exists()
     
-    # Check if user has access to the group through delegation
-    if not is_organizer_for_group and event.group:
-        is_delegated_assistant = GroupDelegation.objects.filter(
-            delegated_user=request.user,
-            group=event.group
-        ).exists()
-    
-    if not (is_site_admin or is_event_owner or is_organizer_for_group or is_delegated_assistant):
-        messages.error(request, 'You do not have permission to edit this event.')
+    if not request.user.is_superuser and not (request.user.profile.is_approved_organizer and event.group in request.user.profile.allowed_groups.all()) and not is_delegated_assistant:
+        messages.error(request, "You are not authorized to edit events for this group.")
         return redirect('event_detail', event_id=event.id)
 
     if request.method == 'POST':
         form = EventForm(request.POST, instance=event, user=request.user)
         if form.is_valid():
-            old_capacity = event.capacity
-            form.save()
-            messages.success(request, 'Event updated successfully!')
-
-            # After saving, check if capacity increased and promote waitlisted users
-            if event.capacity is not None and old_capacity is not None and event.capacity > old_capacity:
-                # Synchronously promote waitlisted users if capacity increased
-                # Promote users as long as there is capacity and waitlisted users
-                while event.rsvps.filter(status='confirmed').count() < event.capacity:
-                    oldest_waitlisted_rsvp = event.rsvps.filter(
-                        status='waitlisted'
-                    ).order_by('timestamp').first()
-
-                    if oldest_waitlisted_rsvp:
-                        oldest_waitlisted_rsvp.status = 'confirmed'
-                        oldest_waitlisted_rsvp.timestamp = timezone.now()
-                        oldest_waitlisted_rsvp.save()
-                        messages.info(request, f'{oldest_waitlisted_rsvp.user.username} has been moved from the waitlist to confirmed for {event.title}!', extra_tags='admin_notification')
-                        Notification.objects.create(
-                            user=oldest_waitlisted_rsvp.user,
-                            message=f'You have been moved from the waitlist to confirmed for {event.title}!',
-                            link=event.get_absolute_url()
-                        )
-                    else:
-                        # No more waitlisted users for this event
-                        break
-
+            event = form.save(commit=False)
+            # Organizer is set only if it's a new event or being set for the first time.
+            # For existing events, it should not change unless specifically handled.
+            if not event.organizer:
+                event.organizer = request.user
+            event.save()
+            create_notification(request.user, 'Event updated successfully!', link=event.get_absolute_url())
             return redirect('event_detail', event_id=event.id)
     else:
         form = EventForm(instance=event, user=request.user)

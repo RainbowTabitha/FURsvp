@@ -156,8 +156,7 @@ class RSVPForm(forms.ModelForm):
         self.fields['status'].empty_label = None
         
         # Set initial value to empty string if no existing RSVP instance or status
-        if not self.instance or not self.instance.status:
-            self.initial['status'] = ''
+        self.initial['status'] = ''
 
     class Meta:
         model = RSVP
