@@ -42,7 +42,7 @@
     <div class="card shadow-sm mb-4">
         <div class="card-body p-4">
             <div class="row align-items-center justify-content-between mb-3">
-                <div class="col-md-auto mb-3 mb-md-0 d-flex align-items-center">
+                <div class="col-12 col-md-auto mb-3 mb-md-0 d-flex flex-wrap justify-content-center">
                     <div class="btn-group" role="group">
                         <a href="?sort=date&order={{ current_order }}" 
                            class="btn {% if current_sort == 'date' %}btn-primary text-white{% else %}btn-outline-primary{% endif %} d-flex align-items-center justify-content-center rounded-start" style="padding: .5rem 1rem; font-size: 1.1rem;">
@@ -62,7 +62,7 @@
                         </a>
                     </div>
                 </div>
-                <div class="col-auto d-flex gap-2">
+                <div class="col-12 col-md-auto d-flex gap-2 flex-wrap justify-content-center">
                     <button type="button" id="toggleAdultEvents" class="btn btn-danger flex-shrink-0" style="width: 190px; min-width: 190px; max-width: 190px; padding: .5rem 1rem; white-space: nowrap;">
                         Hide 18+/21+
                     </button>
