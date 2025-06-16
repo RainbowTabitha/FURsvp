@@ -207,11 +207,11 @@
     <nav class="navbar navbar-expand-lg top-bar">
         <div class="container">
             <a class="navbar-brand" href="{% url 'home' %}">
-            {% if request.get_host == 'nj.fursvp.org' %}
-            <img src="{% static 'fursvp-nj.png' %}" alt="FURsvp Logo">
-            {% else %}
-            <img src="{% static 'fursvp-logo.png' %}" alt="FURsvp Logo">
-            {% endif %}
+                {% if request.get_host == 'nj.fursvp.org' %}
+                <img src="{% static 'fursvp-nj.png' %}" alt="FURsvp Logo">
+                {% else %}
+                <img src="{% static 'fursvp-logo.png' %}" alt="FURsvp Logo">
+                {% endif %}
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -301,10 +301,18 @@
 
     <footer class="footer">
         <div class="container text-center">
-            <img src="{% static 'fursvp-logo.png' %}" alt="FURsvp Logo" class="footer-logo d-block mx-auto mb-4">
+            {% if request.get_host == 'nj.fursvp.org' %}
+            <img src="{% static 'fursvp-nj.png' %}" alt="FURsvp Logo">
+            {% else %}
+            <img src="{% static 'fursvp-logo.png' %}" alt="FURsvp Logo">
+            {% endif %}
+            </a>
             <p class="text-muted"
                 style="max-width: 48em; font-size: 1.08rem; margin: 0 auto 1.5rem auto; color: #335588 !important;">
-                Dedicated to helping event organizers of all sizes within the furry community. A quick-and-dirty solution to get a head count, or as a free and hassle-free alternative to mainstream event services. FURsvp is an open-source project created to serve the furry community. We're always looking for feedback and contributions to make the platform better.
+                Dedicated to helping event organizers of all sizes within the furry community. A quick-and-dirty
+                solution to get a head count, or as a free and hassle-free alternative to mainstream event services.
+                FURsvp is an open-source project created to serve the furry community. We're always looking for feedback
+                and contributions to make the platform better.
             </p>
             <div class="d-flex gap-2 justify-content-center mb-4">
                 <a href="mailto:info@tabithahanegan.com"
