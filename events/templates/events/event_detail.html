@@ -455,17 +455,19 @@
         }
 
         function performBan(userId, groupId, banType) {
+            const formData = new FormData();
+            formData.append('user_id', userId);
+            formData.append('group_id', groupId);
+            formData.append('ban_type', banType);
+            formData.append('action', 'ban');
+            formData.append('reason', 'Banned from event group');
+
             fetch('{% url "ban_user" %}', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'X-CSRFToken': getCookie('csrftoken')
                 },
-                body: JSON.stringify({
-                    user_id: userId,
-                    group_id: groupId,
-                    ban_type: banType
-                })
+                body: formData
             })
             .then(response => response.json())
             .then(data => {

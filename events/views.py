@@ -59,31 +59,27 @@ def event_detail(request, event_id):
     # Get user's RSVP if they're logged in
     user_rsvp = None
     is_site_admin = request.user.is_authenticated and request.user.is_superuser
-    is_delegated_assistant = False
-    is_organizer = False # Initialize is_organizer here
+    is_organizer_of_this_event = request.user.is_authenticated and event.organizer == request.user
 
+    # Check if user is an approved organizer for this group or a delegated assistant
+    can_access_group_contact_info = False
     if request.user.is_authenticated:
-        user_rsvp = event.rsvps.filter(user=request.user).first()
-        
-        # Check if user is an approved organizer for this group
         try:
             profile = request.user.profile
             if profile.is_approved_organizer and event.group in profile.allowed_groups.all():
-                is_organizer = True
+                can_access_group_contact_info = True
         except Profile.DoesNotExist:
             pass
 
-        # Check if user has access to the group through delegation
-        if not is_organizer and event.group:
-            is_delegated_assistant = GroupDelegation.objects.filter(
-                delegated_user=request.user,
-                group=event.group
-            ).exists()
-            # If user is a delegated assistant, they are considered an organizer for this context
-            if is_delegated_assistant:
-                is_organizer = True
+        if not can_access_group_contact_info and event.group:
+            if GroupDelegation.objects.filter(delegated_user=request.user, group=event.group).exists():
+                can_access_group_contact_info = True
 
-    can_ban_user = is_organizer or is_site_admin or is_delegated_assistant
+    if request.user.is_authenticated:
+        user_rsvp = event.rsvps.filter(user=request.user).first()
+
+    can_ban_user = is_organizer_of_this_event or is_site_admin
+    can_view_contact_info = is_organizer_of_this_event or is_site_admin or can_access_group_contact_info
 
     # Check if the user is banned by this event's organizer (for any group)
     is_banned_by_organizer = False
@@ -274,17 +270,6 @@ def event_detail(request, event_id):
     maybe_rsvps = [r for r in all_rsvps_data if r['rsvp'].status == 'maybe']
     not_attending_rsvps = [r for r in all_rsvps_data if r['rsvp'].status == 'not_attending']
 
-    # Calculate location parts for display
-    # location_parts = []
-    # if event.address:
-    #     location_parts.append(event.address)
-    # if event.city:
-    #     location_parts.append(event.city)
-    # if event.state:
-    #     location_parts.append(event.state)
-    # if event.country and event.country not in ['USA', 'United States']:
-    #     location_parts.append(event.country)
-
     # Construct a well-formatted location string
     location_components = []
     if event.address:
@@ -309,23 +294,22 @@ def event_detail(request, event_id):
         'rsvps': rsvps,
         'form': form,
         'user_rsvp': user_rsvp,
-        'is_organizer': is_organizer,
+        'is_organizer': is_organizer_of_this_event,
         'is_site_admin': is_site_admin,
-        'is_delegated_assistant': is_delegated_assistant,
-        'can_view_contact_info': True,
         'event_has_passed': event_has_passed,
         'confirmed_rsvps_count': confirmed_rsvps_count,
         'waitlisted_rsvps_count': waitlisted_rsvps_count,
         'is_event_full': is_event_full,
         'can_join_waitlist': can_join_waitlist,
         'can_ban_user': can_ban_user,
-        'location_display_string': location_display_string, # Pass formatted location string to context
+        'location_display_string': location_display_string,
         'rsvp_groups': {
             'confirmed': confirmed_rsvps,
             'waitlisted': waitlisted_rsvps,
             'maybe': maybe_rsvps,
             'not_attending': not_attending_rsvps,
-        }
+        },
+        'can_view_contact_info': can_view_contact_info,
     }
     return render(request, 'events/event_detail.html', context)
 
