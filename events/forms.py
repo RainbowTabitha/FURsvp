@@ -116,10 +116,6 @@ class EventForm(forms.ModelForm):
             self.add_error('waitlist_enabled', 'Capacity must be set when waitlist is enabled.')
             self.add_error('capacity', 'Capacity must be set when waitlist is enabled.')
         
-        # If capacity is set but waitlist is not enabled, automatically enable waitlist
-        if capacity and not waitlist_enabled:
-            cleaned_data['waitlist_enabled'] = True
-
         return cleaned_data
 
     def save(self, commit=True):

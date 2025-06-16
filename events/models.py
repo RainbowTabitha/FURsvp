@@ -39,8 +39,6 @@ class Event(models.Model):
                 'waitlist_enabled': 'Capacity must be set when waitlist is enabled.',
                 'capacity': 'Capacity must be set when waitlist is enabled.'
             })
-        if not self.waitlist_enabled and self.capacity is not None:
-            self.waitlist_enabled = True  # Automatically enable waitlist when capacity is set
     
     def __str__(self):
         return self.title

@@ -118,7 +118,7 @@
                     <div class="mt-auto">
                         <span class="badge bg-primary rounded-pill py-2 px-3">
                             <i class="material-icons me-1 align-middle">people</i>
-                            {% if event.waitlist_enabled and event.capacity %}
+                            {% if event.capacity %}
                                 {{ event.confirmed_count }} / {{ event.capacity }} RSVPs
                             {% else %}
                                 {{ event.rsvps.count }} RSVPs
@@ -162,8 +162,8 @@
                     <div class="mt-auto">
                         <span class="badge bg-primary rounded-pill py-2 px-3">
                             <i class="material-icons me-1 align-middle">people</i>
-                            {% if event.waitlist_enabled and event.capacity %}
-                                {{ event.confirmed_count }}/{{ event.capacity }} RSVPs
+                            {% if event.capacity %}
+                                {{ event.confirmed_count }} / {{ event.capacity }} RSVPs
                             {% else %}
                                 {{ event.rsvps.count }} RSVPs
                             {% endif %}

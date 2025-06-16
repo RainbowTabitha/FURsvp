@@ -207,7 +207,7 @@
                     <h3 class="h5 mb-3">
                         <i class="material-icons">groups</i> Attendees
                     </h3>
-                    <!-- Attending -->
+                    <!-- Confirmed -->
                     <div class="mb-3">
                         <h4 class="h6 text-success mb-2">
                             <i class="material-icons align-middle me-1">check_circle</i> Confirmed ({{ confirmed_rsvps_count }})
@@ -240,6 +240,75 @@
                             {% endfor %}
                         </div>
                     </div>
+
+                    <!-- Maybe -->
+                    <div class="mb-3">
+                        <h4 class="h6 text-warning mb-2">
+                            <i class="material-icons align-middle me-1">help</i> Maybe ({{ rsvp_groups.maybe|length }})
+                        </h4>
+                        <div class="list-group list-group-flush">
+                            {% for rsvp_data in rsvp_groups.maybe %}
+                                {% with rsvp=rsvp_data.rsvp %}
+                                <div class="list-group-item d-flex align-items-center py-2">
+                                    {% if rsvp.user %}
+                                        <div class="me-2">{{ rsvp.user.profile|get_avatar_sized_html:32|safe }}</div>
+                                        {% if can_view_contact_info %}
+                                            <a href="#" class="text-body js-open-contact-modal"
+                                               data-display-name="{{ rsvp.user.profile.get_display_name }}"
+                                               data-discord="{{ rsvp.user.profile.discord_username|default_if_none:'' }}"
+                                               data-telegram="{{ rsvp.user.profile.telegram_username|default_if_none:'' }}"
+                                               data-user-id="{{ rsvp.user.id }}">
+                                                {{ rsvp.user.profile.get_display_name }}
+                                            </a>
+                                        {% else %}
+                                            {{ rsvp.user.profile.get_display_name }}
+                                        {% endif %}
+                                    {% else %}
+                                        <div class="me-2"><i class="material-icons text-muted">person</i></div>
+                                        <span class="text-body">{{ rsvp.name }}</span>
+                                    {% endif %}
+                                </div>
+                                {% endwith %}
+                            {% empty %}
+                                <div class="list-group-item text-muted py-2">No maybes yet</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Not Attending -->
+                    <div class="mb-3">
+                        <h4 class="h6 text-danger mb-2">
+                            <i class="material-icons align-middle me-1">cancel</i> Not Attending ({{ rsvp_groups.not_attending|length }})
+                        </h4>
+                        <div class="list-group list-group-flush">
+                            {% for rsvp_data in rsvp_groups.not_attending %}
+                                {% with rsvp=rsvp_data.rsvp %}
+                                <div class="list-group-item d-flex align-items-center py-2">
+                                    {% if rsvp.user %}
+                                        <div class="me-2">{{ rsvp.user.profile|get_avatar_sized_html:32|safe }}</div>
+                                        {% if can_view_contact_info %}
+                                            <a href="#" class="text-body js-open-contact-modal"
+                                               data-display-name="{{ rsvp.user.profile.get_display_name }}"
+                                               data-discord="{{ rsvp.user.profile.discord_username|default_if_none:'' }}"
+                                               data-telegram="{{ rsvp.user.profile.telegram_username|default_if_none:'' }}"
+                                               data-user-id="{{ rsvp.user.id }}">
+                                                {{ rsvp.user.profile.get_display_name }}
+                                            </a>
+                                        {% else %}
+                                            {{ rsvp.user.profile.get_display_name }}
+                                        {% endif %}
+                                    {% else %}
+                                        <div class="me-2"><i class="material-icons text-muted">person</i></div>
+                                        <span class="text-body">{{ rsvp.name }}</span>
+                                    {% endif %}
+                                </div>
+                                {% endwith %}
+                            {% empty %}
+                                <div class="list-group-item text-muted py-2">No one has declined yet</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
                     <!-- Waitlisted -->
                     {% if event.waitlist_enabled %}
                     <div class="mb-3">
@@ -277,71 +346,6 @@
                         </div>
                     </div>
                     {% endif %}
-                    <!-- Maybe -->
-                    <div class="mb-3">
-                        <h4 class="h6 text-warning mb-2">
-                            <i class="material-icons align-middle me-1">help</i> Maybe ({{ rsvp_groups.maybe|length }})
-                        </h4>
-                        <div class="list-group list-group-flush">
-                            {% for rsvp_data in rsvp_groups.maybe %}
-                                {% with rsvp=rsvp_data.rsvp %}
-                                <div class="list-group-item d-flex align-items-center py-2">
-                                    {% if rsvp.user %}
-                                        <div class="me-2">{{ rsvp.user.profile|get_avatar_sized_html:32|safe }}</div>
-                                        {% if can_view_contact_info %}
-                                            <a href="#" class="text-body js-open-contact-modal"
-                                               data-display-name="{{ rsvp.user.profile.get_display_name }}"
-                                               data-discord="{{ rsvp.user.profile.discord_username|default_if_none:'' }}"
-                                               data-telegram="{{ rsvp.user.profile.telegram_username|default_if_none:'' }}"
-                                               data-user-id="{{ rsvp.user.id }}">
-                                                {{ rsvp.user.profile.get_display_name }}
-                                            </a>
-                                        {% else %}
-                                            {{ rsvp.user.profile.get_display_name }}
-                                        {% endif %}
-                                    {% else %}
-                                        <div class="me-2"><i class="material-icons text-muted">person</i></div>
-                                        <span class="text-body">{{ rsvp.name }}</span>
-                                    {% endif %}
-                                </div>
-                                {% endwith %}
-                            {% empty %}
-                                <div class="list-group-item text-muted py-2">No maybes yet</div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    <!-- Not Attending -->
-                    <div class="mb-3">
-                        <h4 class="h6 text-danger mb-2">
-                            <i class="material-icons align-middle me-1">cancel</i> Not Attending ({{ rsvp_groups.not_attending|length }})
-                        </h4>
-                        <div class="list-group list-group-flush">
-                            {% for rsvp_data in rsvp_groups.not_attending %}
-                                {% with rsvp=rsvp_data.rsvp %}
-                                <div class="list-group-item d-flex align-items-center py-2">
-                                    {% if rsvp.user %}
-                                        <div class="me-2">{{ rsvp.user.profile|get_avatar_sized_html:32|safe }}</div>
-                                        {% if can_view_contact_info %}
-                                            <a href="#" class="text-body js-open-contact-modal"
-                                               data-display-name="{{ rsvp.user.profile.get_display_name }}"
-                                               data-discord="{{ rsvp.user.profile.discord_username|default_if_none:'' }}"
-                                               data-telegram="{{ rsvp.user.profile.telegram_username|default_if_none:'' }}"
-                                               data-user-id="{{ rsvp.user.id }}">
-                                                {{ rsvp.user.profile.get_display_name }}
-                                            </a>
-                                        {% else %}
-                                            {{ rsvp.user.profile.get_display_name }}
-                                        {% endif %}
-                                    {% else %}
-                                        <div class="me-2"><i class="material-icons text-muted">person</i></div>
-                                        <span class="text-body">{{ rsvp.name }}</span>
-                                    {% endif %}
-                                </div>
-                                {% endwith %}
-                            {% empty %}
-                                <div class="list-group-item text-muted py-2">No one has declined yet</div>
-                            {% endfor %}
-                    </div>
                 </div>
             </div>
         </div>
