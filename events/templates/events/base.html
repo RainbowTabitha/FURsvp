@@ -526,11 +526,11 @@
                     </li>
                     {% endif %}
                     <li class="nav-item">
-                        <form action="{% url 'logout' %}" method="post" class="d-inline">
+                        <form action="{% url 'logout' %}" method="post" class="d-inline" style="margin: 0;">
                             {% csrf_token %}
-                            <button type="submit" class="nav-link" style="background: none; border: none; padding: 0; cursor: pointer; display: flex; flex-direction: column; align-items: center; color: #666; font-size: 11px; text-align: center;">
-                                <i class="material-icons">logout</i>
-                                <span>Logout</span>
+                            <button type="submit" class="nav-link" style="background: none; border: none; padding: 0; cursor: pointer; display: flex; align-items: center; color: #2a3faa; font-size: 1.1rem; font-weight: 500;">
+                                <i class="material-icons" style="font-size: 24px; vertical-align: middle; line-height: 1;">logout</i>
+                                <span style="margin-left: 0.5rem; font-size: 1.1rem;">Logout</span>
                             </button>
                         </form>
                     </li>
@@ -597,7 +597,7 @@
             <i class="material-icons">person</i>
             <span>Profile</span>
         </a>
-        <form action="{% url 'logout' %}" method="post" class="d-inline">
+        <form action="{% url 'logout' %}" method="post" class="d-inline" style="margin: 0;">
             {% csrf_token %}
             <button type="submit" class="nav-link logout-link">
                 <i class="material-icons">logout</i>
