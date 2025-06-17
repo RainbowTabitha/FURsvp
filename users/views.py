@@ -64,10 +64,10 @@ def profile(request):
             base64_image = request.POST.get('profile_picture_base64')
             if base64_image:  # Update with new image
                 request.user.profile.profile_picture_base64 = base64_image
-                create_notification(request.user, 'Your profile picture has been updated.', link='/profile')
+                create_notification(request.user, 'Your profile picture has been updated.', link='/accounts/profile/')
             else:  # Clear existing image
                 request.user.profile.profile_picture_base64 = None
-                create_notification(request.user, 'Your profile picture has been removed.', link='/profile')
+                create_notification(request.user, 'Your profile picture has been removed.', link='/accounts/profile/')
             request.user.profile.save()
             return redirect('profile')
         
@@ -88,7 +88,7 @@ def profile(request):
                 if profile_form.cleaned_data.get('clear_profile_picture'):
                     request.user.profile.profile_picture_base64 = None
                     request.user.profile.save()
-                    create_notification(request.user, 'Your profile picture has been removed.', link='/profile')
+                    create_notification(request.user, 'Your profile picture has been removed.', link='/accounts/profile/')
                 
                 # Save profile settings
                 profile = profile_form.save()
@@ -101,7 +101,7 @@ def profile(request):
             password_change_form = UserPasswordChangeForm(user=request.user, data=request.POST)
             if password_change_form.is_valid():
                 password_change_form.save()
-                create_notification(request.user, 'Your password has been updated successfully.', link='/profile')
+                create_notification(request.user, 'Your password has been updated successfully.', link='/accounts/profile/')
                 return redirect('profile') # Redirect to clear the POST data and display message
             else:
                 messages.error(request, f'Error changing password: {password_change_form.errors}', extra_tags='admin_notification')
@@ -114,8 +114,8 @@ def profile(request):
                     assignment.organizer = request.user
                     try:
                         assignment.save()
-                        create_notification(request.user, f'You have assigned {assignment.delegated_user.username} as an assistant for {assignment.group.name}.', link='/profile')
-                        create_notification(assignment.delegated_user, f'You have been assigned as an assistant for {assignment.group.name}.', link='/profile')
+                        create_notification(request.user, f'You have assigned {assignment.delegated_user.username} as an assistant for {assignment.group.name}.', link='/accounts/profile/')
+                        create_notification(assignment.delegated_user, f'You have been assigned as an assistant for {assignment.group.name}.', link='/accounts/profile/')
                         return redirect('profile')
                     except Exception as e:
                         messages.error(request, f'Error creating assistant assignment: {e}', extra_tags='admin_notification')
@@ -133,8 +133,8 @@ def profile(request):
                         delegated_user_name = assignment_to_delete.delegated_user.username
                         group_name = assignment_to_delete.group.name
                         assignment_to_delete.delete()
-                        create_notification(request.user, f'You have removed {delegated_user_name} as an assistant for {group_name}.', link='/profile')
-                        create_notification(assignment_to_delete.delegated_user, f'Your assistant role for {group_name} has been removed.', link='/profile')
+                        create_notification(request.user, f'You have removed {delegated_user_name} as an assistant for {group_name}.', link='/accounts/profile/')
+                        create_notification(assignment_to_delete.delegated_user, f'Your assistant role for {group_name} has been removed.', link='/accounts/profile/')
                     except GroupDelegation.DoesNotExist:
                         messages.error(request, 'Assistant assignment not found or you do not have permission to delete it.', extra_tags='admin_notification')
                 return redirect('profile')

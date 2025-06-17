@@ -396,6 +396,7 @@
                 position: relative;
                 z-index: 1;
             }
+
             .footer-logo {
                 height: 2.5rem;
                 margin-bottom: 0.75rem;
@@ -753,7 +754,7 @@
                         const notificationDate = document.createElement('div');
                         notificationDate.classList.add('notification-item-date');
                         notificationDate.textContent = new Date(notification.timestamp)
-                    .toLocaleString();
+                            .toLocaleString();
                         notificationItem.appendChild(notificationDate);
 
                         // Add click event listener to mark as read and redirect
@@ -886,6 +887,44 @@
 
             // Initial fetch on page load for both desktop and mobile
             fetchNotifications();
+
+            // TomSelect autocomplete for Assign New Assistant
+            if (window.TomSelect && document.getElementById('assistant-user-input')) {
+                new TomSelect('#assistant-user-input', {
+                    create: false,
+                    maxItems: 1,
+                    valueField: 'id',
+                    labelField: 'text',
+                    searchField: 'text',
+                    load: function (query, callback) {
+                        if (!query.length) return callback();
+                        fetch('/accounts/user_search_autocomplete/?exclude_current=true&q=' +
+                                encodeURIComponent(query))
+                            .then(response => response.json())
+                            .then(data => callback(data.results))
+                            .catch(() => callback());
+                    }
+                });
+            }
+
+            // Remember and restore last active profile tab
+            const profileTabs = document.getElementById('profileTabs');
+            if (profileTabs) {
+                const lastProfileTab = localStorage.getItem('lastProfileTab');
+                if (lastProfileTab) {
+                    const lastTabButton = document.querySelector(
+                        `#profileTabs button[data-bs-target="${lastProfileTab}"]`);
+                    if (lastTabButton) {
+                        new bootstrap.Tab(lastTabButton).show();
+                    }
+                }
+                profileTabs.querySelectorAll('button[data-bs-toggle="tab"]').forEach(function (tabBtn) {
+                    tabBtn.addEventListener('shown.bs.tab', function (e) {
+                        localStorage.setItem('lastProfileTab', e.target.getAttribute(
+                            'data-bs-target'));
+                    });
+                });
+            }
         });
     </script>
     {% endblock %}

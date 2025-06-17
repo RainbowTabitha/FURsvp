@@ -216,11 +216,11 @@
                                         <input type="hidden" name="create_assignment_submit" value="1">
                                         <div class="row g-3">
                                             <div class="col-md-6">
-                                                <label for="{{ assistant_assignment_form.delegated_user.id_for_label }}" class="form-label">
+                                                <label for="assistant-user-input" class="form-label">
                                                     <i class="material-icons align-middle me-1">person_add</i>
                                                     Select User
                                                 </label>
-                                                {{ assistant_assignment_form.delegated_user|add_class:"form-select" }}
+                                                <input type="text" id="assistant-user-input" name="delegated_user" class="form-control" placeholder="Type to search users..." autocomplete="off">
                                             </div>
                                             <div class="col-md-6">
                                                 <label for="{{ assistant_assignment_form.group.id_for_label }}" class="form-label">
@@ -523,6 +523,25 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         return cookieValue;
+    }
+
+    // Restore last active profile tab
+    const profileTabs = document.getElementById('profileTabs');
+    if (profileTabs) {
+        const lastProfileTab = localStorage.getItem('lastProfileTab');
+        if (lastProfileTab) {
+            const lastTabButton = document.querySelector(`#profileTabs button[data-bs-target="${lastProfileTab}"]`);
+            if (lastTabButton) {
+                new bootstrap.Tab(lastTabButton).show();
+            }
+        }
+
+        // Save tab on click
+        profileTabs.querySelectorAll('button[data-bs-toggle="tab"]').forEach(function(tabBtn) {
+            tabBtn.addEventListener('shown.bs.tab', function(e) {
+                localStorage.setItem('lastProfileTab', e.target.getAttribute('data-bs-target'));
+            });
+        });
     }
 });
 </script>
