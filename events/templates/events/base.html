@@ -209,7 +209,8 @@
             position: fixed;
             top: 30px;
             right: 20px;
-            z-index: 1050; /* Ensure it's above other elements */
+            z-index: 1050;
+            /* Ensure it's above other elements */
         }
 
         @media (max-width: 768px) {
@@ -237,9 +238,12 @@
 
         .unread-notifications-badge {
             position: absolute;
-            top: -5px; /* Adjusted to move up */
-            right: -5px; /* Adjusted to move left */
-            background-color: #dc3545; /* Red color for unread */
+            top: -5px;
+            /* Adjusted to move up */
+            right: -5px;
+            /* Adjusted to move left */
+            background-color: #dc3545;
+            /* Red color for unread */
             color: white;
             border: 2px solid white;
             font-size: 0.75rem;
@@ -328,7 +332,8 @@
                 align-items: center;
                 color: var(--primary-color);
                 font-size: 0.75rem;
-                flex-grow; 0;
+                flex-grow;
+                0;
                 margin-left: 10px;
                 margin-right: 10px;
                 text-align: center;
@@ -355,17 +360,14 @@
                 transition: all 0.3s ease;
             }
 
-            /* Add padding to main content to account for bottom nav */
             .main-content {
                 padding-bottom: 5.5rem;
             }
 
-            /* Hide regular navbar on mobile */
             .navbar {
                 display: none;
             }
 
-            /* Show mobile header */
             .mobile-header {
                 display: flex;
                 align-items: center;
@@ -386,14 +388,18 @@
                 height: 2.5rem;
             }
 
-            /* Mobile Footer Styles */
             .footer {
-                padding: 1.5rem 0;
-                margin-top: 1.5rem;
+                padding: 2.5rem 0 1.5rem 0;
+                margin-top: 0;
                 background-color: var(--secondary-color);
                 margin-bottom: 4.5rem;
                 position: relative;
                 z-index: 1;
+            }
+            .footer-logo {
+                height: 2.5rem;
+                margin-bottom: 0.75rem;
+                margin-top: 0;
             }
 
             .footer .row {
@@ -405,14 +411,9 @@
                 margin-bottom: 0.75rem;
             }
 
-            .footer p, .footer a {
+            .footer p,
+            .footer a {
                 font-size: 0.85rem;
-            }
-
-            .footer-logo {
-                height: 2.5rem;
-                margin-top: -5rem;
-                margin-bottom: 1rem;
             }
 
             .footer .btn {
@@ -422,6 +423,7 @@
         }
 
         @media (min-width: 769px) {
+
             .mobile-bottom-nav,
             .mobile-header {
                 display: none;
@@ -436,6 +438,7 @@
             0% {
                 color: var(--primary-color);
             }
+
             100% {
                 color: #dc3545;
             }
@@ -491,15 +494,25 @@
                     </li>
                     {% if user.is_authenticated %}
                     <li class="nav-item dropdown notification-bell-container">
-                        <a class="nav-link notification-bell-icon" href="#" id="notificationsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <a class="nav-link notification-bell-icon" href="#" id="notificationsDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="material-icons">notifications</i>
-                            <span class="badge rounded-pill unread-notifications-badge" id="unread-notifications-badge">0</span>
+                            <span class="badge rounded-pill unread-notifications-badge"
+                                id="unread-notifications-badge">0</span>
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 notifications-dropdown" aria-labelledby="notificationsDropdown" id="notifications-list">
-                            <li><h6 class="dropdown-header notification-header">Notifications</h6></li>
-                            <li id="no-notifications-message-item"><a class="dropdown-item text-center text-muted" href="#" id="no-notifications-message" style="padding: 15px;">No new notifications</a></li>
-                            <li><hr class="dropdown-divider my-0"></li>
-                            <li><button class="dropdown-item text-center text-primary notification-footer" id="clear-notifications-btn">Clear All Notifications</button></li>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 notifications-dropdown"
+                            aria-labelledby="notificationsDropdown" id="notifications-list">
+                            <li>
+                                <h6 class="dropdown-header notification-header">Notifications</h6>
+                            </li>
+                            <li id="no-notifications-message-item"><a class="dropdown-item text-center text-muted"
+                                    href="#" id="no-notifications-message" style="padding: 15px;">No new
+                                    notifications</a></li>
+                            <li>
+                                <hr class="dropdown-divider my-0">
+                            </li>
+                            <li><button class="dropdown-item text-center text-primary notification-footer"
+                                    id="clear-notifications-btn">Clear All Notifications</button></li>
                         </ul>
                     </li>
                     <li class="nav-item">
@@ -529,8 +542,10 @@
                     <li class="nav-item">
                         <form action="{% url 'logout' %}" method="post" class="d-inline" style="margin: 0;">
                             {% csrf_token %}
-                            <button type="submit" class="nav-link" style="background: none; border: none; padding: 0; cursor: pointer; display: flex; align-items: center; color: #2a3faa; font-size: 1.1rem; font-weight: 500;">
-                                <i class="material-icons" style="font-size: 24px; vertical-align: middle; line-height: 1;">logout</i>
+                            <button type="submit" class="nav-link"
+                                style="background: none; border: none; padding: 0; cursor: pointer; display: flex; align-items: center; color: #2a3faa; font-size: 1.1rem; font-weight: 500;">
+                                <i class="material-icons"
+                                    style="font-size: 24px; vertical-align: middle; line-height: 1;">logout</i>
                                 <span style="margin-left: 0.5rem; font-size: 1.1rem;">Logout</span>
                             </button>
                         </form>
@@ -577,7 +592,8 @@
 
     <!-- Mobile Bottom Navigation -->
     <nav class="mobile-bottom-nav">
-        <a href="{% url 'home' %}" style="padding-right: -2.5rem;" class="nav-link home-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+        <a href="{% url 'home' %}" style="padding-right: -2.5rem;"
+            class="nav-link home-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
             <i class="material-icons">home</i>
             <span>Home</span>
         </a>
@@ -594,7 +610,8 @@
         </a>
         {% endif %}
         {% if user.is_authenticated %}
-        <a href="{% url 'profile' %}" class="nav-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+        <a href="{% url 'profile' %}"
+            class="nav-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
             <i class="material-icons">person</i>
             <span>Profile</span>
         </a>
@@ -606,11 +623,13 @@
             </button>
         </form>
         {% else %}
-        <a href="{% url 'login' %}" class="nav-link {% if request.resolver_match.url_name == 'login' %}active{% endif %}">
+        <a href="{% url 'login' %}"
+            class="nav-link {% if request.resolver_match.url_name == 'login' %}active{% endif %}">
             <i class="material-icons">login</i>
             <span>Login</span>
         </a>
-        <a href="{% url 'register' %}" class="nav-link {% if request.resolver_match.url_name == 'register' %}active{% endif %}">
+        <a href="{% url 'register' %}"
+            class="nav-link {% if request.resolver_match.url_name == 'register' %}active{% endif %}">
             <i class="material-icons">person_add</i>
             <span>Register</span>
         </a>
@@ -642,7 +661,7 @@
             </div>
         </div>
     </footer>
-    
+
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- TomSelect JS -->
@@ -659,7 +678,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     {% block extra_js %}
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const notificationsDropdown = document.getElementById('notificationsDropdown');
             const mobileNotificationsIcon = document.getElementById('mobileNotificationsIcon');
 
@@ -677,8 +696,10 @@
                     if (notificationsDropdown) {
                         const unreadBadge = document.getElementById('unread-notifications-badge');
                         const notificationsList = document.getElementById('notifications-list');
-                        const noNotificationsMessageItem = document.getElementById('no-notifications-message-item');
-                        updateNotificationsList(notificationsList, data.notifications, noNotificationsMessageItem);
+                        const noNotificationsMessageItem = document.getElementById(
+                            'no-notifications-message-item');
+                        updateNotificationsList(notificationsList, data.notifications,
+                            noNotificationsMessageItem);
 
                         if (unreadCount > 0) {
                             unreadBadge.textContent = unreadCount;
@@ -722,7 +743,8 @@
                         const notificationText = document.createElement('div');
                         notificationText.classList.add('notification-item-text');
                         if (notification.event_name) {
-                            notificationText.innerHTML = `<strong>${notification.event_name}</strong><br>${notification.message}`;
+                            notificationText.innerHTML =
+                                `<strong>${notification.event_name}</strong><br>${notification.message}`;
                         } else {
                             notificationText.textContent = notification.message;
                         }
@@ -730,7 +752,8 @@
 
                         const notificationDate = document.createElement('div');
                         notificationDate.classList.add('notification-item-date');
-                        notificationDate.textContent = new Date(notification.timestamp).toLocaleString();
+                        notificationDate.textContent = new Date(notification.timestamp)
+                    .toLocaleString();
                         notificationItem.appendChild(notificationDate);
 
                         // Add click event listener to mark as read and redirect
@@ -756,7 +779,9 @@
                             'X-CSRFToken': getCookie('csrftoken'),
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ notification_ids: [notificationId] })
+                        body: JSON.stringify({
+                            notification_ids: [notificationId]
+                        })
                     });
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
@@ -816,7 +841,7 @@
                         if (!response.ok) {
                             throw new Error(`HTTP error! status: ${response.status}`);
                         }
-                        
+
                         // Fetch notifications again to update counts and flashing icon
                         fetchNotifications();
 
@@ -830,9 +855,10 @@
                 });
 
                 // Clean up modal when hidden
-                document.getElementById('clearNotificationsModal').addEventListener('hidden.bs.modal', function () {
-                    this.remove();
-                });
+                document.getElementById('clearNotificationsModal').addEventListener('hidden.bs.modal',
+                    function () {
+                        this.remove();
+                    });
             }
 
             // Get CSRF token
