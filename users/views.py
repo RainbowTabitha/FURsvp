@@ -486,7 +486,8 @@ def purge_read_notifications(request):
     Deletes all read notifications for the authenticated user.
     """
     try:
-        deleted_count, _ = Notification.objects.filter(user=request.user, is_read=True).delete()
-        return JsonResponse({'status': 'success', 'message': f'Successfully purged {deleted_count} read notifications.'})
+        # Modified to delete all notifications, not just read ones
+        deleted_count, _ = Notification.objects.filter(user=request.user).delete()
+        return JsonResponse({'status': 'success', 'message': f'Successfully purged {deleted_count} notifications.'})
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': f'Failed to purge notifications: {str(e)}'}, status=500)

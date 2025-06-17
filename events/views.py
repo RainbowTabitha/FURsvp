@@ -17,11 +17,12 @@ def home(request):
     sort_by = request.GET.get('sort', 'date')  # Default sort by date
     sort_order = request.GET.get('order', 'asc')  # Default ascending order
     
-    # Base queryset - filter out events that have already passed
+    # Base queryset - filter out events that have already passed and cancelled events
     now = timezone.now()
     events = Event.objects.filter(
         models.Q(date__gt=now.date()) | 
-        (models.Q(date=now.date()) & models.Q(end_time__gt=now.time()))
+        (models.Q(date=now.date()) & models.Q(end_time__gt=now.time())),
+        status='active'  # Only show active events
     ).annotate(
         confirmed_count=models.Count('rsvps', filter=models.Q(rsvps__status='confirmed'))
     )
@@ -81,6 +82,7 @@ def event_detail(request, event_id):
 
     can_ban_user = is_organizer_of_this_event or is_site_admin
     can_view_contact_info = is_organizer_of_this_event or is_site_admin or can_access_group_contact_info
+    can_cancel_event = is_organizer_of_this_event or is_site_admin
 
     # Check if the user is banned by this event's organizer (for any group)
     is_banned_by_organizer = False
@@ -109,6 +111,23 @@ def event_detail(request, event_id):
         if is_banned_by_organizer or is_banned_from_group:
             messages.error(request, 'You are banned from RSVPing to events by this organizer or group.', extra_tags='admin_notification')
             return redirect('event_detail', event_id=event.id)
+
+        if 'cancel_event' in request.POST and can_cancel_event:
+            with transaction.atomic():
+                event.status = 'cancelled'
+                event.save()
+                
+                # Notify all confirmed and waitlisted attendees
+                for rsvp in event.rsvps.filter(status__in=['confirmed', 'waitlisted']):
+                    if rsvp.user:
+                        create_notification(
+                            rsvp.user,
+                            f'Event "{event.title}" has been cancelled.',
+                            link=event.get_absolute_url()
+                        )
+                
+                messages.success(request, 'Event has been cancelled and all attendees have been notified.', extra_tags='admin_notification')
+                return redirect('event_detail', event_id=event.id)
 
         if 'remove_rsvp' in request.POST:
             if user_rsvp: # Ensure there is an RSVP to remove
@@ -335,6 +354,7 @@ def event_detail(request, event_id):
         },
         'can_view_contact_info': can_view_contact_info,
         'show_rsvp_form': show_rsvp_form,
+        'can_cancel_event': can_cancel_event,
     }
     return render(request, 'events/event_detail.html', context)
 
@@ -400,4 +420,30 @@ def edit_event(request, event_id):
     else:
         form = EventForm(instance=event, user=request.user)
     return render(request, 'events/event_edit.html', {'form': form, 'event': event})
+
+@login_required
+def uncancel_event(request, event_id):
+    event = get_object_or_404(Event, pk=event_id)
+    if request.user != event.organizer and not request.user.is_superuser:
+        messages.error(request, "You are not authorized to uncancel this event.")
+        return redirect('event_detail', event_id=event.id)
+
+    if request.method == 'POST':
+        with transaction.atomic():
+            event.status = 'active'
+            event.save()
+            
+            # Notify all users who had RSVPs
+            for rsvp in event.rsvps.all():
+                if rsvp.user:
+                    create_notification(
+                        rsvp.user,
+                        f'Event "{event.title}" has been uncancelled.',
+                        link=event.get_absolute_url()
+                    )
+            
+            messages.success(request, 'Event has been uncancelled and all attendees have been notified.', extra_tags='admin_notification')
+            return redirect('event_detail', event_id=event.id)
+    
+    return redirect('event_detail', event_id=event.id)
 
