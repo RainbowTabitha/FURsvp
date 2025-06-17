@@ -14,6 +14,7 @@ from django.db.models import Q
 from django.db import models, transaction
 import json
 from django.core.serializers.json import DjangoJSONEncoder
+from .utils import create_notification
 
 # Create your views here.
 
@@ -24,7 +25,12 @@ def register(request):
             user = form.save()
             if not hasattr(user, 'profile'):
                 Profile.objects.create(user=user)
-            messages.success(request, f'Your account has been created! You can now log in.', extra_tags='admin_notification')
+            # Create welcome notification
+            create_notification(
+                user,
+                'Welcome to FURsvp! We\'re excited to have you join our community. You can now RSVP to events and connect with other members.',
+                link='/'
+            )
             return redirect('registration_success')
     else:
         form = UserRegisterForm()
@@ -58,10 +64,10 @@ def profile(request):
             base64_image = request.POST.get('profile_picture_base64')
             if base64_image:  # Update with new image
                 request.user.profile.profile_picture_base64 = base64_image
-                messages.success(request, 'Profile picture updated successfully!', extra_tags='admin_notification')
+                create_notification(request.user, 'Your profile picture has been updated.', link='/profile')
             else:  # Clear existing image
                 request.user.profile.profile_picture_base64 = None
-                messages.success(request, 'Profile picture removed successfully!', extra_tags='admin_notification')
+                create_notification(request.user, 'Your profile picture has been removed.', link='/profile')
             request.user.profile.save()
             return redirect('profile')
         
@@ -82,11 +88,11 @@ def profile(request):
                 if profile_form.cleaned_data.get('clear_profile_picture'):
                     request.user.profile.profile_picture_base64 = None
                     request.user.profile.save()
-                    messages.success(request, 'Profile picture removed successfully!', extra_tags='admin_notification')
+                    create_notification(request.user, 'Your profile picture has been removed.', link='/profile')
                 
                 # Save profile settings
                 profile = profile_form.save()
-                messages.success(request, 'Profile settings updated successfully!', extra_tags='admin_notification')
+                create_notification(request.user, 'Your profile settings have been updated.', link='/profile')
                 return redirect('profile')
             else:
                 print("Form errors:", profile_form.errors)  # Debug print
@@ -96,7 +102,7 @@ def profile(request):
             password_change_form = UserPasswordChangeForm(user=request.user, data=request.POST)
             if password_change_form.is_valid():
                 password_change_form.save()
-                messages.success(request, 'Your password was successfully updated!', extra_tags='admin_notification')
+                create_notification(request.user, 'Your password has been updated successfully.', link='/profile')
                 return redirect('profile') # Redirect to clear the POST data and display message
             else:
                 messages.error(request, f'Error changing password: {password_change_form.errors}', extra_tags='admin_notification')
@@ -109,7 +115,8 @@ def profile(request):
                     assignment.organizer = request.user
                     try:
                         assignment.save()
-                        messages.success(request, f'Assistant {assignment.delegated_user.username} assigned for {assignment.group.name} successfully!', extra_tags='admin_notification')
+                        create_notification(request.user, f'You have assigned {assignment.delegated_user.username} as an assistant for {assignment.group.name}.', link='/profile')
+                        create_notification(assignment.delegated_user, f'You have been assigned as an assistant for {assignment.group.name}.', link='/profile')
                         return redirect('profile')
                     except Exception as e:
                         messages.error(request, f'Error creating assistant assignment: {e}', extra_tags='admin_notification')
@@ -127,7 +134,8 @@ def profile(request):
                         delegated_user_name = assignment_to_delete.delegated_user.username
                         group_name = assignment_to_delete.group.name
                         assignment_to_delete.delete()
-                        messages.success(request, f'Assistant assignment for {delegated_user_name} to {group_name} deleted successfully!', extra_tags='admin_notification')
+                        create_notification(request.user, f'You have removed {delegated_user_name} as an assistant for {group_name}.', link='/profile')
+                        create_notification(assignment_to_delete.delegated_user, f'Your assistant role for {group_name} has been removed.', link='/profile')
                     except GroupDelegation.DoesNotExist:
                         messages.error(request, 'Assistant assignment not found or you do not have permission to delete it.', extra_tags='admin_notification')
                 return redirect('profile')
@@ -376,9 +384,9 @@ def administration(request):
             if group_form.is_valid():
                 try:
                     group_form.save()
-                    messages.success(request, 'Group created successfully!', extra_tags='admin_notification')
+                    create_notification(request.user, f'You have created a new group: {group_form.instance.name}.', link='/administration')
                 except Exception as e:
-                    messages.error(request, f'Error creating group: {str(e)}', extra_tags='admin_notification')
+                    pass
             else:
                 messages.error(request, 'Error creating group: Invalid form data.', extra_tags='admin_notification')
             return redirect('administration')
@@ -390,7 +398,7 @@ def administration(request):
                     if rename_form.is_valid():
                         try:
                             rename_form.save()
-                            messages.success(request, f'Group "{group.name}" renamed successfully!', extra_tags='admin_notification')
+                            create_notification(request.user, f'You have renamed the group to "{group.name}".', link='/administration')
                         except Exception as e:
                             messages.error(request, f'Error renaming group: {str(e)}', extra_tags='admin_notification')
                     else:
@@ -404,7 +412,7 @@ def administration(request):
                     group_to_delete = Group.objects.get(id=group_id)
                     group_name = group_to_delete.name
                     group_to_delete.delete()
-                    messages.success(request, f'Group "{group_name}" deleted successfully!', extra_tags='admin_notification')
+                    create_notification(request.user, f'You have deleted the group "{group_name}".', link='/administration')
                 except Group.DoesNotExist:
                     messages.error(request, 'Group not found.', extra_tags='admin_notification')
                 except Exception as e:
