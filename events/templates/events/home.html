@@ -269,7 +269,15 @@
         function toggleAdultEvents() {
             showAdult = !showAdult;
             localStorage.setItem('showAdultEvents', showAdult);
-            toggleAdult.textContent = showAdult ? 'Hide 18+/21+' : 'Show 18+/21+';
+            if (showAdult) {
+                toggleAdult.textContent = 'Hide 18+/21+';
+                toggleAdult.classList.remove('btn-success');
+                toggleAdult.classList.add('btn-danger');
+            } else {
+                toggleAdult.textContent = 'Show 18+/21+';
+                toggleAdult.classList.remove('btn-danger');
+                toggleAdult.classList.add('btn-success');
+            }
             fetchEvents(currentSort, currentOrder, showAdult);
         }
 
@@ -303,7 +311,16 @@
             toggleIcon.textContent = 'grid_view';
         }
 
-        toggleAdult.textContent = showAdult ? 'Hide 18+/21+' : 'Show 18+/21+';
+        // On page load, set the correct color
+        if (showAdult) {
+            toggleAdult.textContent = 'Hide 18+/21+';
+            toggleAdult.classList.remove('btn-success');
+            toggleAdult.classList.add('btn-danger');
+        } else {
+            toggleAdult.textContent = 'Show 18+/21+';
+            toggleAdult.classList.remove('btn-danger');
+            toggleAdult.classList.add('btn-success');
+        }
 
         // Handle browser back/forward buttons
         window.addEventListener('popstate', function(event) {
