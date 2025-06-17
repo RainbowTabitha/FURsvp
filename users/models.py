@@ -78,6 +78,7 @@ class Notification(models.Model):
     is_read = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
     link = models.CharField(max_length=255, blank=True, null=True) # Optional link for the notification
+    event_name = models.CharField(max_length=255, blank=True, null=True) # Optional event name for the notification
 
     class Meta:
         ordering = ['-timestamp']

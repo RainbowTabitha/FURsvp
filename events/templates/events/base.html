@@ -762,7 +762,11 @@
 
                         const notificationText = document.createElement('div');
                         notificationText.classList.add('notification-item-text');
-                        notificationText.textContent = notification.message;
+                        if (notification.event_name) {
+                            notificationText.innerHTML = `<strong>${notification.event_name}</strong><br>${notification.message}`;
+                        } else {
+                            notificationText.textContent = notification.message;
+                        }
                         notificationItem.appendChild(notificationText);
 
                         const notificationDate = document.createElement('div');
