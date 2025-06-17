@@ -58,7 +58,7 @@ class GroupDelegation(models.Model):
 
 class BannedUser(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='banned_entries')
-    group = models.ForeignKey('events.Group', on_delete=models.CASCADE)
+    group = models.ForeignKey('events.Group', on_delete=models.CASCADE, null=True, blank=True)
     banned_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='initiated_group_bans')
     organizer = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='initiated_all_bans')
     reason = models.TextField(blank=True, null=True)

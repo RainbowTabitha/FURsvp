@@ -254,7 +254,7 @@
                             <h3 class="h5 mb-3 text-secondary">
                                 <i class="material-icons me-2">gavel</i> Apply Site-wide Ban
                             </h3>
-                            <form method="post" id="sitewideBanForm">
+                            <form method="post" id="sitewideBanForm" action="{% url 'ban_user' %}">
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="ban">
                                 <input type="hidden" name="ban_type" value="sitewide">
@@ -483,53 +483,6 @@
             });
         }
 
-        // User search autocomplete for organizer-wide ban (User to Ban)
-        new TomSelect('#organizerBanUserInput', {
-            valueField: 'id',
-            labelField: 'text',
-            searchField: 'text',
-            create: false,
-            load: function(query, callback) {
-                if (!query.length) return callback();
-                fetch('{% url "user_search_autocomplete" %}?q=' + encodeURIComponent(query) + '&exclude_current=true') // Exclude current user from suggestions
-                    .then(response => response.json())
-                    .then(data => {
-                        callback(data.results);
-                    }).catch(() => {
-                        callback();
-                    });
-            },
-            onInitialize: function() {
-                this.wrapper.classList.add('rounded-pill');
-                this.control.classList.add('rounded-pill');
-                this.dropdown.classList.add('shadow', 'rounded-3');
-            }
-        });
-
-        // Organizer search autocomplete for organizer-wide ban (Organizer)
-        new TomSelect('#organizerBanOrganizerInput', {
-            valueField: 'id',
-            labelField: 'text',
-            searchField: 'text',
-            create: false,
-            load: function(query, callback) {
-                if (!query.length) return callback();
-                // Fetch only approved organizers
-                fetch('{% url "user_search_autocomplete" %}?q=' + encodeURIComponent(query) + '&is_organizer=true')
-                    .then(response => response.json())
-                    .then(data => {
-                        callback(data.results);
-                    }).catch(() => {
-                        callback();
-                    });
-            },
-            onInitialize: function() {
-                this.wrapper.classList.add('rounded-pill');
-                this.control.classList.add('rounded-pill');
-                this.dropdown.classList.add('shadow', 'rounded-3');
-            }
-        });
-
         // Handle unban buttons
         document.querySelectorAll('.unban-btn').forEach(button => {
             button.addEventListener('click', async function() {
@@ -595,9 +548,15 @@
             tabButtons.forEach(button => {
                 button.addEventListener('shown.bs.tab', function (event) {
                     localStorage.setItem('lastAdminTab', event.target.id);
+                    // Store the current pagination state when switching tabs
+                    const userPage = new URLSearchParams(window.location.search).get('user_page');
+                    const groupPage = new URLSearchParams(window.location.search).get('group_page');
+                    if (userPage) localStorage.setItem('lastUserPage', userPage);
+                    if (groupPage) localStorage.setItem('lastGroupPage', groupPage);
                 });
             });
 
+            // Restore the last active tab
             const lastTab = localStorage.getItem('lastAdminTab');
             if (lastTab) {
                 const lastTabButton = document.getElementById(lastTab);
@@ -606,6 +565,59 @@
                     bsTab.show();
                 }
             }
+
+            // Restore pagination state when the page loads
+            const urlParams = new URLSearchParams(window.location.search);
+            if (!urlParams.has('user_page') && !urlParams.has('group_page')) {
+                const lastUserPage = localStorage.getItem('lastUserPage');
+                const lastGroupPage = localStorage.getItem('lastGroupPage');
+                const currentTab = localStorage.getItem('lastAdminTab');
+                
+                if (currentTab === 'organizers-tab' && lastUserPage) {
+                    window.location.href = `?user_page=${lastUserPage}`;
+                } else if (currentTab === 'groups-tab' && lastGroupPage) {
+                    window.location.href = `?group_page=${lastGroupPage}`;
+                }
+            }
+        }
+
+        // Handle site-wide ban form submission via AJAX
+        const sitewideBanForm = document.getElementById('sitewideBanForm');
+        if (sitewideBanForm) {
+            sitewideBanForm.addEventListener('submit', async function(event) {
+                event.preventDefault(); // Prevent default form submission
+
+                const formData = new FormData(this); // 'this' refers to the form element
+                const selectedUserId = formData.get('user_id');
+                if (!selectedUserId) {
+                    alert('Please select a user to ban.');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(this.action, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: formData
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        alert(data.message);
+                        // Reload the page to show updated ban list and clear form
+                        location.reload(); 
+                    } else {
+                        // Handle specific error messages from the backend
+                        alert('Error: ' + data.message);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An unexpected error occurred while applying the ban.');
+                }
+            });
         }
     });
 </script>

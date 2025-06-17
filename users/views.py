@@ -159,6 +159,8 @@ def ban_user(request):
     if not request.user.is_authenticated:
         return JsonResponse({'status': 'error', 'message': 'Authentication required.'}, status=401)
 
+    print("ban_user request.POST:", request.POST) # Added for debugging
+
     try:
         target_user_id = request.POST.get('user_id')
         group_id = request.POST.get('group_id') # Can be None for organizer-wide or sitewide bans
@@ -248,7 +250,6 @@ def ban_user(request):
                     group=group,
                     banned_by=banned_by_user,
                     reason=reason,
-                    organizer=organizer_user_for_ban_entry
                 )
                 # Delete RSVPs for this user in this group's events
                 RSVP.objects.filter(user=target_user, event__group=group).delete()
@@ -279,20 +280,18 @@ def ban_user(request):
                 return JsonResponse({'status': 'success', 'message': f'{target_user.username} has been banned from all events by {organizer_user_for_ban_entry.username}.'})
 
             elif ban_type == 'sitewide':
-                existing_ban = BannedUser.objects.filter(user=target_user, organizer__isnull=True, group__isnull=True).first()
+                existing_ban = BannedUser.objects.filter(user=target_user, group__isnull=True, organizer__isnull=True).first()
                 if existing_ban:
-                    return JsonResponse({'status': 'info', 'message': f'{target_user.username} is already banned sitewide.'})
+                    return JsonResponse({'status': 'info', 'message': f'{target_user.username} is already site-wide banned.'})
 
                 BannedUser.objects.create(
                     user=target_user,
                     banned_by=banned_by_user,
                     reason=reason,
-                    group=None,
-                    organizer=None
+                    group=None, # Explicitly set to None for site-wide ban
+                    organizer=None # Explicitly set to None for site-wide ban
                 )
-                # Delete all RSVPs for this user
-                RSVP.objects.filter(user=target_user).delete()
-                return JsonResponse({'status': 'success', 'message': f'{target_user.username} has been banned sitewide.'})
+                return JsonResponse({'status': 'success', 'message': f'{target_user.username} has been site-wide banned.'})
             else:
                 return JsonResponse({'status': 'error', 'message': 'Unsupported ban type for this action.'}, status=400)
 
@@ -333,7 +332,7 @@ def ban_user(request):
 def administration(request):
     # Get all users including superusers with pagination
     all_users = User.objects.all().prefetch_related('profile')
-    user_paginator = Paginator(all_users, 1)
+    user_paginator = Paginator(all_users, 10)
     user_page = request.GET.get('user_page', 1)
     try:
         users_to_promote = user_paginator.page(user_page)

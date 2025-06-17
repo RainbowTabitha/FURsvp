@@ -707,219 +707,222 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const notificationsDropdown = document.getElementById('notificationsDropdown');
-            const unreadBadge = document.getElementById('unread-notifications-badge');
-            const mobileUnreadBadge = document.getElementById('mobile-unread-notifications-badge');
-            const notificationsList = document.getElementById('notifications-list');
-            const noNotificationsMessageItem = document.getElementById('no-notifications-message-item');
-            const clearNotificationsBtnElement = document.getElementById('clear-notifications-btn');
 
-            // Function to fetch and display notifications
-            async function fetchNotifications() {
-                try {
-                    const response = await fetch('/accounts/notifications/');
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const data = await response.json();
-                    const notifications = data.notifications;
-                    const unreadCount = data.unread_count;
+            if (notificationsDropdown) {
+                const unreadBadge = document.getElementById('unread-notifications-badge');
+                const mobileUnreadBadge = document.getElementById('mobile-unread-notifications-badge');
+                const notificationsList = document.getElementById('notifications-list');
+                const noNotificationsMessageItem = document.getElementById('no-notifications-message-item');
+                const clearNotificationsBtnElement = document.getElementById('clear-notifications-btn');
 
-                    // Update both desktop and mobile badges
-                    if (unreadCount > 0) {
-                        unreadBadge.textContent = unreadCount;
-                        mobileUnreadBadge.textContent = unreadCount;
-                        unreadBadge.style.display = 'block';
-                        mobileUnreadBadge.style.display = 'block';
-                    } else {
-                        unreadBadge.style.display = 'none';
-                        mobileUnreadBadge.style.display = 'none';
-                    }
-
-                    // Update desktop notifications
-                    updateNotificationsList(notificationsList, notifications, noNotificationsMessageItem);
-
-                } catch (error) {
-                    console.error('Error fetching notifications:', error);
-                }
-            }
-
-            // Function to update a notifications list
-            function updateNotificationsList(list, notifications, noMessageElement) {
-                // Clear existing dynamically added notifications
-                Array.from(list.querySelectorAll('.notification-item')).forEach(item => {
-                    item.remove();
-                });
-
-                if (notifications && notifications.length > 0) {
-                    noMessageElement.style.display = 'none';
-                    notifications.forEach(notification => {
-                        const notificationItem = document.createElement('div');
-                        notificationItem.classList.add('notification-item');
-                        notificationItem.setAttribute('data-notification-id', notification.id);
-                        if (!notification.is_read) {
-                            notificationItem.classList.add('unread');
+                // Function to fetch and display notifications
+                async function fetchNotifications() {
+                    try {
+                        const response = await fetch('/accounts/notifications/');
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
                         }
+                        const data = await response.json();
+                        const notifications = data.notifications;
+                        const unreadCount = data.unread_count;
 
-                        const notificationText = document.createElement('div');
-                        notificationText.classList.add('notification-item-text');
-                        if (notification.event_name) {
-                            notificationText.innerHTML = `<strong>${notification.event_name}</strong><br>${notification.message}`;
+                        // Update both desktop and mobile badges
+                        if (unreadCount > 0) {
+                            unreadBadge.textContent = unreadCount;
+                            mobileUnreadBadge.textContent = unreadCount;
+                            unreadBadge.style.display = 'block';
+                            mobileUnreadBadge.style.display = 'block';
                         } else {
-                            notificationText.textContent = notification.message;
-                        }
-                        notificationItem.appendChild(notificationText);
-
-                        const notificationDate = document.createElement('div');
-                        notificationDate.classList.add('notification-item-date');
-                        notificationDate.textContent = new Date(notification.timestamp).toLocaleString();
-                        notificationItem.appendChild(notificationDate);
-
-                        // Add click event listener to mark as read and redirect
-                        notificationItem.addEventListener('click', async () => {
-                            await markNotificationAsRead(notification.id);
-                            if (notification.link) {
-                                window.location.href = notification.link;
-                            }
-                        });
-                        list.insertBefore(notificationItem, noMessageElement);
-                    });
-                } else {
-                    noMessageElement.style.display = 'block';
-                }
-            }
-
-            // Function to mark notification as read
-            async function markNotificationAsRead(notificationId) {
-                try {
-                    const response = await fetch('/accounts/notifications/mark_as_read/', {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRFToken': getCookie('csrftoken'),
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ notification_ids: [notificationId] })
-                    });
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    // Update UI: remove unread class and decrement badge
-                    const notificationItem = document.querySelector(`[data-notification-id="${notificationId}"]`);
-                    if (notificationItem) {
-                        notificationItem.classList.remove('unread');
-                    }
-                    let currentUnreadCount = parseInt(unreadBadge.textContent);
-                    if (currentUnreadCount > 0) {
-                        currentUnreadCount--;
-                        unreadBadge.textContent = currentUnreadCount;
-                        mobileUnreadBadge.textContent = currentUnreadCount;
-                        if (currentUnreadCount === 0) {
                             unreadBadge.style.display = 'none';
                             mobileUnreadBadge.style.display = 'none';
                         }
+
+                        // Update desktop notifications
+                        updateNotificationsList(notificationsList, notifications, noNotificationsMessageItem);
+
+                    } catch (error) {
+                        console.error('Error fetching notifications:', error);
                     }
-                } catch (error) {
-                    console.error('Error marking notification as read:', error);
                 }
-            }
 
-            // Function to clear all notifications
-            async function clearAllNotifications() {
-                // Create and show a Bootstrap modal for confirmation
-                const modalHtml = `
-                    <div class="modal fade" id="clearNotificationsModal" tabindex="-1" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">
-                                        <i class="material-icons me-2">delete</i>
-                                        Clear Notifications
-                                    </h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <p>Are you sure you want to clear all notifications? This action cannot be undone.</p>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="button" class="btn btn-danger" id="confirmClearNotifications">
-                                        <i class="material-icons me-1">delete</i>
-                                        Clear All Notifications
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
+                // Function to update a notifications list
+                function updateNotificationsList(list, notifications, noMessageElement) {
+                    // Clear existing dynamically added notifications
+                    Array.from(list.querySelectorAll('.notification-item')).forEach(item => {
+                        item.remove();
+                    });
 
-                // Add modal to body
-                document.body.insertAdjacentHTML('beforeend', modalHtml);
-                const modal = new bootstrap.Modal(document.getElementById('clearNotificationsModal'));
-                modal.show();
+                    if (notifications && notifications.length > 0) {
+                        noMessageElement.style.display = 'none';
+                        notifications.forEach(notification => {
+                            const notificationItem = document.createElement('div');
+                            notificationItem.classList.add('notification-item');
+                            notificationItem.setAttribute('data-notification-id', notification.id);
+                            if (!notification.is_read) {
+                                notificationItem.classList.add('unread');
+                            }
 
-                // Handle confirmation
-                document.getElementById('confirmClearNotifications').addEventListener('click', async () => {
+                            const notificationText = document.createElement('div');
+                            notificationText.classList.add('notification-item-text');
+                            if (notification.event_name) {
+                                notificationText.innerHTML = `<strong>${notification.event_name}</strong><br>${notification.message}`;
+                            } else {
+                                notificationText.textContent = notification.message;
+                            }
+                            notificationItem.appendChild(notificationText);
+
+                            const notificationDate = document.createElement('div');
+                            notificationDate.classList.add('notification-item-date');
+                            notificationDate.textContent = new Date(notification.timestamp).toLocaleString();
+                            notificationItem.appendChild(notificationDate);
+
+                            // Add click event listener to mark as read and redirect
+                            notificationItem.addEventListener('click', async () => {
+                                await markNotificationAsRead(notification.id);
+                                if (notification.link) {
+                                    window.location.href = notification.link;
+                                }
+                            });
+                            list.insertBefore(notificationItem, noMessageElement);
+                        });
+                    } else {
+                        noMessageElement.style.display = 'block';
+                    }
+                }
+
+                // Function to mark notification as read
+                async function markNotificationAsRead(notificationId) {
                     try {
-                        const response = await fetch('/accounts/notifications/purge_read/', {
+                        const response = await fetch('/accounts/notifications/mark_as_read/', {
                             method: 'POST',
                             headers: {
                                 'X-CSRFToken': getCookie('csrftoken'),
                                 'Content-Type': 'application/json'
-                            }
+                            },
+                            body: JSON.stringify({ notification_ids: [notificationId] })
                         });
                         if (!response.ok) {
                             throw new Error(`HTTP error! status: ${response.status}`);
                         }
-                        
-                        // Clear notifications from both desktop and mobile UI
-                        Array.from(notificationsList.querySelectorAll('.notification-item')).forEach(item => {
-                            item.remove();
-                        });
-
-                        noNotificationsMessageItem.style.display = 'block';
-                        unreadBadge.style.display = 'none';
-                        mobileUnreadBadge.style.display = 'none';
-                        unreadBadge.textContent = '0';
-                        mobileUnreadBadge.textContent = '0';
-
-                        // Hide and remove the modal
-                        modal.hide();
-                        document.getElementById('clearNotificationsModal').remove();
-                    } catch (error) {
-                        console.error('Error clearing notifications:', error);
-                        alert('Failed to clear notifications. Please try again.');
-                    }
-                });
-
-                // Clean up modal when hidden
-                document.getElementById('clearNotificationsModal').addEventListener('hidden.bs.modal', function () {
-                    this.remove();
-                });
-            }
-
-            // Get CSRF token
-            function getCookie(name) {
-                let cookieValue = null;
-                if (document.cookie && document.cookie !== '') {
-                    const cookies = document.cookie.split(';');
-                    for (let i = 0; i < cookies.length; i++) {
-                        const cookie = cookies[i].trim();
-                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                            break;
+                        // Update UI: remove unread class and decrement badge
+                        const notificationItem = document.querySelector(`[data-notification-id="${notificationId}"]`);
+                        if (notificationItem) {
+                            notificationItem.classList.remove('unread');
                         }
+                        let currentUnreadCount = parseInt(unreadBadge.textContent);
+                        if (currentUnreadCount > 0) {
+                            currentUnreadCount--;
+                            unreadBadge.textContent = currentUnreadCount;
+                            mobileUnreadBadge.textContent = currentUnreadCount;
+                            if (currentUnreadCount === 0) {
+                                unreadBadge.style.display = 'none';
+                                mobileUnreadBadge.style.display = 'none';
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error marking notification as read:', error);
                     }
                 }
-                return cookieValue;
+
+                // Function to clear all notifications
+                async function clearAllNotifications() {
+                    // Create and show a Bootstrap modal for confirmation
+                    const modalHtml = `
+                        <div class="modal fade" id="clearNotificationsModal" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">
+                                            <i class="material-icons me-2">delete</i>
+                                            Clear Notifications
+                                        </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Are you sure you want to clear all notifications? This action cannot be undone.</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="button" class="btn btn-danger" id="confirmClearNotifications">
+                                            <i class="material-icons me-1">delete</i>
+                                            Clear All Notifications
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    // Add modal to body
+                    document.body.insertAdjacentHTML('beforeend', modalHtml);
+                    const modal = new bootstrap.Modal(document.getElementById('clearNotificationsModal'));
+                    modal.show();
+
+                    // Handle confirmation
+                    document.getElementById('confirmClearNotifications').addEventListener('click', async () => {
+                        try {
+                            const response = await fetch('/accounts/notifications/purge_read/', {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRFToken': getCookie('csrftoken'),
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+                            
+                            // Clear notifications from both desktop and mobile UI
+                            Array.from(notificationsList.querySelectorAll('.notification-item')).forEach(item => {
+                                item.remove();
+                            });
+
+                            noNotificationsMessageItem.style.display = 'block';
+                            unreadBadge.style.display = 'none';
+                            mobileUnreadBadge.style.display = 'none';
+                            unreadBadge.textContent = '0';
+                            mobileUnreadBadge.textContent = '0';
+
+                            // Hide and remove the modal
+                            modal.hide();
+                            document.getElementById('clearNotificationsModal').remove();
+                        } catch (error) {
+                            console.error('Error clearing notifications:', error);
+                            alert('Failed to clear notifications. Please try again.');
+                        }
+                    });
+
+                    // Clean up modal when hidden
+                    document.getElementById('clearNotificationsModal').addEventListener('hidden.bs.modal', function () {
+                        this.remove();
+                    });
+                }
+
+                // Get CSRF token
+                function getCookie(name) {
+                    let cookieValue = null;
+                    if (document.cookie && document.cookie !== '') {
+                        const cookies = document.cookie.split(';');
+                        for (let i = 0; i < cookies.length; i++) {
+                            const cookie = cookies[i].trim();
+                            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                break;
+                            }
+                        }
+                    }
+                    return cookieValue;
+                }
+
+                // Event listeners for dropdown show to fetch latest notifications
+                notificationsDropdown.addEventListener('shown.bs.dropdown', fetchNotifications);
+
+                // Event listeners for clear all buttons
+                clearNotificationsBtnElement.addEventListener('click', clearAllNotifications);
+
+                // Initial fetch on page load
+                fetchNotifications();
             }
-
-            // Event listeners for dropdown show to fetch latest notifications
-            notificationsDropdown.addEventListener('shown.bs.dropdown', fetchNotifications);
-
-            // Event listeners for clear all buttons
-            clearNotificationsBtnElement.addEventListener('click', clearAllNotifications);
-
-            // Initial fetch on page load
-            fetchNotifications();
         });
     </script>
     {% endblock %}
