@@ -92,7 +92,6 @@ def profile(request):
                 
                 # Save profile settings
                 profile = profile_form.save()
-                create_notification(request.user, 'Your profile settings have been updated.', link='/profile')
                 return redirect('profile')
             else:
                 print("Form errors:", profile_form.errors)  # Debug print
@@ -437,7 +436,10 @@ def user_search_autocomplete(request):
     is_organizer_filter = request.GET.get('is_organizer', 'false').lower() == 'true'
 
     if query:
-        users_query = User.objects.filter(username__icontains=query)
+        users_query = User.objects.filter(
+            Q(username__icontains=query) | 
+            Q(profile__display_name__icontains=query)
+        ).select_related('profile')
 
         if exclude_current:
             users_query = users_query.exclude(id=request.user.id)
@@ -445,8 +447,13 @@ def user_search_autocomplete(request):
         if is_organizer_filter:
             users_query = users_query.filter(profile__is_approved_organizer=True)
 
-        users = users_query.values('id', 'username', 'email')[:10]
-        results = [{'id': user['id'], 'text': f"{user['username']} ({user['email']})", 'username': user['username']} for user in users]
+        users = users_query[:10]
+        results = [{
+            'id': user.id, 
+            'text': f"{user.profile.get_display_name()} ({user.username})",
+            'username': user.username,
+            'display_name': user.profile.get_display_name()
+        } for user in users]
         return JsonResponse({'results': results})
     return JsonResponse({'results': []})
 

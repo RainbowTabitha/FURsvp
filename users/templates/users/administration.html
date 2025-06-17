@@ -40,7 +40,7 @@
                             <span class="input-group-text bg-light">
                                 <i class="material-icons">search</i>
                             </span>
-                            <input type="text" id="userSearchInput" class="form-control" placeholder="Search users by username or email..." list="userSuggestions">
+                            <input type="text" id="userSearchInput" class="form-control" placeholder="Search users by display name or username..." list="userSuggestions">
                             <datalist id="userSuggestions"></datalist>
                         </div>
                     </div>
@@ -59,7 +59,10 @@
                                 <tbody>
                                     {% for user_obj in users_to_promote %}
                                     <tr data-user-id="{{ user_obj.id }}">
-                                        <td>{{ user_obj.profile.get_display_name }}</td>
+                                        <td>
+                                            <span class="fw-medium">{{ user_obj.profile.get_display_name }}</span>
+                                            <small class="text-muted d-block">({{ user_obj.username }})</small>
+                                        </td>
                                         <td>{{ user_obj.email }}</td>
                                         <td>
                                             <span class="badge {% if user_obj.is_superuser %}bg-success{% else %}bg-danger{% endif %} py-2 px-3 rounded-pill fw-normal">
@@ -470,8 +473,7 @@
                                 userSuggestionsDatalist.innerHTML = ''; // Clear previous suggestions
                                 data.results.forEach(user => {
                                     const option = document.createElement('option');
-                                    option.value = user.username + ' (' + user.email + ')'; // Display both username and email
-                                    // No need to store user ID in datalist option if we are filtering directly from table
+                                    option.value = user.text; // Use the formatted text from the backend
                                     userSuggestionsDatalist.appendChild(option);
                                 });
                             })
@@ -545,38 +547,62 @@
         const adminTabs = document.getElementById('adminTabs');
         if (adminTabs) {
             const tabButtons = adminTabs.querySelectorAll('.nav-link');
+            
+            // Function to update URL with both tab and pagination state
+            function updateUrlWithState(tabId, userPage, groupPage) {
+                const params = new URLSearchParams(window.location.search);
+                if (userPage) params.set('user_page', userPage);
+                if (groupPage) params.set('group_page', groupPage);
+                params.set('tab', tabId);
+                const newUrl = `${window.location.pathname}?${params.toString()}`;
+                window.history.pushState({}, '', newUrl);
+            }
+
             tabButtons.forEach(button => {
                 button.addEventListener('shown.bs.tab', function (event) {
-                    localStorage.setItem('lastAdminTab', event.target.id);
-                    // Store the current pagination state when switching tabs
-                    const userPage = new URLSearchParams(window.location.search).get('user_page');
-                    const groupPage = new URLSearchParams(window.location.search).get('group_page');
-                    if (userPage) localStorage.setItem('lastUserPage', userPage);
-                    if (groupPage) localStorage.setItem('lastGroupPage', groupPage);
+                    const tabId = event.target.id;
+                    const currentUserPage = new URLSearchParams(window.location.search).get('user_page');
+                    const currentGroupPage = new URLSearchParams(window.location.search).get('group_page');
+                    
+                    // Store the current state
+                    localStorage.setItem('lastAdminTab', tabId);
+                    if (currentUserPage) localStorage.setItem('lastUserPage', currentUserPage);
+                    if (currentGroupPage) localStorage.setItem('lastGroupPage', currentGroupPage);
+                    
+                    // Update URL with current state
+                    updateUrlWithState(tabId, currentUserPage, currentGroupPage);
                 });
             });
 
-            // Restore the last active tab
-            const lastTab = localStorage.getItem('lastAdminTab');
-            if (lastTab) {
-                const lastTabButton = document.getElementById(lastTab);
-                if (lastTabButton) {
-                    const bsTab = new bootstrap.Tab(lastTabButton);
+            // Restore state on page load
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabParam = urlParams.get('tab');
+            const userPage = urlParams.get('user_page');
+            const groupPage = urlParams.get('group_page');
+            
+            // If we have a tab parameter, use it
+            if (tabParam) {
+                const tabButton = document.getElementById(tabParam);
+                if (tabButton) {
+                    const bsTab = new bootstrap.Tab(tabButton);
                     bsTab.show();
                 }
-            }
-
-            // Restore pagination state when the page loads
-            const urlParams = new URLSearchParams(window.location.search);
-            if (!urlParams.has('user_page') && !urlParams.has('group_page')) {
-                const lastUserPage = localStorage.getItem('lastUserPage');
-                const lastGroupPage = localStorage.getItem('lastGroupPage');
-                const currentTab = localStorage.getItem('lastAdminTab');
-                
-                if (currentTab === 'organizers-tab' && lastUserPage) {
-                    window.location.href = `?user_page=${lastUserPage}`;
-                } else if (currentTab === 'groups-tab' && lastGroupPage) {
-                    window.location.href = `?group_page=${lastGroupPage}`;
+            } else {
+                // Otherwise use the stored tab
+                const lastTab = localStorage.getItem('lastAdminTab');
+                if (lastTab) {
+                    const lastTabButton = document.getElementById(lastTab);
+                    if (lastTabButton) {
+                        const bsTab = new bootstrap.Tab(lastTabButton);
+                        bsTab.show();
+                        
+                        // If we don't have pagination params but have stored ones, update URL
+                        if (!userPage && !groupPage) {
+                            const lastUserPage = localStorage.getItem('lastUserPage');
+                            const lastGroupPage = localStorage.getItem('lastGroupPage');
+                            updateUrlWithState(lastTab, lastUserPage, lastGroupPage);
+                        }
+                    }
                 }
             }
         }
