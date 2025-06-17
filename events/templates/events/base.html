@@ -321,16 +321,21 @@
                 border-top-left-radius: 15px;
                 border-top-right-radius: 15px;
             }
-
+            .mobile-bottom-nav .nav-link.home-link {
+                padding-left: 0.5rem;
+            }
+            .mobile-bottom-nav .nav-link.logout-link {
+                padding-right: 0.5rem;
+            }
             .mobile-bottom-nav .nav-link {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 color: var(--primary-color);
                 font-size: 0.75rem;
-                padding: 0.5rem 0.2rem;
+                padding: 0.5rem 0.1rem;
                 flex-grow: 1;
-                margin-right: 25px;
+                margin-right: 0;
                 text-align: center;
                 text-decoration: none;
                 transition: all 0.3s ease;
@@ -528,10 +533,9 @@
                     <li class="nav-item">
                         <form action="{% url 'logout' %}" method="post" class="d-inline">
                             {% csrf_token %}
-                            <button type="submit" class="nav-link"
-                                style="background: none; border: none; padding: 0; cursor: pointer;">
-                                <i class="material-icons"
-                                    style="vertical-align: middle; line-height: 1; font-size: 20px;">logout</i> Logout
+                            <button type="submit" class="nav-link" style="background: none; border: none; padding: 0; cursor: pointer; display: flex; flex-direction: column; align-items: center; color: #666; font-size: 11px; text-align: center;">
+                                <i class="material-icons">logout</i>
+                                <span>Logout</span>
                             </button>
                         </form>
                     </li>
@@ -577,28 +581,30 @@
 
     <!-- Mobile Bottom Navigation -->
     <nav class="mobile-bottom-nav">
-        <a href="{% url 'home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+        <a href="{% url 'home' %}" class="nav-link home-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
             <i class="material-icons">home</i>
             <span>Home</span>
         </a>
         {% if user.is_authenticated %}
         <a href="{% url 'notifications_page' %}" class="nav-link" id="mobileNotificationsLink">
             <i class="material-icons" id="mobileNotificationsIcon">notifications</i>
-            <span>Notifications</span>
+            <span>Alerts</span>
         </a>
+        {% endif %}
         {% if user.profile.is_approved_organizer or user.delegated_groups_as_delegate.exists %}
         <a href="{% url 'create_event' %}" class="nav-link">
             <i class="material-icons">add</i>
             <span>Create</span>
         </a>
         {% endif %}
+        {% if user.is_authenticated %}
         <a href="{% url 'profile' %}" class="nav-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
             <i class="material-icons">person</i>
             <span>Profile</span>
         </a>
         <form action="{% url 'logout' %}" method="post" class="d-inline">
             {% csrf_token %}
-            <button type="submit" class="nav-link" style="background: none; border: none; padding: 0; cursor: pointer; display: flex; flex-direction: column; align-items: center; color: #666; font-size: 11px; padding: 8px 20px; min-width: 100px; text-align: center;">
+            <button type="submit" class="nav-link logout-link">
                 <i class="material-icons">logout</i>
                 <span>Logout</span>
             </button>
