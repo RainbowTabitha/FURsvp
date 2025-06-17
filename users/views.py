@@ -325,7 +325,7 @@ def ban_user(request):
 def administration(request):
     # Get all users including superusers with pagination
     all_users = User.objects.all().prefetch_related('profile')
-    user_paginator = Paginator(all_users, 20)
+    user_paginator = Paginator(all_users, 10)
     user_page = request.GET.get('user_page', 1)
     try:
         users_to_promote = user_paginator.page(user_page)
