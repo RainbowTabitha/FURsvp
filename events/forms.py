@@ -29,6 +29,18 @@ class EventForm(forms.ModelForm):
     )
     description = forms.CharField(widget=TinyMCE(attrs={'cols': 80, 'rows': 30}))
     
+    # Add new checkbox fields
+    eula_agreement = forms.BooleanField(
+        required=True,
+        label='I agree to the End User License Agreement (EULA)',
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+    state_agreement = forms.BooleanField(
+        required=True,
+        label='I confirm that this event is located in the same state as this FURsvp instance',
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+    
     class Meta:
         model = Event
         fields = [

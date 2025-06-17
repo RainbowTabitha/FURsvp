@@ -201,6 +201,42 @@
                             {{ form.description }}
                         </div>
 
+                        <!-- Agreement Checkboxes -->
+                        <div class="mb-4">
+                            <div class="card bg-light border-0">
+                                <div class="card-body">
+                                    <h3 class="h5 fw-bold mb-3">Required Agreements</h3>
+                                    
+                                    <div class="form-check mb-3">
+                                        {{ form.eula_agreement }}
+                                        <label class="form-check-label" for="{{ form.eula_agreement.id_for_label }}">
+                                            {{ form.eula_agreement.label }}
+                                            <a href="{% url 'eula' %}" target="_blank" class="ms-1">
+                                                <i class="material-icons align-middle" style="font-size: 1rem;">open_in_new</i>
+                                            </a>
+                                        </label>
+                                        {% if form.eula_agreement.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.eula_agreement.errors }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="form-check">
+                                        {{ form.state_agreement }}
+                                        <label class="form-check-label" for="{{ form.state_agreement.id_for_label }}">
+                                            {{ form.state_agreement.label }}
+                                        </label>
+                                        {% if form.state_agreement.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.state_agreement.errors }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="d-grid gap-2 mt-5">
                             <button type="submit" class="btn btn-primary btn-lg">
                                 <i class="material-icons me-2">add</i> Create Event

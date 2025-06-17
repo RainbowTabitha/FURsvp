@@ -1,0 +1,322 @@
+{% extends 'events/base.html' %}
+{% block title %}Frequently Asked Questions - FURsvp{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4 p-md-5">
+                    <div class="text-center mb-5">
+                        <h1 class="display-5 fw-bold text-primary mb-3">Frequently Asked Questions</h1>
+                        <p class="lead text-muted">Find answers to common questions about FURsvp</p>
+                    </div>
+
+                    <div class="accordion" id="faqAccordion">
+                        <!-- General Questions -->
+                        <div class="mb-4">
+                            <h2 class="h4 fw-bold mb-4">General Questions</h2>
+                            
+                            <div class="accordion-item border-0 mb-3">
+                                <h3 class="accordion-header">
+                                    <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#whatIsFursvp">
+                                        What is FURsvp?
+                                    </button>
+                                </h3>
+                                <div id="whatIsFursvp" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        FURsvp is a free tool designed for event organizers to gauge attendance prior to their events. It helps you create, manage, and track RSVPs for your community gatherings in a safe and organized way.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item border-0 mb-3">
+                                <h3 class="accordion-header">
+                                    <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#isItFree">
+                                        Is FURsvp free to use?
+                                    </button>
+                                </h3>
+                                <div id="isItFree" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        Yes, FURsvp is completely free to use for both event organizers and attendees. There are no hidden fees or premium features.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- For Group Organizers -->
+                        <div class="mb-4">
+                            <h2 class="h4 fw-bold mb-4">For Group Organizers</h2>
+
+                            <div class="accordion-item border-0 mb-3">
+                                <h3 class="accordion-header">
+                                    <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#howToCreate">
+                                        How do I create an event?
+                                    </button>
+                                </h3>
+                                <div id="howToCreate" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        To create an event, you'll need to be an approved organizer. Once approved, click the "Create Event" button in the navigation bar. Fill out the event details including title, date, location, and any specific requirements. You can also set capacity limits and add custom questions for attendees.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item border-0 mb-3">
+                                <h3 class="accordion-header">
+                                    <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#organizerApproval">
+                                        How do I become an approved organizer?
+                                    </button>
+                                </h3>
+                                <div id="organizerApproval" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        To become an approved organizer, you'll need to be verified by our moderation team. This helps ensure the safety and quality of events on the platform. Contact us at <a href="mailto:info@tabithahanegan.com">info@tabithahanegan.com</a> to start the approval process.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item border-0 mb-3">
+                                <h3 class="accordion-header">
+                                    <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#stateRestrictions">
+                                        Can I post events for any state?
+                                    </button>
+                                </h3>
+                                <div id="stateRestrictions" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        <p>No, you can only post events for the state in which the event is physically located in, in the instance that the state is for the same state as the FURsvp instance. This restriction helps ensure:</p>
+                                        <ul>
+                                            <li>Better local event management</li>
+                                            <li>Compliance with state-specific regulations</li>
+                                            <li>More accurate event information</li>
+                                            <li>Proper verification of event details</li>
+                                        </ul>
+                                        <div class="alert alert-warning mt-3">
+                                            <p class="mb-0"><strong>Important:</strong> Attempting to post events for states other than where your event is located may result in account suspension or termination and / or removal of your event.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item border-0 mb-3">
+                                <h3 class="accordion-header">
+                                    <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#manageEvent">
+                                        How do I manage my event?
+                                    </button>
+                                </h3>
+                                <div id="manageEvent" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        Once your event is created, you can manage it from your profile page. You can view RSVPs, send messages to attendees, update event details, and cancel or reschedule if needed. You can also assign assistants to help manage the event.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item border-0 mb-3">
+                                <h3 class="accordion-header">
+                                    <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#assignAssistants">
+                                        How do I assign assistants to my event?
+                                    </button>
+                                </h3>
+                                <div id="assignAssistants" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        <p>To assign assistants to your group:</p>
+                                        <ol>
+                                            <li>Go to your profile</li>
+                                            <li>Click on the "Manage Assistants" button</li>
+                                            <li>Use the search field to find users by name or username</li>
+                                            <li>Click "Add" next to the user you want to assign</li>
+                                        </ol>
+                                        <p>Assistants can help you:</p>
+                                        <ul>
+                                            <li>View and manage RSVPs</li>
+                                            <li>Send messages to attendees</li>
+                                            <li>Update event details</li>
+                                            <li>Monitor event capacity</li>
+                                        </ul>
+                                        <p>Note: You can remove assistants at any time from the same management page.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- For Attendees -->
+                        <div class="mb-4">
+                            <h2 class="h4 fw-bold mb-4">For Attendees</h2>
+
+                            <div class="accordion-item border-0 mb-3">
+                                <h3 class="accordion-header">
+                                    <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#howToRsvp">
+                                        How do I RSVP to an event?
+                                    </button>
+                                </h3>
+                                <div id="howToRsvp" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        Browse the events page to find an event you're interested in. Click on the event to view its details, then click on a status under RSVP. You can choose to RSVP, not attend, or maybe attend. You may need to answer some questions or provide additional information depending on the event requirements.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item border-0 mb-3">
+                                <h3 class="accordion-header">
+                                    <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#cancelRsvp">
+                                        Can I cancel my RSVP?
+                                    </button>
+                                </h3>
+                                <div id="cancelRsvp" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        Yes, you can cancel your RSVP at any time before the event. Go to your profile page, find the event in your RSVPs, and click the "Cancel RSVP" button. It's courteous to cancel as soon as possible if you know you can't attend.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item border-0 mb-3">
+                                <h3 class="accordion-header">
+                                    <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#eventUpdates">
+                                        How will I know if an event changes?
+                                    </button>
+                                </h3>
+                                <div id="eventUpdates" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        You'll receive notifications for any changes to events you've RSVP'd to, including updates to the time, location, or if the event is canceled. Make sure your notification settings are enabled in your profile.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Safety and Privacy -->
+                        <div class="mb-4">
+                            <h2 class="h4 fw-bold mb-4">Safety and Privacy</h2>
+
+                            <div class="accordion-item border-0 mb-3">
+                                <h3 class="accordion-header">
+                                    <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#reportIssue">
+                                        How do I report an issue?
+                                    </button>
+                                </h3>
+                                <div id="reportIssue" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        If you encounter any issues or violations of our terms of service, please contact our moderation team at <a href="mailto:info@tabithahanegan.com">info@tabithahanegan.com</a>. We take all reports seriously and will investigate promptly. Please do not report events that are not in violation of our terms of service, as this will be considered abuse of the reporting system. Additionally, please do not take situations into your own hands and report them to the moderation team, as this will be considered abuse of the reporting system.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item border-0 mb-3">
+                                <h3 class="accordion-header">
+                                    <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#privacy">
+                                        How is my information protected?
+                                    </button>
+                                </h3>
+                                <div id="privacy" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        We take privacy seriously. Your personal information is only shared with event organizers when you RSVP to their event. You can control what information is visible on your profile through your privacy settings.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Legal and Liability -->
+                        <div class="mb-4">
+                            <h2 class="h4 fw-bold mb-4">Legal and Liability</h2>
+
+                            <div class="accordion-item border-0 mb-3">
+                                <h3 class="accordion-header">
+                                    <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#liability">
+                                        What is FURsvp's responsibility regarding events?
+                                    </button>
+                                </h3>
+                                <div id="liability" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        <p>FURsvp is a platform for event organization and RSVP management only. We are not responsible for:</p>
+                                        <ul>
+                                            <li>The conduct of event organizers or attendees</li>
+                                            <li>The safety or security of event venues</li>
+                                            <li>Any incidents or accidents that occur prior, during, or after events</li>
+                                            <li>The quality or accuracy of event information provided by organizers</li>
+                                            <li>Any disputes between event organizers and attendees</li>
+                                        </ul>
+                                        <p>By using FURsvp, you acknowledge that you attend events at your own risk and that FURsvp is not liable for any damages, injuries, or losses that may occur during events.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item border-0 mb-3">
+                                <h3 class="accordion-header">
+                                    <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#organizerLiability">
+                                        What are event organizers responsible for?
+                                    </button>
+                                </h3>
+                                <div id="organizerLiability" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        <p>As an event organizer, you are responsible for:</p>
+                                        <ul>
+                                            <li>Ensuring your event complies with all local, state, and federal laws</li>
+                                            <li>Providing accurate and complete event information</li>
+                                            <li>Maintaining appropriate safety measures at your event</li>
+                                            <li>Managing attendee behavior and resolving conflicts</li>
+                                            <li>Obtaining necessary permits, licenses, or insurance</li>
+                                            <li>Handling any incidents or emergencies that occur during your event</li>
+                                            <li>Protecting attendee privacy and personal information</li>
+                                        </ul>
+                                        <p>We recommend that all event organizers:</p>
+                                        <ul>
+                                            <li>Have appropriate liability insurance</li>
+                                            <li>Create and communicate clear event rules and guidelines</li>
+                                            <li>Have a plan for handling emergencies</li>
+                                            <li>Keep records of important event communications</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item border-0 mb-3">
+                                <h3 class="accordion-header">
+                                    <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#assetUsage">
+                                        Can I use FURsvp's assets in my own projects?
+                                    </button>
+                                </h3>
+                                <div id="assetUsage" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body">
+                                        <p>While FURsvp is open source, our assets are protected and have specific usage restrictions:</p>
+                                        <ul>
+                                            <li>All logos, graphics, and branding elements are proprietary and cannot be used in public projects</li>
+                                            <li>The FURsvp name and branding cannot be used without explicit permission</li>
+                                            <li>You may not use our assets to create derivative works or competing services</li>
+                                            <li>Any unauthorized use of our assets may result in legal action</li>
+                                        </ul>
+                                        <div class="alert alert-warning mt-3">
+                                            <p class="mb-0"><strong>Important:</strong> The open source nature of our code does not grant permission to use our assets. All assets remain the exclusive property of FURsvp.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-5">
+                        <p class="mb-0">Still have questions? Contact us at <a href="mailto:info@tabithahanegan.com" class="text-primary">info@tabithahanegan.com</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.accordion-button:not(.collapsed) {
+    background-color: var(--primary-color);
+    color: black;
+}
+
+.accordion-button:focus {
+    box-shadow: none;
+    border-color: rgba(0,0,0,.125);
+}
+
+.accordion-button::after {
+    background-size: 1.2rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.accordion-button:not(.collapsed)::after {
+    filter: brightness(0) invert(0);
+}
+</style>
+{% endblock %} 

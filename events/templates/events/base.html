@@ -536,7 +536,7 @@
                         <a class="nav-link" href="{% url 'create_event' %}">
                             <i class="material-icons"
                                 style="vertical-align: middle; line-height: 1; font-size: 20px;">add_circle</i> Create
-                            Events
+                            Event
                         </a>
                     </li>
                     {% endif %}
@@ -644,7 +644,7 @@
             {% else %}
             <img src="{% static 'fursvp-logo.png' %}" alt="FURsvp Logo" class="footer-logo">
             {% endif %}
-            <div class="d-flex gap-2 justify-content-center mb-4">
+            <div class="d-flex gap-2 justify-content-center mb-2">
                 <a href="mailto:info@tabithahanegan.com"
                     class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn">
                     <i class="material-icons me-1">email</i> Contact Us
@@ -652,6 +652,24 @@
                 <a href="https://github.com/furconnect/fursvp" target="_blank"
                     class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn">
                     <i class="material-icons me-1">code</i> GitHub
+                </a>
+            </div>
+            <div class="d-flex gap-2 justify-content-center mb-4">
+                <a href="{% url 'terms' %}"
+                    class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn">
+                    <i class="material-icons me-1">gavel</i> Terms of Service
+                </a>
+                <a href="{% url 'faq' %}"
+                    class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn">
+                    <i class="material-icons me-1">help</i> FAQ
+                </a>
+                <a href="{% url 'eula' %}"
+                    class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn">
+                    <i class="material-icons me-1">description</i> EULA
+                </a>
+                <a href="{% url 'privacy' %}"
+                    class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn">
+                    <i class="material-icons me-1">privacy_tip</i> Privacy
                 </a>
             </div>
             <div class="footer-meta"

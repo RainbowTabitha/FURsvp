@@ -458,3 +458,14 @@ def uncancel_event(request, event_id):
     
     return redirect('event_detail', event_id=event.id)
 
+def terms(request):
+    return render(request, 'events/terms.html')
+
+def faq(request):
+    return render(request, 'events/faq.html')
+
+def eula(request):
+    return render(request, 'events/eula.html')
+
+def privacy(request):
+    return render(request, 'events/privacy.html')
