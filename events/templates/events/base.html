@@ -105,8 +105,11 @@
 
         .footer {
             background-color: var(--secondary-color);
-            padding: 3rem 0;
+            padding: 3.5rem 0;
             margin-top: auto;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
         }
 
         .footer h5 {
@@ -313,6 +316,168 @@
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
             padding: 0;
         }
+
+        /* Mobile Bottom Navigation */
+        @media (max-width: 768px) {
+            .mobile-bottom-nav {
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: white;
+                box-shadow: 0 -6px 15px rgba(0, 0, 0, 0.15);
+                z-index: 1000;
+                padding: 8px 20px;
+                justify-content: space-between;
+                border-top-left-radius: 15px;
+                border-top-right-radius: 15px;
+            }
+
+            .mobile-bottom-nav .nav-link {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                color: #666;
+                font-size: 11px;
+                padding: 8px 20px;
+                min-width: 100px;
+                text-align: center;
+            }
+
+            .mobile-bottom-nav .nav-link.active {
+                color: var(--primary-color);
+            }
+
+            .mobile-bottom-nav .material-icons {
+                font-size: 22px;
+                margin-bottom: 2px;
+            }
+
+            .mobile-bottom-nav .badge {
+                position: absolute;
+                top: 0;
+                right: 0;
+                transform: translate(25%, -25%);
+            }
+
+            .mobile-bottom-nav .create-event-btn {
+                background-color: var(--primary-color);
+                color: white;
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+                transition: all 0.3s ease;
+            }
+
+            .mobile-bottom-nav .create-event-btn:hover {
+                background-color: #1a2f9a;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            }
+
+            .mobile-bottom-nav .create-event-btn .material-icons {
+                font-size: 28px;
+                margin: 0;
+                border-bottom: none !important;
+                text-decoration: none !important;
+                outline: none !important;
+            }
+
+            /* Add padding to main content to account for bottom nav */
+            .main-content {
+                padding-bottom: 90px;
+            }
+
+            /* Hide regular navbar on mobile */
+            .navbar {
+                display: none;
+            }
+
+            /* Show mobile header */
+            .mobile-header {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 15px;
+                background: white;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+            }
+
+            .mobile-header .navbar-brand {
+                margin: 0;
+            }
+
+            .mobile-header .navbar-brand img {
+                height: 40px;
+            }
+
+            /* Mobile Footer Styles */
+            .footer {
+                padding: 2rem 0;
+                margin-top: 2rem;
+                background-color: var(--secondary-color);
+            }
+
+            .footer .row {
+                margin-bottom: 1.5rem;
+            }
+
+            .footer h5 {
+                font-size: 1.1rem;
+                margin-bottom: 1rem;
+            }
+
+            .footer p, .footer a {
+                font-size: 0.9rem;
+            }
+
+            .footer-logo {
+                height: 40px;
+                margin-bottom: 1rem;
+            }
+
+            .footer .btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .footer-links {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .footer-links a {
+                color: #6c757d;
+                text-decoration: none;
+                transition: color 0.2s ease;
+            }
+
+            .footer-links a:hover {
+                color: var(--primary-color);
+            }
+
+            .footer .text-center {
+                margin-top: 1rem;
+                padding-top: 1rem;
+                border-top: 1px solid rgba(0, 0, 0, 0.1);
+            }
+        }
+
+        @media (min-width: 769px) {
+            .mobile-bottom-nav,
+            .mobile-header {
+                display: none;
+            }
+        }
     </style>
     <!-- TomSelect CSS -->
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
@@ -322,6 +487,18 @@
 </head>
 
 <body>
+    <!-- Mobile Header -->
+    <div class="mobile-header">
+        <a class="navbar-brand" href="{% url 'home' %}">
+            {% if request.get_host == 'nj.fursvp.org' %}
+            <img src="{% static 'fursvp-nj.png' %}" alt="FURsvp Logo">
+            {% else %}
+            <img src="{% static 'fursvp-logo.png' %}" alt="FURsvp Logo">
+            {% endif %}
+        </a>
+    </div>
+
+    <!-- Regular Navbar -->
     <nav class="navbar navbar-expand-lg top-bar">
         <div class="container">
             <a class="navbar-brand" href="{% url 'home' %}">
@@ -429,6 +606,50 @@
         </div>
     </div>
 
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-bottom-nav">
+        <a href="{% url 'home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+            <i class="material-icons">home</i>
+            <span>Home</span>
+        </a>
+        {% if user.is_authenticated %}
+        <a href="#" class="nav-link position-relative" id="mobileNotificationsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="material-icons">notifications</i>
+            <span>Notifications</span>
+            <span class="badge rounded-pill unread-notifications-badge" id="mobile-unread-notifications-badge">0</span>
+        </a>
+        <a href="{% url 'create_event' %}" class="create-event-btn">
+            <i class="material-icons">add</i>
+        </a>
+        <a href="{% url 'profile' %}" class="nav-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+            <i class="material-icons">person</i>
+            <span>Profile</span>
+        </a>
+        <a href="{% url 'logout' %}" class="nav-link">
+            <i class="material-icons">logout</i>
+            <span>Logout</span>
+        </a>
+        {% else %}
+        <a href="{% url 'login' %}" class="nav-link {% if request.resolver_match.url_name == 'login' %}active{% endif %}">
+            <i class="material-icons">login</i>
+            <span>Login</span>
+        </a>
+        <a href="{% url 'register' %}" class="nav-link {% if request.resolver_match.url_name == 'register' %}active{% endif %}">
+            <i class="material-icons">person_add</i>
+            <span>Register</span>
+        </a>
+        {% endif %}
+    </nav>
+
+    <!-- Mobile Notifications Dropdown -->
+    <div class="dropdown-menu shadow border-0 notifications-dropdown" aria-labelledby="mobileNotificationsDropdown" id="mobile-notifications-list">
+        <h6 class="dropdown-header notification-header">Notifications</h6>
+        <div id="mobile-no-notifications-message" class="text-center text-muted" style="padding: 15px;">No new notifications</div>
+        <hr class="dropdown-divider my-0">
+        <button class="dropdown-item text-center text-primary notification-footer" id="mobile-clear-notifications-btn">Clear All Notifications</button>
+    </div>
+
+
     <footer class="footer">
         <div class="container text-center">
             {% if request.get_host == 'nj.fursvp.org' %}
@@ -454,7 +675,7 @@
             </div>
         </div>
     </footer>
-
+    
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- TomSelect JS -->
@@ -471,23 +692,18 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     {% block extra_js %}
     <script>
-        // Removed console.log('Base template script loaded.');
-        // Removed console.log('Attempting to get notification elements within base.html...');
-
-        // Moved these declarations inside DOMContentLoaded for proper scoping
         document.addEventListener('DOMContentLoaded', function() {
             const notificationsDropdown = document.getElementById('notificationsDropdown');
+            const mobileNotificationsDropdown = document.getElementById('mobileNotificationsDropdown');
             const unreadBadge = document.getElementById('unread-notifications-badge');
+            const mobileUnreadBadge = document.getElementById('mobile-unread-notifications-badge');
             const notificationsList = document.getElementById('notifications-list');
+            const mobileNotificationsList = document.getElementById('mobile-notifications-list');
             const noNotificationsMessageItem = document.getElementById('no-notifications-message-item');
+            const mobileNoNotificationsMessage = document.getElementById('mobile-no-notifications-message');
             const clearNotificationsBtnElement = document.getElementById('clear-notifications-btn');
+            const mobileClearNotificationsBtnElement = document.getElementById('mobile-clear-notifications-btn');
 
-            // Removed console.log('notificationsDropdown (base.html):', notificationsDropdown);
-            // Removed console.log('unreadBadge (base.html):', unreadBadge);
-            // Removed console.log('notificationsList (base.html):', notificationsList);
-            // Removed console.log('noNotificationsMessage (base.html):', noNotificationsMessage);
-
-            // Original notification logic (now inside DOMContentLoaded)
             // Function to fetch and display notifications
             async function fetchNotifications() {
                 try {
@@ -499,52 +715,65 @@
                     const notifications = data.notifications;
                     const unreadCount = data.unread_count;
 
-                    // Clear existing dynamically added notifications
-                    Array.from(notificationsList.querySelectorAll('.notification-item')).forEach(item => {
-                        item.remove();
-                    });
-
-                    if (notifications && notifications.length > 0) {
-                        noNotificationsMessageItem.style.display = 'none';
-                        notifications.forEach(notification => {
-                            const notificationItem = document.createElement('li');
-                            notificationItem.classList.add('notification-item');
-                            notificationItem.setAttribute('data-notification-id', notification.id);
-                            if (!notification.is_read) {
-                                notificationItem.classList.add('unread');
-                            }
-
-                            const notificationText = document.createElement('div');
-                            notificationText.classList.add('notification-item-text');
-                            notificationText.textContent = notification.message;
-                            notificationItem.appendChild(notificationText);
-
-                            const notificationDate = document.createElement('div');
-                            notificationDate.classList.add('notification-item-date');
-                            notificationDate.textContent = new Date(notification.timestamp).toLocaleString();
-                            notificationItem.appendChild(notificationDate);
-
-                            // Add click event listener to mark as read and redirect
-                            notificationItem.addEventListener('click', async () => {
-                                await markNotificationAsRead(notification.id);
-                                if (notification.link) {
-                                    window.location.href = notification.link;
-                                }
-                            });
-                            notificationsList.insertBefore(notificationItem, noNotificationsMessageItem);
-                        });
-                    } else {
-                        noNotificationsMessageItem.style.display = 'block';
-                    }
-
+                    // Update both desktop and mobile badges
                     if (unreadCount > 0) {
                         unreadBadge.textContent = unreadCount;
+                        mobileUnreadBadge.textContent = unreadCount;
                         unreadBadge.style.display = 'block';
+                        mobileUnreadBadge.style.display = 'block';
                     } else {
                         unreadBadge.style.display = 'none';
+                        mobileUnreadBadge.style.display = 'none';
                     }
 
+                    // Update desktop notifications
+                    updateNotificationsList(notificationsList, notifications, noNotificationsMessageItem);
+                    // Update mobile notifications
+                    updateNotificationsList(mobileNotificationsList, notifications, mobileNoNotificationsMessage);
+
                 } catch (error) {
+                    console.error('Error fetching notifications:', error);
+                }
+            }
+
+            // Function to update a notifications list
+            function updateNotificationsList(list, notifications, noMessageElement) {
+                // Clear existing dynamically added notifications
+                Array.from(list.querySelectorAll('.notification-item')).forEach(item => {
+                    item.remove();
+                });
+
+                if (notifications && notifications.length > 0) {
+                    noMessageElement.style.display = 'none';
+                    notifications.forEach(notification => {
+                        const notificationItem = document.createElement('div');
+                        notificationItem.classList.add('notification-item');
+                        notificationItem.setAttribute('data-notification-id', notification.id);
+                        if (!notification.is_read) {
+                            notificationItem.classList.add('unread');
+                        }
+
+                        const notificationText = document.createElement('div');
+                        notificationText.classList.add('notification-item-text');
+                        notificationText.textContent = notification.message;
+                        notificationItem.appendChild(notificationText);
+
+                        const notificationDate = document.createElement('div');
+                        notificationDate.classList.add('notification-item-date');
+                        notificationDate.textContent = new Date(notification.timestamp).toLocaleString();
+                        notificationItem.appendChild(notificationDate);
+
+                        // Add click event listener to mark as read and redirect
+                        notificationItem.addEventListener('click', async () => {
+                            await markNotificationAsRead(notification.id);
+                            if (notification.link) {
+                                window.location.href = notification.link;
+                            }
+                        });
+                        list.insertBefore(notificationItem, noMessageElement);
+                    });
+                } else {
+                    noMessageElement.style.display = 'block';
                 }
             }
 
@@ -571,8 +800,10 @@
                     if (currentUnreadCount > 0) {
                         currentUnreadCount--;
                         unreadBadge.textContent = currentUnreadCount;
+                        mobileUnreadBadge.textContent = currentUnreadCount;
                         if (currentUnreadCount === 0) {
                             unreadBadge.style.display = 'none';
+                            mobileUnreadBadge.style.display = 'none';
                         }
                     }
                 } catch (error) {
@@ -617,34 +848,37 @@
                 // Handle confirmation
                 document.getElementById('confirmClearNotifications').addEventListener('click', async () => {
                     try {
-                    const notificationsList = document.getElementById('notifications-list');
-                    const unreadBadge = document.getElementById('unread-notifications-badge');
-                    const noNotificationsMessageItem = document.getElementById('no-notifications-message-item');
-
-                    const response = await fetch('/accounts/notifications/purge_read/', {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRFToken': getCookie('csrftoken'),
-                            'Content-Type': 'application/json'
+                        const response = await fetch('/accounts/notifications/purge_read/', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': getCookie('csrftoken'),
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
                         }
-                    });
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    // Clear notifications from UI
-                    Array.from(notificationsList.querySelectorAll('.notification-item')).forEach(item => {
-                        item.remove();
-                    });
+                        
+                        // Clear notifications from both desktop and mobile UI
+                        Array.from(notificationsList.querySelectorAll('.notification-item')).forEach(item => {
+                            item.remove();
+                        });
+                        Array.from(mobileNotificationsList.querySelectorAll('.notification-item')).forEach(item => {
+                            item.remove();
+                        });
 
-                    noNotificationsMessageItem.style.display = 'block';
-                    unreadBadge.style.display = 'none';
-                    unreadBadge.textContent = '0';
+                        noNotificationsMessageItem.style.display = 'block';
+                        mobileNoNotificationsMessage.style.display = 'block';
+                        unreadBadge.style.display = 'none';
+                        mobileUnreadBadge.style.display = 'none';
+                        unreadBadge.textContent = '0';
+                        mobileUnreadBadge.textContent = '0';
 
                         // Hide and remove the modal
                         modal.hide();
                         document.getElementById('clearNotificationsModal').remove();
-                } catch (error) {
-                    console.error('Error clearing notifications:', error);
+                    } catch (error) {
+                        console.error('Error clearing notifications:', error);
                         alert('Failed to clear notifications. Please try again.');
                     }
                 });
@@ -671,13 +905,15 @@
                 return cookieValue;
             }
 
-            // Event listener for dropdown show to fetch latest notifications
+            // Event listeners for dropdown show to fetch latest notifications
             notificationsDropdown.addEventListener('shown.bs.dropdown', fetchNotifications);
+            mobileNotificationsDropdown.addEventListener('shown.bs.dropdown', fetchNotifications);
 
-            // Event listener for clear all button
+            // Event listeners for clear all buttons
             clearNotificationsBtnElement.addEventListener('click', clearAllNotifications);
+            mobileClearNotificationsBtnElement.addEventListener('click', clearAllNotifications);
 
-            // Initial fetch on page load (optional, if you want notifications to be loaded immediately)
+            // Initial fetch on page load
             fetchNotifications();
         });
     </script>
