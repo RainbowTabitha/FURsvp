@@ -333,7 +333,7 @@ def ban_user(request):
 def administration(request):
     # Get all users including superusers with pagination
     all_users = User.objects.all().prefetch_related('profile')
-    user_paginator = Paginator(all_users, 10)
+    user_paginator = Paginator(all_users, 1)
     user_page = request.GET.get('user_page', 1)
     try:
         users_to_promote = user_paginator.page(user_page)
@@ -342,7 +342,7 @@ def administration(request):
 
     # Get all groups with pagination
     all_groups = Group.objects.all()
-    group_paginator = Paginator(all_groups, 20)
+    group_paginator = Paginator(all_groups, 10)
     group_page = request.GET.get('group_page', 1)
     try:
         paginated_groups = group_paginator.page(group_page)

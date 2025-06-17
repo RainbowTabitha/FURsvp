@@ -113,16 +113,13 @@
                         </button>
                         <div class="btn-group" role="group">
                             <a href="#" id="orderToggleBtn" data-sort="{{ current_sort }}" data-order="{% if current_order == 'asc' %}desc{% else %}asc{% endif %}"
-                                class="btn btn-light d-flex align-items-center justify-content-center order-toggle-btn"
-                                style="padding: .375rem .75rem;">
+                                class="btn btn-light d-flex align-items-center justify-content-center order-toggle-btn flex-shrink-0"
+                                style="width: 40px !important; height: 40px !important; padding: 0 !important; overflow: hidden !important;" title="Toggle Order">
                                 <i class="material-icons"
-                                    style="font-size: 18px; line-height: 1;">{% if current_order == 'desc' %}arrow_downward{% else %}arrow_upward{% endif %}</i>
-                                <span class="visually-hidden">Order: </span>
+                                    style="font-size: 18px;">{% if current_order == 'desc' %}arrow_downward{% else %}arrow_upward{% endif %}</i>
                             </a>
-                            <button type="button" class="btn btn-light d-flex align-items-center justify-content-center"
-                                id="viewToggle">
+                            <button type="button" class="btn btn-light d-flex align-items-center justify-content-center flex-shrink-0" id="viewToggle" style="width: 40px !important; height: 40px !important; padding: 0 !important; overflow: hidden !important;" title="Toggle View">
                                 <i class="material-icons align-middle" style="font-size: 18px;">grid_view</i>
-                                <span class="visually-hidden">Toggle View</span>
                             </button>
                         </div>
                     </div>
@@ -262,7 +259,9 @@
         // Event Listener for Order Toggle Button
         orderToggleBtn.addEventListener('click', function (e) {
             e.preventDefault();
-            const newOrder = this.dataset.order === 'asc' ? 'desc' : 'asc';
+            const newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
+            currentOrder = newOrder; // Update currentOrder immediately
+            this.dataset.order = newOrder; // Update dataset.order immediately
             fetchEvents(currentSort, newOrder, showAdult);
         });
 
@@ -283,7 +282,7 @@
             if (isListView) {
                 eventsGrid.style.display = 'none';
                 eventsList.style.display = 'block';
-                toggleIcon.textContent = 'list_view';
+                toggleIcon.textContent = 'view_list';
             } else {
                 eventsGrid.style.display = 'flex';
                 eventsList.style.display = 'none';
@@ -297,7 +296,7 @@
         if (isListView) {
             eventsGrid.style.display = 'none';
             eventsList.style.display = 'block';
-            toggleIcon.textContent = 'list_view';
+            toggleIcon.textContent = 'view_list';
         } else {
             eventsGrid.style.display = 'flex';
             eventsList.style.display = 'none';
