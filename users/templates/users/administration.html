@@ -144,62 +144,42 @@
                         </div>
                     </div>
                     <!-- Create New Group Form -->
-                    <div class="card bg-light border-0 rounded-3 mb-4">
-                        <div class="card-body">
-                            <h3 class="h5 mb-3 text-secondary">
-                                <i class="material-icons me-2">add_circle</i> Create New Group
-                            </h3>
-                            <form method="post">
-                                {% csrf_token %}
-                                <div class="row g-3 align-items-center">
-                                    <div class="col-sm-auto flex-grow-1">
-                                        {{ group_form.name|add_class:"form-control form-control-lg"|attr:"placeholder:Enter group name" }}
-                                    </div>
-                                    <div class="col-sm-auto">
-                                        <button type="submit" name="create_group_submit" class="btn btn-success btn-lg rounded-pill px-4 shadow-sm">
-                                            <i class="material-icons me-2">add</i> Create Group
-                                        </button>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
+                    <div class="d-flex justify-content-between align-items-center mb-4 mt-3">
+                        <button type="button" class="btn btn-success btn-lg rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#createGroupModal">
+                            <i class="material-icons me-2">add_circle</i> Create New Group
+                        </button>
                     </div>
 
                     <!-- Existing Groups Table -->
-                    <h3 class="h5 mb-3 text-secondary">
-                        <i class="material-icons me-2">list</i> Existing Groups
-                    </h3>
                     {% if all_groups %}
                         <div class="table-responsive">
                             <table class="table table-hover align-middle caption-top mb-0" id="groupsTable">
                                 <thead>
                                     <tr>
                                         <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">label</i> Group Name</th>
-                                        <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">edit</i> Rename</th>
-                                        <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">delete</i> Delete</th>
+                                        <th scope="col" class="text-secondary" style="width: 480px;">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for group in all_groups %}
                                     <tr>
-                                        <td><span class="badge bg-info text-dark py-2 px-3 rounded-pill fw-normal">{{ group.name }}</span></td>
                                         <td>
-                                            <form method="post" class="d-flex gap-2">
-                                                {% csrf_token %}
-                                                {% with rename_form=rename_group_forms|get_item:group.id %}
-                                                    {{ rename_form.name|add_class:"form-control form-control-sm"|attr:"placeholder:Rename group" }}
-                                                {% endwith %}
-                                                <button type="submit" name="rename_group_{{ group.id }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                                                    <i class="material-icons">edit</i>
-                                                </button>
-                                            </form>
+                                            <span class="badge bg-info text-dark py-2 px-3 rounded-pill fw-normal">
+                                                <i class="material-icons me-1" style="font-size: 18px;">group</i>
+                                                {{ group.name }}
+                                            </span>
                                         </td>
                                         <td>
-                                            <form method="post" class="d-inline"
-                                                  onsubmit="return confirm('Are you sure you want to delete group \'{{ group.name }}\'?');">
+                                            <form method="post" class="d-flex align-items-center gap-2">
                                                 {% csrf_token %}
+                                                {% with rename_form=rename_group_forms|get_item:group.id %}
+                                                    {{ rename_form.name|add_class:"form-control form-control-sm flex-grow-1"|attr:"placeholder:Rename group" }}
+                                                {% endwith %}
+                                                <button type="submit" name="rename_group_{{ group.id }}" class="btn btn-sm btn-outline-primary rounded-circle" style="width: 38px; height: 38px;">
+                                                    <i class="material-icons">edit</i>
+                                                </button>
                                                 <input type="hidden" name="group_id" value="{{ group.id }}">
-                                                <button type="submit" name="delete_group_submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                                                <button type="submit" name="delete_group_submit" class="btn btn-sm btn-outline-danger rounded-circle" style="width: 38px; height: 38px;" onclick="return confirm('Are you sure you want to delete group \'{{ group.name }}\'?');">
                                                     <i class="material-icons">delete</i>
                                                 </button>
                                             </form>
@@ -207,7 +187,7 @@
                                     </tr>
                                     {% empty %}
                                     <tr>
-                                        <td colspan="4" class="text-center py-4 text-muted">
+                                        <td colspan="2" class="text-center py-4 text-muted">
                                             <i class="material-icons d-block mb-2 fs-1">info</i>
                                             No groups found.
                                         </td>
@@ -235,9 +215,9 @@
 
                                 {% for num in all_groups.paginator.page_range %}
                                     {% if all_groups.number == num %}
-                                        <li class="page-item active"><a class="page-link" href="#" style="font-size: 24px;">{{ num }}</a></li>
+                                        <li class="page-item active"><a class="page-link" href="#" style="font-size: 21px;">{{ num }}</a></li>
                                     {% elif num > all_groups.number|add:'-3' and num < all_groups.number|add:'3' %}
-                                        <li class="page-item"><a class="page-link" href="?group_page={{ num }}{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}" style="font-size: 24px;">{{ num }}</a></li>
+                                        <li class="page-item"><a class="page-link" href="?group_page={{ num }}{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}" style="font-size: 21px;">{{ num }}</a></li>
                                     {% endif %}
                                 {% endfor %}
 
@@ -607,8 +587,53 @@
             }
             return cookieValue;
         }
+
+        // Tab persistence logic
+        const adminTabs = document.getElementById('adminTabs');
+        if (adminTabs) {
+            const tabButtons = adminTabs.querySelectorAll('.nav-link');
+            tabButtons.forEach(button => {
+                button.addEventListener('shown.bs.tab', function (event) {
+                    localStorage.setItem('lastAdminTab', event.target.id);
+                });
+            });
+
+            const lastTab = localStorage.getItem('lastAdminTab');
+            if (lastTab) {
+                const lastTabButton = document.getElementById(lastTab);
+                if (lastTabButton) {
+                    const bsTab = new bootstrap.Tab(lastTabButton);
+                    bsTab.show();
+                }
+            }
+        }
     });
 </script>
+
+<!-- Create Group Modal -->
+<div class="modal fade" id="createGroupModal" tabindex="-1" aria-labelledby="createGroupModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-3 shadow">
+            <div class="modal-header bg-primary text-white border-0">
+                <h5 class="modal-title" id="createGroupModalLabel"><i class="material-icons me-2">group_add</i> Create New Group</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label for="id_name" class="form-label visually-hidden">Group Name</label>
+                        {{ group_form.name|add_class:"form-control form-control-lg"|attr:"placeholder:Enter new group name" }}
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0 pe-4 pb-4">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" name="create_group_submit" class="btn btn-success rounded-pill px-4"><i class="material-icons me-2">add</i> Create Group</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 <style>
