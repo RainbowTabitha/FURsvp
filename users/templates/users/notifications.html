@@ -1,0 +1,147 @@
+{% extends 'events/base.html' %}
+
+{% block title %}Your Notifications{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Your Notifications</h4>
+            </div>
+            <div class="list-group list-group-flush">
+                {% if notifications %}
+                    {% for notification in notifications %}
+                        <a href="{% if notification.link %}{{ notification.link }}{% else %}#{% endif %}" class="list-group-item list-group-item-action {% if not notification.is_read %}fw-bold bg-light{% endif %}" data-notification-id="{{ notification.id }}">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">{{ notification.message }}</h5>
+                                <small class="text-muted">{{ notification.timestamp|date:"M d, Y H:i" }}</small>
+                            </div>
+                        </a>
+                    {% endfor %}
+                {% else %}
+                    <div class="list-group-item text-center text-muted">
+                        No notifications yet.
+                    </div>
+                {% endif %}
+            </div>
+            {% if notifications %}
+            <div class="card-footer text-center">
+                <button class="btn btn-outline-danger" id="clear-all-notifications-page-btn">
+                    <i class="material-icons me-1">delete</i> Clear All Notifications
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const clearAllBtn = document.getElementById('clear-all-notifications-page-btn');
+
+        if (clearAllBtn) {
+            clearAllBtn.addEventListener('click', async () => {
+                const modalHtml = `
+                    <div class="modal fade" id="clearNotificationsModalPage" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">
+                                        <i class="material-icons me-2">delete</i>
+                                        Clear Notifications
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Are you sure you want to clear all notifications? This action cannot be undone.</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="button" class="btn btn-danger" id="confirmClearNotificationsPage">
+                                        <i class="material-icons me-1">delete</i>
+                                        Clear All Notifications
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                const modal = new bootstrap.Modal(document.getElementById('clearNotificationsModalPage'));
+                modal.show();
+
+                document.getElementById('confirmClearNotificationsPage').addEventListener('click', async () => {
+                    try {
+                        const response = await fetch('/accounts/notifications/purge_read/', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': getCookie('csrftoken'),
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        window.location.reload(); // Reload the page to show updated notifications
+                    } catch (error) {
+                        console.error('Error clearing notifications:', error);
+                        alert('Failed to clear notifications. Please try again.');
+                    }
+                });
+
+                document.getElementById('clearNotificationsModalPage').addEventListener('hidden.bs.modal', function () {
+                    this.remove();
+                });
+            });
+        }
+
+        // Mark notification as read when clicked on the full page
+        document.querySelectorAll('.list-group-item[data-notification-id]').forEach(item => {
+            item.addEventListener('click', async function(event) {
+                const notificationId = this.getAttribute('data-notification-id');
+                if (!this.classList.contains('fw-bold')) { // Only mark as read if it's unread
+                    try {
+                        const response = await fetch('/accounts/notifications/mark_as_read/', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': getCookie('csrftoken'),
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ notification_ids: [notificationId] })
+                        });
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        this.classList.remove('fw-bold');
+                        this.classList.remove('bg-light');
+                        // No need to update badge here, as it's a full page view and badge is on base.html
+                    } catch (error) {
+                        console.error('Error marking notification as read:', error);
+                    }
+                }
+                // If there's a link, let the default anchor tag behavior handle the redirection
+            });
+        });
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    });
+</script>
+{% endblock %} 

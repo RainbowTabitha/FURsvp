@@ -244,8 +244,8 @@
         .unread-notifications-badge {
             font-size: 0.75em;
             position: absolute;
-            top: -5px;
-            right: -5px;
+            top: 0px;
+            right: 0px;
             padding: .3em .6em;
             border-radius: 50%;
             background-color: #dc3545; /* Bootstrap danger color */
@@ -619,11 +619,13 @@
             <span>Home</span>
         </a>
         {% if user.is_authenticated %}
-        <a href="#" class="nav-link position-relative" id="mobileNotificationsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="material-icons">notifications</i>
-            <span>Notifications</span>
-            <span class="badge rounded-pill unread-notifications-badge" id="mobile-unread-notifications-badge">0</span>
-        </a>
+        <div class="dropdown d-flex justify-content-center align-items-center">
+            <a href="{% url 'notifications_page' %}" class="nav-link position-relative" id="mobileNotificationsLink">
+                <i class="material-icons">notifications</i>
+                <span>Notifications</span>
+                <span class="badge rounded-pill unread-notifications-badge" id="mobile-unread-notifications-badge">0</span>
+            </a>
+        </div>
         <a href="{% url 'create_event' %}" class="create-event-btn">
             <i class="material-icons">add</i>
         </a>
@@ -646,15 +648,6 @@
         </a>
         {% endif %}
     </nav>
-
-    <!-- Mobile Notifications Dropdown -->
-    <div class="dropdown-menu shadow border-0 notifications-dropdown" aria-labelledby="mobileNotificationsDropdown" id="mobile-notifications-list">
-        <h6 class="dropdown-header notification-header">Notifications</h6>
-        <div id="mobile-no-notifications-message" class="text-center text-muted" style="padding: 15px;">No new notifications</div>
-        <hr class="dropdown-divider my-0">
-        <button class="dropdown-item text-center text-primary notification-footer" id="mobile-clear-notifications-btn">Clear All Notifications</button>
-    </div>
-
 
     <footer class="footer">
         <div class="container text-center">
@@ -700,15 +693,11 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const notificationsDropdown = document.getElementById('notificationsDropdown');
-            const mobileNotificationsDropdown = document.getElementById('mobileNotificationsDropdown');
             const unreadBadge = document.getElementById('unread-notifications-badge');
             const mobileUnreadBadge = document.getElementById('mobile-unread-notifications-badge');
             const notificationsList = document.getElementById('notifications-list');
-            const mobileNotificationsList = document.getElementById('mobile-notifications-list');
             const noNotificationsMessageItem = document.getElementById('no-notifications-message-item');
-            const mobileNoNotificationsMessage = document.getElementById('mobile-no-notifications-message');
             const clearNotificationsBtnElement = document.getElementById('clear-notifications-btn');
-            const mobileClearNotificationsBtnElement = document.getElementById('mobile-clear-notifications-btn');
 
             // Function to fetch and display notifications
             async function fetchNotifications() {
@@ -734,8 +723,6 @@
 
                     // Update desktop notifications
                     updateNotificationsList(notificationsList, notifications, noNotificationsMessageItem);
-                    // Update mobile notifications
-                    updateNotificationsList(mobileNotificationsList, notifications, mobileNoNotificationsMessage);
 
                 } catch (error) {
                     console.error('Error fetching notifications:', error);
@@ -869,12 +856,8 @@
                         Array.from(notificationsList.querySelectorAll('.notification-item')).forEach(item => {
                             item.remove();
                         });
-                        Array.from(mobileNotificationsList.querySelectorAll('.notification-item')).forEach(item => {
-                            item.remove();
-                        });
 
                         noNotificationsMessageItem.style.display = 'block';
-                        mobileNoNotificationsMessage.style.display = 'block';
                         unreadBadge.style.display = 'none';
                         mobileUnreadBadge.style.display = 'none';
                         unreadBadge.textContent = '0';
@@ -913,11 +896,9 @@
 
             // Event listeners for dropdown show to fetch latest notifications
             notificationsDropdown.addEventListener('shown.bs.dropdown', fetchNotifications);
-            mobileNotificationsDropdown.addEventListener('shown.bs.dropdown', fetchNotifications);
 
             // Event listeners for clear all buttons
             clearNotificationsBtnElement.addEventListener('click', clearAllNotifications);
-            mobileClearNotificationsBtnElement.addEventListener('click', clearAllNotifications);
 
             // Initial fetch on page load
             fetchNotifications();

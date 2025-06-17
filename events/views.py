@@ -16,6 +16,7 @@ def home(request):
     # Get sort parameters from request
     sort_by = request.GET.get('sort', 'date')  # Default sort by date
     sort_order = request.GET.get('order', 'asc')  # Default ascending order
+    filter_adult = request.GET.get('adult', 'true') # Default to show adult events
     
     # Base queryset - filter out events that have already passed and cancelled events
     now = timezone.now()
@@ -23,7 +24,12 @@ def home(request):
         models.Q(date__gt=now.date()) | 
         (models.Q(date=now.date()) & models.Q(end_time__gt=now.time())),
         status='active'  # Only show active events
-    ).annotate(
+    )
+
+    if filter_adult == 'false':
+        events = events.exclude(age_restriction__in=['adult', 'mature'])
+
+    events = events.annotate(
         confirmed_count=models.Count('rsvps', filter=models.Q(rsvps__status='confirmed'))
     )
     
@@ -43,7 +49,14 @@ def home(request):
         'events': events,
         'current_sort': sort_by,
         'current_order': sort_order,
+        'filter_adult': filter_adult, # Pass the filter status to the template
     }
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        # If it's an AJAX request, only return the partial event list HTML
+        return render(request, 'events/events_list_partial.html', context)
+    
+    # For regular requests, render the full page
     return render(request, 'events/home.html', context)
 
 def event_detail(request, event_id):

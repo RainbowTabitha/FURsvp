@@ -53,23 +53,23 @@
             <div class="row align-items-center justify-content-between mb-3">
                 <div class="col-12 col-md-auto mb-3 mb-md-0 d-flex flex-wrap justify-content-center">
                     <div class="btn-group" role="group">
-                        <a href="?sort=date&order={{ current_order }}"
-                            class="btn {% if current_sort == 'date' %}btn-primary text-white{% else %}btn-outline-primary{% endif %} d-flex align-items-center justify-content-center rounded-start"
+                        <a href="#" data-sort="date" data-order="{{ current_order }}"
+                            class="btn {% if current_sort == 'date' %}btn-primary text-white{% else %}btn-outline-primary{% endif %} d-flex align-items-center justify-content-center rounded-start sort-btn"
                             style="padding: .5rem 1rem; font-size: 1.1rem;">
                             <i class="material-icons me-1 align-middle" style="font-size: 20px;">calendar_today</i> Date
                         </a>
-                        <a href="?sort=group&order={{ current_order }}"
-                            class="btn {% if current_sort == 'group' %}btn-primary text-white{% else %}btn-outline-primary{% endif %} d-flex align-items-center justify-content-center"
+                        <a href="#" data-sort="group" data-order="{{ current_order }}"
+                            class="btn {% if current_sort == 'group' %}btn-primary text-white{% else %}btn-outline-primary{% endif %} d-flex align-items-center justify-content-center sort-btn"
                             style="padding: .5rem 1rem; font-size: 1.1rem;">
                             <i class="material-icons me-1 align-middle" style="font-size: 20px;">group</i> Group
                         </a>
-                        <a href="?sort=title&order={{ current_order }}"
-                            class="btn {% if current_sort == 'title' %}btn-primary text-white{% else %}btn-outline-primary{% endif %} d-flex align-items-center justify-content-center"
+                        <a href="#" data-sort="title" data-order="{{ current_order }}"
+                            class="btn {% if current_sort == 'title' %}btn-primary text-white{% else %}btn-outline-primary{% endif %} d-flex align-items-center justify-content-center sort-btn"
                             style="padding: .5rem 1rem; font-size: 1.1rem;">
                             <i class="material-icons me-1 align-middle" style="font-size: 20px;">title</i> Title
                         </a>
-                        <a href="?sort=rsvps&order={{ current_order }}"
-                            class="btn {% if current_sort == 'rsvps' %}btn-primary text-white{% else %}btn-outline-primary{% endif %} d-flex align-items-center justify-content-center rounded-end"
+                        <a href="#" data-sort="rsvps" data-order="{{ current_order }}"
+                            class="btn {% if current_sort == 'rsvps' %}btn-primary text-white{% else %}btn-outline-primary{% endif %} d-flex align-items-center justify-content-center rounded-end sort-btn"
                             style="padding: .5rem 1rem; font-size: 1.1rem;">
                             <i class="material-icons me-1 align-middle" style="font-size: 20px;">people</i> RSVPs
                         </a>
@@ -81,8 +81,8 @@
                         Hide 18+/21+
                     </button>
                     <div class="btn-group" role="group">
-                        <a href="?sort={{ current_sort }}&order={% if current_order == 'asc' %}desc{% else %}asc{% endif %}"
-                            class="btn btn-light d-flex align-items-center justify-content-center"
+                        <a href="#" id="orderToggleBtn" data-sort="{{ current_sort }}" data-order="{% if current_order == 'asc' %}desc{% else %}asc{% endif %}"
+                            class="btn btn-light d-flex align-items-center justify-content-center order-toggle-btn"
                             style="padding: .375rem .75rem;">
                             <i class="material-icons"
                                 style="font-size: 18px; line-height: 1;">{% if current_order == 'desc' %}arrow_downward{% else %}arrow_upward{% endif %}</i>
@@ -99,137 +99,7 @@
         </div>
     </div>
 
-    <div class="row" id="eventsGrid" style="display: flex;">
-        {% for event in events %}
-        <div class="col-md-6 col-lg-4 mb-4">
-            <a href="{% url 'event_detail' event.id %}" class="card shadow-sm h-100 text-decoration-none">
-                <div class="card-body d-flex flex-column">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div>
-                            <h5 class="card-title text-primary mb-1">
-                                {{ event.title }}
-                            </h5>
-                            <small class="text-muted d-block"><i class="material-icons me-1 align-middle"
-                                    style="font-size: 18px;">calendar_today</i>
-                                {{ event.date }}{% if event.start_time %} at
-                                {{ event.start_time|time:"P" }}{% endif %}{% if event.end_time %} -
-                                {{ event.end_time|time:"P" }}{% endif %}</small>
-                        </div>
-                        <div>
-                            {% if event.age_restriction == 'mature' %}
-                            <span class="badge bg-danger rounded-pill py-2 px-3 ms-2">
-                                <i class="material-icons me-1 align-middle" style="font-size: 16px;">warning</i> 21+
-                            </span>
-                            {% elif event.age_restriction == 'adult' %}
-                            <span class="badge bg-warning text-dark rounded-pill py-2 px-3 ms-2">
-                                <i class="material-icons me-1 align-middle" style="font-size: 16px;">warning</i> 18+
-                            </span>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <div class="d-flex flex-wrap gap-3 mb-3 text-muted">
-                        <span class="d-flex align-items-center">
-                            <i class="material-icons me-1" style="font-size: 18px;">group</i> {{ event.group.name }}
-                        </span>
-                        <span class="d-flex align-items-center">
-                            <i class="material-icons me-1" style="font-size: 18px;">location_on</i> {{ event.city }}
-                        </span>
-                    </div>
-
-                    <div class="mt-auto">
-                        <span class="badge bg-primary rounded-pill py-2 px-3">
-                            <i class="material-icons me-1 align-middle">people</i>
-                            {% if event.capacity %}
-                            {{ event.confirmed_count }} / {{ event.capacity }} RSVPs
-                            {% else %}
-                            {{ event.confirmed_count }} RSVPs
-                            {% endif %}
-                        </span>
-                    </div>
-                </div>
-            </a>
-        </div>
-        {% empty %}
-        <div class="col-12">
-            <div class="alert alert-info text-center" role="alert">
-                <i class="material-icons align-middle me-2">event_busy</i> No upcoming events found.
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-
-    <div class="list-group shadow-sm" id="eventsList" style="display: none;">
-        {% for event in events %}
-        <a href="{% url 'event_detail' event.id %}" class="list-group-item list-group-item-action p-0">
-            <div class="d-flex w-100 p-3 align-items-center">
-                <div class="flex-grow-1">
-                    <div class="d-flex align-items-start mb-2">
-                        <div>
-                            <h5 class="mb-1 text-primary">{{ event.title }}</h5>
-                            <small class="text-muted d-block"><i class="material-icons me-1 align-middle"
-                                    style="font-size: 18px;">calendar_today</i>
-                                {{ event.date }}{% if event.start_time %} at
-                                {{ event.start_time|time:"P" }}{% endif %}{% if event.end_time %} -
-                                {{ event.end_time|time:"P" }}{% endif %}</small>
-                        </div>
-
-                    </div>
-                    <div class="d-flex flex-wrap gap-3 text-muted mb-3">
-                        <div class="d-flex align-items-center">
-                            <i class="material-icons me-1" style="font-size: 18px;">group</i>
-                            <span>{{ event.group.name }}</span>
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <i class="material-icons me-1" style="font-size: 18px;">location_on</i>
-                            <span>{{ event.city }}</span>
-                        </div>
-                    </div>
-                    <div class="mt-auto">
-                        <span class="badge bg-primary rounded-pill py-2 px-3">
-                            <i class="material-icons me-1 align-middle">people</i>
-                            {% if event.capacity %}
-                            {{ event.confirmed_count }} / {{ event.capacity }} RSVPs
-                            {% else %}
-                            {{ event.confirmed_count }} RSVPs
-                            {% endif %}
-                        </span>
-                    </div>
-                </div>
-
-                {% if event.age_restriction == 'mature' %}
-                <div class="ms-auto align-self-center">
-                    <span class="badge bg-danger rounded-pill py-2 px-3">
-                        <i class="material-icons me-1 align-middle" style="font-size: 16px;">warning</i> 21+
-                    </span>
-                </div>
-                {% elif event.age_restriction == 'adult' %}
-                <div class="ms-auto align-self-center">
-                    <span class="badge bg-warning text-dark rounded-pill py-2 px-3">
-                        <i class="material-icons me-1 align-middle" style="font-size: 16px;">warning</i> 18+
-                    </span>
-                </div>
-                {% endif %}
-
-                <div class="ms-3 d-flex align-items-center">
-                    <i class="material-icons text-primary">chevron_right</i>
-                </div>
-            </div>
-        </a>
-        {% empty %}
-        <div class="alert alert-info text-center" role="alert">
-            <i class="material-icons align-middle me-2">event_busy</i> No upcoming events found.
-        </div>
-        {% endfor %}
-    </div>
-
-    <!-- Loading Spinner -->
-    <div id="loadingSpinner" class="text-center py-5" style="display: none;">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-        <p class="mt-2 text-muted">Loading events...</p>
-    </div>
+    {% include 'events/events_list_partial.html' %}
 
 </div>
 
@@ -243,102 +113,180 @@
         const toggleIcon = viewToggle.querySelector('.material-icons');
         const toggleAdult = document.getElementById('toggleAdultEvents');
         const loadingSpinner = document.getElementById('loadingSpinner');
+        const sortButtons = document.querySelectorAll('.sort-btn');
+        const orderToggleBtn = document.getElementById('orderToggleBtn');
 
         // Set initial state
         let isListView = localStorage.getItem('eventViewPreference') === 'list';
         let showAdult = localStorage.getItem('showAdultEvents') !== 'false'; // Default to true if not set
+        let currentSort = '{{ current_sort }}';
+        let currentOrder = '{{ current_order }}';
 
-        // Initial setup with loading spinner
-        showLoading();
-        setTimeout(() => {
-            updateView();
-            updateToggleButton();
-            filterAdultEvents();
-            hideLoading();
-        }, 100); // Small delay to ensure spinner shows before content is processed
+        // Function to update the UI based on events data
+        function updateEventDisplay(eventsHtml) {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = eventsHtml;
+            const newEventsGrid = tempDiv.querySelector('#eventsGrid');
+            const newEventsList = tempDiv.querySelector('#eventsList');
+            const newLoadingSpinner = tempDiv.querySelector('#loadingSpinner'); // Get the new spinner too
 
-        function showLoading() {
-            eventsGrid.style.display = 'none';
-            eventsList.style.display = 'none';
-            loadingSpinner.style.display = 'block';
-        }
+            if (newEventsGrid && eventsGrid) {
+                eventsGrid.innerHTML = newEventsGrid.innerHTML;
+            }
+            if (newEventsList && eventsList) {
+                eventsList.innerHTML = newEventsList.innerHTML;
+            }
 
-        function hideLoading() {
-            loadingSpinner.style.display = 'none';
+            // Ensure the correct view is displayed after update
             if (isListView) {
+                eventsGrid.style.display = 'none';
                 eventsList.style.display = 'block';
             } else {
                 eventsGrid.style.display = 'flex';
+                eventsList.style.display = 'none';
+            }
+
+            // Update the loading spinner in case the full response contains it
+            if (newLoadingSpinner && loadingSpinner) {
+                loadingSpinner.style.display = newLoadingSpinner.style.display; // Sync display state
             }
         }
 
-        function updateView() {
-            showLoading();
-            setTimeout(() => {
+        // Function to fetch and update events
+        async function fetchEvents(sort, order, adult) {
+            loadingSpinner.style.display = 'block'; // Show spinner
+            try {
+                const url = new URL(window.location.href);
+                url.searchParams.set('sort', sort);
+                url.searchParams.set('order', order);
+                url.searchParams.set('adult', adult);
+
+                // Update current sort and order for future interactions
+                currentSort = sort;
+                currentOrder = order;
+
+                // Update URL in browser history
+                history.pushState({ sort: sort, order: order, adult: adult }, '', url.toString());
+
+                const response = await fetch(url.toString());
+                const html = await response.text();
+                
+                // Extract the content of the event sections from the full HTML response
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newEventsGridHtml = doc.querySelector('#eventsGrid').innerHTML;
+                const newEventsListHtml = doc.querySelector('#eventsList').innerHTML;
+                const newLoadingSpinnerHtml = doc.querySelector('#loadingSpinner').innerHTML;
+
+                // Update the existing elements
+                eventsGrid.innerHTML = newEventsGridHtml;
+                eventsList.innerHTML = newEventsListHtml;
+                loadingSpinner.innerHTML = newLoadingSpinnerHtml;
+
+                // Apply current view preference after update
                 if (isListView) {
                     eventsGrid.style.display = 'none';
                     eventsList.style.display = 'block';
-                    toggleIcon.textContent = 'view_list';
                 } else {
                     eventsGrid.style.display = 'flex';
                     eventsList.style.display = 'none';
-                    toggleIcon.textContent = 'grid_view';
                 }
-                hideLoading();
-            }, 100);
-        }
 
-        function filterAdultEvents() {
-            showLoading();
-            setTimeout(() => {
-                const gridCards = eventsGrid.querySelectorAll('.col-md-6');
-                const listItems = eventsList.querySelectorAll('.list-group-item');
-
-                gridCards.forEach(card => {
-                    const badge = card.querySelector('.badge.bg-danger, .badge.bg-warning');
-                    if (badge && !showAdult) {
-                        card.style.display = 'none';
-                    } else {
-                        card.style.display = '';
+                // Update active state for sort buttons
+                sortButtons.forEach(button => {
+                    button.classList.remove('btn-primary', 'text-white');
+                    button.classList.add('btn-outline-primary');
+                    if (button.dataset.sort === currentSort) {
+                        button.classList.remove('btn-outline-primary');
+                        button.classList.add('btn-primary', 'text-white');
                     }
                 });
 
-                listItems.forEach(item => {
-                    const badge = item.querySelector('.badge.bg-danger, .badge.bg-warning');
-                    if (badge && !showAdult) {
-                        item.style.display = 'none';
-                    } else {
-                        item.style.display = '';
-                    }
-                });
-                hideLoading();
-            }, 100);
-        }
+                // Update the order toggle button's data-order attribute and icon
+                orderToggleBtn.dataset.order = currentOrder;
+                const orderIcon = orderToggleBtn.querySelector('.material-icons');
+                if (orderIcon) {
+                    orderIcon.textContent = currentOrder === 'desc' ? 'arrow_downward' : 'arrow_upward';
+                }
 
-        function updateToggleButton() {
-            if (showAdult) {
-                toggleAdult.textContent = 'Hide 18+/21+';
-                toggleAdult.classList.remove('btn-primary');
-                toggleAdult.classList.add('btn-danger');
-            } else {
-                toggleAdult.textContent = 'Show 18+/21+';
-                toggleAdult.classList.remove('btn-danger');
-                toggleAdult.classList.add('btn-primary');
+            } catch (error) {
+                console.error('Error fetching events:', error);
+            } finally {
+                loadingSpinner.style.display = 'none'; // Hide spinner
             }
         }
 
-        viewToggle.addEventListener('click', function () {
-            isListView = !isListView;
-            localStorage.setItem('eventViewPreference', isListView ? 'list' : 'grid');
-            updateView();
-            filterAdultEvents();
+        // Event Listeners for Sorting Buttons
+        sortButtons.forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+                const sortType = this.dataset.sort;
+                // If clicking the currently active sort button, reverse the order
+                const newOrder = (sortType === currentSort) ? (currentOrder === 'asc' ? 'desc' : 'asc') : currentOrder;
+                fetchEvents(sortType, newOrder, showAdult);
+            });
         });
 
-        toggleAdult.addEventListener('click', function () {
+        // Event Listener for Order Toggle Button
+        orderToggleBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const newOrder = this.dataset.order === 'asc' ? 'desc' : 'asc';
+            fetchEvents(currentSort, newOrder, showAdult);
+        });
+
+        // Toggle Adult Events
+        function toggleAdultEvents() {
             showAdult = !showAdult;
             localStorage.setItem('showAdultEvents', showAdult);
-            updateToggleButton();
-            filterAdultEvents();
+            toggleAdult.textContent = showAdult ? 'Hide 18+/21+' : 'Show 18+/21+';
+            fetchEvents(currentSort, currentOrder, showAdult);
+        }
+
+        toggleAdult.addEventListener('click', toggleAdultEvents);
+
+        // View Toggle (Grid/List)
+        function toggleView() {
+            isListView = !isListView;
+            localStorage.setItem('eventViewPreference', isListView ? 'list' : 'grid');
+            if (isListView) {
+                eventsGrid.style.display = 'none';
+                eventsList.style.display = 'block';
+                toggleIcon.textContent = 'list_view';
+            } else {
+                eventsGrid.style.display = 'flex';
+                eventsList.style.display = 'none';
+                toggleIcon.textContent = 'grid_view';
+            }
+        }
+
+        viewToggle.addEventListener('click', toggleView);
+
+        // Initial display setup
+        if (isListView) {
+            eventsGrid.style.display = 'none';
+            eventsList.style.display = 'block';
+            toggleIcon.textContent = 'list_view';
+        } else {
+            eventsGrid.style.display = 'flex';
+            eventsList.style.display = 'none';
+            toggleIcon.textContent = 'grid_view';
+        }
+
+        toggleAdult.textContent = showAdult ? 'Hide 18+/21+' : 'Show 18+/21+';
+
+        // Handle browser back/forward buttons
+        window.addEventListener('popstate', function(event) {
+            const state = event.state;
+            if (state) {
+                currentSort = state.sort || 'date';
+                currentOrder = state.order || 'asc';
+                showAdult = state.adult !== false; // Default to true
+                fetchEvents(currentSort, currentOrder, showAdult); // Re-fetch with historical state
+            } else {
+                // If no state, it might be the initial page load or a navigation outside our pushState calls
+                // Reload page or re-fetch with default parameters to ensure consistency
+                fetchEvents('date', 'asc', true);
+            }
         });
     });
 </script>

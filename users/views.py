@@ -12,7 +12,8 @@ from django.views.decorators.csrf import csrf_protect
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Q
 from django.db import models, transaction
-import json # Added import
+import json
+from django.core.serializers.json import DjangoJSONEncoder
 
 # Create your views here.
 
@@ -491,3 +492,8 @@ def purge_read_notifications(request):
         return JsonResponse({'status': 'success', 'message': f'Successfully purged {deleted_count} notifications.'})
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': f'Failed to purge notifications: {str(e)}'}, status=500)
+
+@login_required
+def notifications_page(request):
+    notifications = Notification.objects.filter(user=request.user).order_by('-timestamp')
+    return render(request, 'users/notifications.html', {'notifications': notifications})
