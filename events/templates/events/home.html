@@ -34,50 +34,69 @@
             font-size: 1.1rem;
         }
     }
+    .hero-gradient {
+        background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%);
+        color: #fff;
+        border-radius: 1.5rem;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.10);
+        padding: 2.5rem 2rem 2rem 2rem;
+        margin-bottom: 2.5rem;
+    }
+    .modern-card {
+        border-radius: 1.25rem;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.10);
+        background: #f8fafc;
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    .modern-card-header.events {
+        background: linear-gradient(90deg, #42f56c 0%, #66f43f 100%);
+        color: #fff;
+        font-size: 1.25rem;
+        font-weight: 700;
+        padding: 1.2rem 2rem;
+        border-bottom: none;
+        display: flex;
+        align-items: center;
+    }
+    .modern-card-body {
+        padding: 2rem 2.5rem 1.5rem 2.5rem;
+        background: #f8fafc;
+        color: #222;
+        font-size: 1.08rem;
+    }
 </style>
 <div class="container">
     <div class="row justify-content-center mb-5">
-        <div class="col-lg-8 text-center">
-            <h1 class="display-3 mb-4">FURsvp Event Manager</h1>
-            <div class="card shadow-sm mb-4">
-                <div class="card-body p-4">
-                    <p class="lead"> Dedicated to helping event organizers of all sizes within the furry community. A
-                        quick-and-dirty
-                        solution to get a head count, or as a free and hassle-free alternative to mainstream event
-                        services.
-                        FURsvp is an open-source project created to serve the furry community. We're always looking for
-                        feedback
-                        and contributions to make the platform better.
-                    </p>
+        <div class="col-lg-10">
+            <div class="hero-gradient text-center mb-4">
+                <h1 class="display-3 mb-3 fw-bold">FURsvp Event Manager</h1>
+                <p class="lead mb-4">Dedicated to helping event organizers of all sizes within the furry community. A quick-and-dirty solution to get a head count, or as a free and hassle-free alternative to mainstream event services. FURsvp is an open-source project created to serve the furry community. We're always looking for feedback and contributions to make the platform better.</p>
+                <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mb-2">
+                    {% if user.is_authenticated and user.profile.is_approved_organizer %}
+                    <a href="{% url 'create_event' %}" class="btn btn-light btn-lg px-4 gap-3 fw-bold">
+                        <i class="material-icons" style="vertical-align: middle; line-height: 1;">add_circle</i> Create an Event
+                    </a>
+                    {% elif user.is_authenticated%}
+                    {% else %}
+                    <a href="{% url 'register' %}" class="btn btn-light btn-lg px-4 gap-3 fw-bold">
+                        <i class="material-icons" style="vertical-align: middle; line-height: 1;">person_add</i> Register
+                    </a>
+                    <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg px-4 fw-bold">
+                        <i class="material-icons" style="vertical-align: middle; line-height: 1;">login</i> Login
+                    </a>
+                    {% endif %}
                 </div>
-            </div>
-            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-                {% if user.is_authenticated and user.profile.is_approved_organizer %}
-                <a href="{% url 'create_event' %}" class="btn btn-primary btn-lg px-4 gap-3">
-                    <i class="material-icons" style="vertical-align: middle; line-height: 1;">add_circle</i> Create an
-                    Event
-                </a>
-                {% elif user.is_authenticated%}
-                {% else %}
-                <a href="{% url 'register' %}" class="btn btn-primary btn-lg px-4 gap-3">
-                    <i class="material-icons" style="vertical-align: middle; line-height: 1;">person_add</i>
-                    Register
-                </a>
-                <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg px-4">
-                    <i class="material-icons" style="vertical-align: middle; line-height: 1;">login</i> Login
-                </a>
-                {% endif %}
             </div>
         </div>
     </div>
 
-    <h3 class="display-6 mb-4 text-center">
-        <i class="material-icons" style="vertical-align: middle; line-height: 1;">event</i> Upcoming Events
-    </h3>
-
-    <!-- Sorting Controls -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-body p-4">
+    <div class="modern-card mb-4">
+        <div class="modern-card-header events">
+            <i class="material-icons me-2">event</i> Upcoming Events
+        </div>
+        <div class="modern-card-body">
+            <!-- Sorting Controls -->
             <div class="row align-items-center justify-content-between mb-3">
                 <div class="col-12 mb-3">
                     <div class="d-flex flex-wrap justify-content-center gap-2">
@@ -125,11 +144,9 @@
                     </div>
                 </div>
             </div>
+            {% include 'events/events_list_partial.html' %}
         </div>
     </div>
-
-    {% include 'events/events_list_partial.html' %}
-
 </div>
 
 {% block extra_js %}
