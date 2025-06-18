@@ -1,0 +1,8 @@
+body {
+    background: #23272b !important;
+    color: #e0e0e0 !important;
+}
+p, h1, h2, h3, h4, h5, h6, ul, ol, li, table, th, td, blockquote, pre, code {
+    color: #e0e0e0 !important;
+}
+a { color: #b3d1f7 !important; } 
