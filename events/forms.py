@@ -183,17 +183,18 @@ class RSVPForm(forms.ModelForm):
 class GroupRoleForm(forms.ModelForm):
     class Meta:
         model = GroupRole
-        fields = ['user', 'role_name', 'is_active']
+        fields = ['user', 'custom_label', 'can_post', 'is_active']
         widgets = {
-            'user': forms.Select(attrs={'class': 'form-select'}),
-            'role_name': forms.Select(attrs={'class': 'form-select'}),
+            'user': forms.Select(attrs={'class': 'form-select tomselect-user'}),
+            'custom_label': forms.TextInput(attrs={'class': 'form-control'}),
+            'can_post': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
     
     def __init__(self, *args, **kwargs):
         group = kwargs.pop('group', None)
         super().__init__(*args, **kwargs)
-        
+        self.fields['custom_label'].required = True
         # Filter users to only show users who don't already have a role in this group
         if group:
             existing_users = GroupRole.objects.filter(group=group).values_list('user_id', flat=True)
@@ -205,11 +206,9 @@ class GroupRoleForm(forms.ModelForm):
         cleaned_data = super().clean()
         user = cleaned_data.get('user')
         group = getattr(self.instance, 'group', None)
-        
         # Check if user already has a role in this group
         if user and group:
             existing_role = GroupRole.objects.filter(user=user, group=group).first()
             if existing_role and existing_role != self.instance:
                 raise forms.ValidationError(f"User {user.username} already has a role in this group.")
-        
         return cleaned_data

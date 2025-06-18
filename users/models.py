@@ -21,6 +21,8 @@ class GroupRole(models.Model):
     role_name = models.CharField(max_length=32, choices=ROLE_CHOICES)
     is_active = models.BooleanField(default=True)
     assigned_at = models.DateTimeField(auto_now_add=True)
+    custom_label = models.CharField(max_length=64, blank=True, null=True, help_text='Custom label for this leader (optional)')
+    can_post = models.BooleanField(default=False, help_text='Can this user make posts for the group?')
     
     class Meta:
         unique_together = ('group', 'user')
@@ -40,7 +42,8 @@ class GroupRole(models.Model):
         return mapping.get(self.role_name, 99)
     
     def __str__(self):
-        return f"{self.user.username} - {self.get_role_name_display()} ({self.group.name})"
+        label = self.custom_label or self.get_role_name_display()
+        return f"{self.user.username} - {label} ({self.group.name})"
     
     def can_manage_events(self):
         """Check if this role can create/edit/delete events"""

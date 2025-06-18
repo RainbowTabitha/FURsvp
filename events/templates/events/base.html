@@ -114,21 +114,25 @@
             color: #2563eb;
             font-weight: 600;
             font-size: 1.08rem;
-            box-shadow: 0 2px 8px rgba(59,130,246,0.07);
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.07);
             transition: background 0.18s, color 0.18s, box-shadow 0.18s, transform 0.12s;
             margin: 0.3em 0.4em 0.3em 0;
             outline: none;
             cursor: pointer;
             text-decoration: none;
         }
-        .footer-btn-modern:hover, .footer-btn-modern.active {
+
+        .footer-btn-modern:hover,
+        .footer-btn-modern.active {
             background: linear-gradient(90deg, #2563eb 0%, #6366f1 100%);
             color: #fff;
-            box-shadow: 0 4px 18px rgba(59,130,246,0.13);
+            box-shadow: 0 4px 18px rgba(59, 130, 246, 0.13);
             transform: translateY(-2px) scale(1.04);
             text-decoration: none;
         }
-        .footer-btn-modern i, .footer-btn-modern .material-icons {
+
+        .footer-btn-modern i,
+        .footer-btn-modern .material-icons {
             font-size: 1.25em;
             vertical-align: middle;
         }
@@ -180,23 +184,23 @@
         .breadcrumb {
             font-size: 1.1rem;
         }
-        
+
         .breadcrumb-item+.breadcrumb-item::before {
             content: "›";
             font-size: 1.5rem;
             line-height: 1;
             color: #6c757d;
         }
-        
+
         .breadcrumb-item a {
             color: #6c757d;
             transition: color 0.2s ease-in-out;
         }
-        
+
         .breadcrumb-item a:hover {
             color: var(--primary-color);
         }
-        
+
         .breadcrumb-item.active {
             color: var(--primary-color);
         }
@@ -205,7 +209,7 @@
         .modern-breadcrumbs {
             background: #f8fafc;
             border-radius: 2rem;
-            box-shadow: 0 2px 8px rgba(59,130,246,0.07);
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.07);
             padding: 0.7rem 1.5rem;
             display: flex;
             align-items: center;
@@ -213,6 +217,7 @@
             font-size: 1.13rem;
             margin-bottom: 1.5rem;
         }
+
         .modern-breadcrumbs a {
             color: #64748b;
             text-decoration: none;
@@ -221,19 +226,23 @@
             align-items: center;
             transition: color 0.15s;
         }
+
         .modern-breadcrumbs a:hover {
             color: #2563eb;
         }
+
         .modern-breadcrumbs .breadcrumb-chevron {
             color: #b0b8c1;
             font-size: 1.3em;
             margin: 0 0.5rem;
             user-select: none;
         }
+
         .modern-breadcrumbs .breadcrumb-current {
             color: #2563eb;
             font-weight: 700;
         }
+
         .modern-breadcrumbs .material-icons {
             font-size: 1.3em;
             margin-right: 0.3em;
@@ -1116,10 +1125,69 @@
             border: 2px solid transparent;
             text-decoration: none;
         }
+
+        .modern-topnav {
+            background: linear-gradient(90deg, #b4d8fa 0%, #a7c7f9 100%);
+            box-shadow: 0 2px 12px rgba(59, 130, 246, 0.07);
+            padding: 1.1rem 0 1.1rem 0;
+            display: flex;
+            justify-content: center;
+            gap: 2.5rem;
+            border-bottom-left-radius: 1.5rem;
+            border-bottom-right-radius: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .modern-topnav-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5em;
+            font-size: 1.13rem;
+            font-weight: 600;
+            color: #223b7b;
+            background: none;
+            border: none;
+            border-radius: 2em;
+            padding: 0.6em 1.4em;
+            transition: background 0.18s, color 0.18s, box-shadow 0.18s, transform 0.12s;
+            text-decoration: none;
+            outline: none;
+        }
+
+        .modern-topnav-link:hover,
+        .modern-topnav-link.active {
+            background: linear-gradient(90deg, #2563eb 0%, #6366f1 100%);
+            color: #fff;
+            box-shadow: 0 4px 18px rgba(59, 130, 246, 0.13);
+            transform: translateY(-2px) scale(1.04);
+            text-decoration: none;
+        }
+
+        .modern-topnav-link .material-icons {
+            font-size: 1.25em;
+            vertical-align: middle;
+        }
+
+        @media (max-width: 768px) {
+            .modern-topnav {
+                flex-direction: column;
+                gap: 0.5rem;
+                padding: 0.7rem 0;
+                border-radius: 0;
+            }
+
+            .modern-topnav-link {
+                width: 100%;
+                justify-content: center;
+                padding: 0.7em 0;
+            }
+        }
+
         .notification-bell-icon.has-unread {
             background-color: var(--primary-color);
             color: white !important;
         }
+
         .notification-bell-icon:hover {
             background-color: #1a2f9a;
             color: white !important;
@@ -1276,6 +1344,7 @@
 
         /* Mobile responsive adjustments */
         @media (max-width: 768px) {
+
             .main-header,
             .navigation-subheader {
                 display: none;
@@ -1406,7 +1475,7 @@
         .dark-mode .list-group-item span {
             color: #fff !important;
         }
-        
+
         .dark-mode .card-body .ms-2 {
             color: #fff !important;
         }
@@ -1421,6 +1490,7 @@
             margin-top: 3rem;
             color: #234;
         }
+
         @media (max-width: 768px) {
             .gradient-footer {
                 border-radius: 0;
@@ -1428,6 +1498,38 @@
             }
         }
 
+        .footer-meta {
+            color: #29486d !important;
+            font-size: 1.13rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 0.2em;
+            letter-spacing: 0.01em;
+        }
+
+        .footer-meta .footer-copyright {
+            font-weight: 600;
+            font-size: 1.09em;
+            color: #29486d;
+            margin-bottom: 0.2em;
+            display: block;
+        }
+
+        .footer-meta .footer-madeby {
+            font-weight: 400;
+            font-size: 1.04em;
+            color: #355b8c;
+            margin-top: 0.2em;
+            letter-spacing: 0.01em;
+            display: block;
+        }
+
+        .footer-meta .footer-heart {
+            color: #355b8c;
+            font-size: 1.2em;
+            vertical-align: middle;
+            margin: 0 0.18em;
+        }
     </style>
     <!-- TomSelect CSS -->
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
@@ -1455,67 +1557,67 @@
         <div class="container">
             <div class="header-content">
                 <!-- Logo -->
-            <a class="navbar-brand" href="{% url 'home' %}">
+                <a class="navbar-brand" href="{% url 'home' %}">
                     {% if request.get_host == 'nj.fursvp.org' %}
                     <img src="{% static 'fursvp-nj.png' %}" alt="FURsvp Logo">
                     {% else %}
                     <img src="{% static 'fursvp-logo.png' %}" alt="FURsvp Logo">
                     {% endif %}
                 </a>
-                
+
                 <!-- User Actions -->
                 <div class="user-actions">
                     {% if user.is_authenticated %}
-                        <!-- Notifications -->
-                        <div class="notification-container">
-                            <a class="notification-bell-icon" href="#" id="notificationsDropdown" role="button"
-                                data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="material-icons">notifications</i>
-                                <span class="badge rounded-pill unread-notifications-badge"
-                                    id="unread-notifications-badge">0</span>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 notifications-dropdown"
-                                aria-labelledby="notificationsDropdown" id="notifications-list">
-                                <li>
-                                    <h6 class="dropdown-header notification-header">Notifications</h6>
-                                </li>
-                                <li id="no-notifications-message-item"><a class="dropdown-item text-center text-muted"
-                                        href="#" id="no-notifications-message" style="padding: 15px;">No new
-                                        notifications</a></li>
-                                <li>
-                                    <hr class="dropdown-divider my-0">
-                                </li>
-                                <li><button class="dropdown-item text-center text-primary notification-footer"
-                                        id="clear-notifications-btn">Clear All Notifications</button></li>
-                            </ul>
-                        </div>
-                        
-                        <!-- User Profile -->
-                        <div class="user-profile-container">
-                            <a class="user-profile-icon" href="{% url 'profile' %}" title="Profile">
-                                <i class="material-icons">account_circle</i>
-                            </a>
-                        </div>
-                        
-                        <!-- Logout -->
-                        <form action="{% url 'logout' %}" method="post" class="d-inline logout-form">
-                            {% csrf_token %}
-                            <button type="submit" class="logout-btn" title="Logout">
-                                <i class="material-icons">logout</i>
-            </button>
-                        </form>
+                    <!-- Notifications -->
+                    <div class="notification-container">
+                        <a class="notification-bell-icon" href="#" id="notificationsDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="material-icons">notifications</i>
+                            <span class="badge rounded-pill unread-notifications-badge"
+                                id="unread-notifications-badge">0</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 notifications-dropdown"
+                            aria-labelledby="notificationsDropdown" id="notifications-list">
+                            <li>
+                                <h6 class="dropdown-header notification-header">Notifications</h6>
+                            </li>
+                            <li id="no-notifications-message-item"><a class="dropdown-item text-center text-muted"
+                                    href="#" id="no-notifications-message" style="padding: 15px;">No new
+                                    notifications</a></li>
+                            <li>
+                                <hr class="dropdown-divider my-0">
+                            </li>
+                            <li><button class="dropdown-item text-center text-primary notification-footer"
+                                    id="clear-notifications-btn">Clear All Notifications</button></li>
+                        </ul>
+                    </div>
+
+                    <!-- User Profile -->
+                    <div class="user-profile-container">
+                        <a class="user-profile-icon" href="{% url 'profile' %}" title="Profile">
+                            <i class="material-icons">account_circle</i>
+                        </a>
+                    </div>
+
+                    <!-- Logout -->
+                    <form action="{% url 'logout' %}" method="post" class="d-inline logout-form">
+                        {% csrf_token %}
+                        <button type="submit" class="logout-btn" title="Logout">
+                            <i class="material-icons">logout</i>
+                        </button>
+                    </form>
                     {% else %}
-                        <!-- Login/Register for non-authenticated users -->
-                        <div class="auth-actions">
-                            <a href="{% url 'login' %}" class="auth-btn login-btn">
-                                <i class="material-icons">login</i>
-                                <span>Login</span>
-                            </a>
-                            <a href="{% url 'register' %}" class="auth-btn register-btn">
-                                <i class="material-icons">person_add</i>
-                                <span>Register</span>
-                            </a>
-                        </div>
+                    <!-- Login/Register for non-authenticated users -->
+                    <div class="auth-actions">
+                        <a href="{% url 'login' %}" class="auth-btn login-btn">
+                            <i class="material-icons">login</i>
+                            <span>Login</span>
+                        </a>
+                        <a href="{% url 'register' %}" class="auth-btn register-btn">
+                            <i class="material-icons">person_add</i>
+                            <span>Register</span>
+                        </a>
+                    </div>
                     {% endif %}
                 </div>
             </div>
@@ -1523,7 +1625,7 @@
     </header>
 
     <!-- Navigation Subheader -->
-    <nav class="navigation-subheader">
+    <nav class="navigation-subheader modern-topnav">
         <div class="container">
             <div class="nav-content">
                 <ul class="nav-menu">
@@ -1533,20 +1635,20 @@
                         </a>
                     </li>
                     {% if user.is_authenticated %}
-                        {% if user.is_superuser %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'administration' %}">
-                                <i class="material-icons">admin_panel_settings</i> Administration
-                            </a>
-                        </li>
-                        {% endif %}
-                        {% if user.profile.is_approved_organizer or user.delegated_groups_as_delegate.exists %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'create_event' %}">
-                                <i class="material-icons">add_circle</i> Create Event
-                                </a>
-                            </li>
-                        {% endif %}
+                    {% if user.is_superuser %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'administration' %}">
+                            <i class="material-icons">admin_panel_settings</i> Administration
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% if user.profile.is_approved_organizer or user.delegated_groups_as_delegate.exists %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'create_event' %}">
+                            <i class="material-icons">add_circle</i> Create Event
+                        </a>
+                    </li>
+                    {% endif %}
                     {% endif %}
                 </ul>
             </div>
@@ -1556,17 +1658,17 @@
     <div class="main-content">
         <div class="container">
             {% if messages %}
-                <div class="message-container">
-                    {% for message in messages %}
-                        {% if not "admin_notification" in message.tags %}
-                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                                <i class="material-icons me-2">info</i>
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        {% endif %}
-                    {% endfor %}
+            <div class="message-container">
+                {% for message in messages %}
+                {% if not "admin_notification" in message.tags %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    <i class="material-icons me-2">info</i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
+                {% endif %}
+                {% endfor %}
+            </div>
             {% endif %}
             {% block content %}
             {% endblock %}
@@ -1635,20 +1737,24 @@
                     class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn-modern">
                     <i class="material-icons me-1">code</i> GitHub
                 </a>
-                <button id="darkModeToggle" class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn-modern"
-                    type="button" style="gap: 0.5rem;">
+                <button id="darkModeToggle"
+                    class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn-modern" type="button"
+                    style="gap: 0.5rem;">
                     <span id="darkModeIcon" class="material-icons">dark_mode</span>
                     <span id="darkModeText">Dark Mode</span>
                 </button>
             </div>
             <div class="d-flex gap-2 justify-content-center mb-4">
-                <a href="{% url 'terms' %}" class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn-modern">
+                <a href="{% url 'terms' %}"
+                    class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn-modern">
                     <i class="material-icons me-1">gavel</i> Terms of Service
                 </a>
-                <a href="{% url 'faq' %}" class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn-modern">
+                <a href="{% url 'faq' %}"
+                    class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn-modern">
                     <i class="material-icons me-1">help</i> FAQ
                 </a>
-                <a href="{% url 'eula' %}" class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn-modern">
+                <a href="{% url 'eula' %}"
+                    class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn-modern">
                     <i class="material-icons me-1">description</i> EULA
                 </a>
                 <a href="{% url 'privacy' %}"
@@ -1656,11 +1762,12 @@
                     <i class="material-icons me-1">privacy_tip</i> Privacy
                 </a>
             </div>
-            <div class="footer-meta"
+            <div class="footer-meta footer-copyright"
                 style="color: #335588 !important; font-size: 1.1rem; font-weight: 600; text-align: center;">
                 <div>© 2010-{% now "Y" %} FURsvp. All rights reserved.</div>
-                <div style="font-size: 1.05rem; font-weight: 500;">Made with<i class="material-icons mx-1"
-                        style="font-size: 1.5rem; vertical-align: middle;">favorite</i>by furtabs</div>
+                <span class="footer-madeby">
+                    Made with <i class="material-icons footer-heart">favorite</i> by furtabs
+                </span>
             </div>
         </div>
     </footer>
@@ -1984,5 +2091,4 @@
     </script>
 </body>
 
-</html> 
-</html> 
+</html>

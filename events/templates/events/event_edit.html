@@ -18,7 +18,7 @@
                 </div>
             </nav>
 
-            <div class="card shadow-sm">
+            <div class="card shadow-sm border-0" style="border-radius: 1.5rem;">
                 <div class="card-body p-4">
                     <div class="d-flex align-items-center mb-4">
                         <i class="material-icons text-primary me-2" style="font-size: 2.5rem;">edit</i>
@@ -28,9 +28,9 @@
                     <form method="post" class="needs-validation" novalidate>
                         {% csrf_token %}
                         <!-- Title Field -->
-                        <div class="mb-4">
-                            <label for="{{ form.title.id_for_label }}" class="form-label fw-bold">
-                                <i class="material-icons align-middle me-1">event_note</i>
+                        <div class="mb-4 event-form-group">
+                            <label for="{{ form.title.id_for_label }}" class="event-form-label">
+                                <i class="material-icons align-middle me-1 event-form-icon">event_note</i>
                                 Event Title
                             </label>
                             <div class="input-group">
@@ -41,9 +41,9 @@
                             </div>
                         </div>
                         <!-- Group Field -->
-                        <div class="mb-4">
-                            <label for="{{ form.group.id_for_label }}" class="form-label fw-bold">
-                                <i class="material-icons align-middle me-1">groups</i>
+                        <div class="mb-4 event-form-group">
+                            <label for="{{ form.group.id_for_label }}" class="event-form-label">
+                                <i class="material-icons align-middle me-1 event-form-icon">groups</i>
                                 Group
                             </label>
                             <div class="input-group">
@@ -54,9 +54,9 @@
                             </div>
                         </div>
                         <!-- Date/Time Fields -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">
-                                <i class="material-icons align-middle me-1">schedule</i>
+                        <div class="mb-4 event-form-group">
+                            <label class="event-form-label">
+                                <i class="material-icons align-middle me-1 event-form-icon">schedule</i>
                                 Date and Time
                             </label>
                             <div class="row">
@@ -88,9 +88,9 @@
                         </div>
 
                         <!-- Location Details Fields -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">
-                                <i class="material-icons align-middle me-1">place</i>
+                        <div class="mb-4 event-form-group">
+                            <label class="event-form-label">
+                                <i class="material-icons align-middle me-1 event-form-icon">place</i>
                                 Location
                             </label>
                             <div class="mb-3">
@@ -126,9 +126,9 @@
                         </div>
 
                         <!-- Age Restriction Field -->
-                        <div class="mb-4">
-                            <label for="{{ form.age_restriction.id_for_label }}" class="form-label fw-bold">
-                                <i class="material-icons align-middle me-1">block</i>
+                        <div class="mb-4 event-form-group">
+                            <label for="{{ form.age_restriction.id_for_label }}" class="event-form-label">
+                                <i class="material-icons align-middle me-1 event-form-icon">block</i>
                                 Age Restriction
                             </label>
                             <div class="input-group">
@@ -140,8 +140,8 @@
                         </div>
 
                         <!-- Event Capacity Field -->
-                        <div class="mb-4">
-                            <label for="{{ form.capacity.id_for_label }}" class="form-label fw-bold">
+                        <div class="mb-4 event-form-group">
+                            <label for="{{ form.capacity.id_for_label }}" class="event-form-label">
                                 Event Capacity
                             </label>
                             <div class="input-group">
@@ -160,8 +160,8 @@
                         <!-- Waitlist Enabled Field -->
                         <div class="mb-4 form-check form-switch">
                             {{ form.waitlist_enabled|add_class:'form-check-input' }}
-                            <label class="form-check-label fw-bold" for="{{ form.waitlist_enabled.id_for_label }}">
-                                <i class="material-icons align-middle me-1">add_box</i> Enable Waitlist
+                            <label class="form-check-label event-form-label" for="{{ form.waitlist_enabled.id_for_label }}">
+                                <i class="material-icons align-middle me-1 event-form-icon">add_box</i> Enable Waitlist
                             </label>
                             {% if form.waitlist_enabled.help_text %}
                             <div class="form-text">{{ form.waitlist_enabled.help_text }}</div>
@@ -174,9 +174,9 @@
                         </div>
 
                         <!-- Description Field -->
-                        <div class="mb-4">
-                            <label for="{{ form.description.id_for_label }}" class="form-label fw-bold">
-                                <i class="material-icons align-middle me-1">description</i>
+                        <div class="mb-4 event-form-group">
+                            <label for="{{ form.description.id_for_label }}" class="event-form-label">
+                                <i class="material-icons align-middle me-1 event-form-icon">description</i>
                                 Description
                             </label>
                             {{ form.description }}
@@ -734,4 +734,50 @@
     });
 });
 </script>
-{% endblock %} 
+{% endblock %}
+
+<style>
+/***** Modern Form Styles for Create/Edit Event *****/
+.event-section-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #2563eb;
+    margin-bottom: 1.1rem;
+    margin-top: 2.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+}
+.event-section-title:first-child {
+    margin-top: 0;
+}
+.event-form-label {
+    font-weight: 600;
+    color: #223b7b;
+    margin-bottom: 0.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+}
+.event-form-group {
+    margin-bottom: 1.5rem;
+}
+.event-form-input, .event-form-select, .event-form-textarea {
+    border-radius: 0.7rem;
+    border: 1.5px solid #c7d7f5;
+    font-size: 1.09rem;
+    padding: 0.7rem 1.1rem;
+    transition: border-color 0.18s, box-shadow 0.18s;
+    box-shadow: 0 1px 4px rgba(59,130,246,0.04);
+}
+.event-form-input:focus, .event-form-select:focus, .event-form-textarea:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px #b3d1f7;
+    outline: none;
+}
+.event-form-icon {
+    color: #2563eb;
+    font-size: 1.25em;
+    margin-right: 0.3em;
+}
+</style> 
