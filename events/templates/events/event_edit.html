@@ -200,8 +200,8 @@
 
 {% block extra_js %}
 {{ block.super }}
-<script src="https://cdn.jsdelivr.net/npm/tinymce@7.9.1/tinymce.min.js" crossorigin="anonymous"
-    referrerpolicy="no-referrer"></script>
+{{ form.media }}
+<script src="https://cdn.jsdelivr.net/npm/tinymce@7.9.1/tinymce.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // Initialize address autocomplete

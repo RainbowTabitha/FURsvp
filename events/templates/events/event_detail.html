@@ -773,10 +773,9 @@
 
                     <!-- Waitlisted -->
                     {% if event.waitlist_enabled %}
-                    <div class="mb-3">
-                        <h4 class="h6 text-warning mb-2 text-primary">
-                            <i class="material-icons align-middle me-1">queue</i> Waitlisted
-                            ({{ waitlisted_rsvps_count }})
+                    <div class="rsvp-group-card rsvp-group-waitlist">
+                        <h4 class="h6 text-warning mb-2 d-flex align-items-center">
+                            <i class="material-icons align-middle me-1">queue</i> Waitlisted ({{ waitlisted_rsvps_count }})
                         </h4>
                         <div class="list-group list-group-flush">
                             {% for rsvp_data in rsvp_groups.waitlisted %}
@@ -919,23 +918,32 @@
 <div class="modal fade" id="contactInfoModal" tabindex="-1" aria-labelledby="contactInfoModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="contactInfoModalLabel">
+            <div class="modal-header" style="background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%); color: #fff; border-bottom: none;">
+                <h5 class="modal-title d-flex align-items-center gap-2" id="contactInfoModalLabel">
                     <i class="material-icons me-2">contact_mail</i> Attendee Contact Information
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <p><strong>Display Name:</strong> <span id="modalContactDisplayName"></span></p>
-                <p><strong>Discord:</strong> <span id="modalContactDiscord"></span></p>
-                <p><strong>Telegram:</strong> <span id="modalContactTelegram"></span></p>
+            <div class="modal-body py-4 px-4" style="background: #f8fafc;">
+                <div class="mb-3">
+                    <span class="fw-bold text-primary">Display Name:</span>
+                    <span id="modalContactDisplayName" class="ms-2"></span>
+                </div>
+                <div class="mb-3">
+                    <span class="fw-bold" style="color: #5865F2;"><i class="material-icons align-middle me-1" style="font-size: 1.2em; vertical-align: middle;">chat</i>Discord:</span>
+                    <span id="modalContactDiscord" class="ms-2"></span>
+                </div>
+                <div class="mb-3">
+                    <span class="fw-bold" style="color: #229ED9;"><i class="material-icons align-middle me-1" style="font-size: 1.2em; vertical-align: middle;">send</i>Telegram:</span>
+                    <span id="modalContactTelegram" class="ms-2"></span>
+                </div>
                 {% if can_ban_user %}
-                <button type="button" class="btn btn-danger btn-sm mt-3" id="modalBanUserBtn">
+                <button type="button" class="btn btn-danger btn-sm mt-3 gradient-btn-danger" id="modalBanUserBtn" style="background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%); color: #fff; border: none; border-radius: 2rem; box-shadow: 0 2px 8px rgba(239,68,68,0.10); font-weight: 600; font-size: 1.08rem;">
                     <i class="material-icons me-1">gavel</i> Ban User from Group
                 </button>
                 {% endif %}
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer" style="background: #f3f4f6; border-top: none;">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
@@ -1056,22 +1064,9 @@
         });
 
         const rsvpSelect = document.querySelector('#{{ form.status.id_for_label }}');
-        const confirmedCount = {
-            {
-                confirmed_rsvps_count
-            }
-        };
-        const capacity = {
-            {
-                event.capacity |
-                    default: "null"
-            }
-        };
-        const waitlistEnabled = {
-            {
-                event.waitlist_enabled | yesno: "true,false"
-            }
-        };
+        const confirmedCount = {{ confirmed_rsvps_count|default:'0' }};
+        const capacity = {{ event.capacity|default:'null' }};
+        const waitlistEnabled = {{ event.waitlist_enabled|yesno:'true,false' }} === 'true';
 
         function updateRSVPOptions() {
             const options = rsvpSelect.options;
