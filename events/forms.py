@@ -165,11 +165,12 @@ class RSVPForm(forms.ModelForm):
 class GroupRoleForm(forms.ModelForm):
     class Meta:
         model = GroupRole
-        fields = ['user', 'custom_label', 'can_post']
+        fields = ['user', 'custom_label', 'can_post', 'can_manage_leadership']
         widgets = {
             'user': forms.Select(attrs={'class': 'form-select tomselect-user'}),
             'custom_label': forms.TextInput(attrs={'class': 'form-control'}),
             'can_post': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'can_manage_leadership': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
     
     def __init__(self, *args, **kwargs):
