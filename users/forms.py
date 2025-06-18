@@ -22,19 +22,20 @@ class UserRegisterForm(UserCreationForm):
         fields = ['username', 'email']
 
 class UserProfileForm(forms.ModelForm):
+    admin_groups = forms.ModelMultipleChoiceField(
+        queryset=Group.objects.all(),
+        required=False,
+        label="Groups"
+    )
     clear_profile_picture = forms.BooleanField(required=False, label="Remove Profile Picture")
-    is_approved_organizer = forms.BooleanField(required=False, label="Approved Organizer")
 
     class Meta:
         model = Profile
-        fields = ['display_name', 'is_approved_organizer', 'profile_picture_base64', 'discord_username', 'telegram_username']
+        fields = ['display_name', 'profile_picture_base64', 'discord_username', 'telegram_username']
         widgets = {
             'display_name': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Enter your display name'
-            }),
-            'is_approved_organizer': forms.CheckboxInput(attrs={
-                'class': 'form-check-input',
             }),
             'discord_username': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -49,9 +50,21 @@ class UserProfileForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.instance:
-            if self.instance.profile_picture_base64:
-                self.initial['profile_picture_base64'] = self.instance.profile_picture_base64
+        if self.instance and self.instance.user:
+            self.fields['admin_groups'].initial = Group.objects.filter(group_roles__user=self.instance.user)
+        if self.instance and self.instance.profile_picture_base64:
+            self.initial['profile_picture_base64'] = self.instance.profile_picture_base64
+
+    def save(self, commit=True):
+        instance = super().save(commit=commit)
+        if self.instance and self.instance.user:
+            selected_groups = self.cleaned_data.get('admin_groups', Group.objects.none())
+            # Add new GroupRoles
+            for group in selected_groups:
+                GroupRole.objects.get_or_create(user=self.instance.user, group=group)
+            # Remove GroupRoles for groups not selected
+            GroupRole.objects.filter(user=self.instance.user).exclude(group__in=selected_groups).delete()
+        return instance
 
 class UserPublicProfileForm(forms.ModelForm):
     clear_profile_picture = forms.BooleanField(required=False, label="Remove Profile Picture")
@@ -125,4 +138,9 @@ class UserPasswordChangeForm(PasswordChangeForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field_name in self.fields:
-            self.fields[field_name].widget.attrs['class'] = 'form-control' 
+            self.fields[field_name].widget.attrs['class'] = 'form-control'
+
+class GroupRoleForm(forms.ModelForm):
+    class Meta:
+        model = GroupRole
+        fields = ['user', 'custom_label', 'can_post', 'can_manage_leadership'] 

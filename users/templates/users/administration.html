@@ -62,7 +62,7 @@
                                         <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">person</i> Username</th>
                                         <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">email</i> Email</th>
                                         <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">admin_panel_settings</i> Site Admin</th>
-                                        <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">group</i> Admin Groups</th>
+                                        <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">group</i> Groups</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -79,13 +79,9 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <ul class="list-unstyled mb-0">
-                                                {% for grouprole in user_obj.group_roles.all %}
-                                                    <li>{{ grouprole.group.name }}</li>
-                                                {% empty %}
-                                                    <li class="text-muted">No groups</li>
-                                                {% endfor %}
-                                            </ul>
+                                            {% with profile_form=user_profile_forms|get_item:user_obj.id %}
+                                                {{ profile_form.admin_groups|add_class:"tomselect-allowed-groups form-select form-select-sm" }}
+                                            {% endwith %}
                                         </td>
                                     </tr>
                                     {% empty %}

@@ -10,11 +10,6 @@ class UserRegisterForm(UserCreationForm):
         model = User
         fields = ['username', 'email']
 
-class UserProfileForm(forms.ModelForm):
-    class Meta:
-        model = Profile
-        fields = ['is_approved_organizer']
-
 class EventForm(forms.ModelForm):
     AGE_CHOICES = [
         ('none', 'No age restriction'),

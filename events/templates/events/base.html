@@ -1642,7 +1642,7 @@
                         </a>
                     </li>
                     {% endif %}
-                    {% if user.profile.is_approved_organizer or user.delegated_groups_as_delegate.exists %}
+                    {% if user.group_roles.all or user.delegated_groups_as_delegate.exists %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'create_event' %}">
                             <i class="material-icons">add_circle</i> Create Event
@@ -1688,7 +1688,7 @@
             <span>Alerts</span>
         </a>
         {% endif %}
-        {% if user.profile.is_approved_organizer or user.delegated_groups_as_delegate.exists %}
+        {% if user.group_roles.all or user.delegated_groups_as_delegate.exists %}
         <a href="{% url 'create_event' %}" class="nav-link">
             <i class="material-icons">add</i>
             <span>Create</span>

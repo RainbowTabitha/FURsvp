@@ -14,6 +14,7 @@ from django.views.generic import ListView, DetailView
 import pytz
 import time
 from events.forms import GroupRoleForm
+from django.db.models import Q
 
 # Create your views here.
 
@@ -108,7 +109,7 @@ def event_detail(request, event_id):
     if request.user.is_authenticated:
         try:
             profile = request.user.profile
-            if profile.is_approved_organizer and GroupRole.objects.filter(user=profile.user, group=event.group).exists():
+            if GroupRole.objects.filter(user=profile.user, group=event.group).exists():
                 can_access_group_contact_info = True
         except Profile.DoesNotExist:
             pass
@@ -399,23 +400,12 @@ def event_detail(request, event_id):
 
 @login_required
 def create_event(request):
-    # Check if user is an approved organizer, an assistant, or an admin
-    is_approved_organizer = False
-    is_assistant = False
+    # Check if user is a group leader, an assistant, or an admin
+    is_leader = GroupRole.objects.filter(user=request.user).exists()
+    is_assistant = GroupDelegation.objects.filter(delegated_user=request.user).exists()
     
     # Admins can always create events
-    if request.user.is_superuser:
-        is_approved_organizer = True
-    else:
-        try:
-            profile = request.user.profile
-            is_approved_organizer = profile.is_approved_organizer
-        except Profile.DoesNotExist:
-            pass
-        
-        is_assistant = GroupDelegation.objects.filter(delegated_user=request.user).exists()
-
-    if not (is_approved_organizer or is_assistant):
+    if not (request.user.is_superuser or is_leader or is_assistant):
         return redirect('pending_approval')
 
     if request.method == 'POST':
@@ -436,13 +426,13 @@ def edit_event(request, event_id):
         messages.error(request, "You are not authorized to edit this event.")
         return redirect('event_detail', event_id=event.id)
 
-    # Check if user is an approved organizer for this group or a delegated assistant
+    # Check if user is a group leader or a delegated assistant
     is_delegated_assistant = False
     if request.user.is_authenticated and event.group:
         is_delegated_assistant = GroupDelegation.objects.filter(delegated_user=request.user, group=event.group, organizer=event.organizer).exists()
     
     is_leader = GroupRole.objects.filter(user=request.user, group=event.group).exists()
-    if not request.user.is_superuser and not (request.user.profile.is_approved_organizer and is_leader) and not is_delegated_assistant:
+    if not request.user.is_superuser and not (is_leader or is_delegated_assistant):
         messages.error(request, "You are not authorized to edit events for this group.")
         return redirect('event_detail', event_id=event.id)
 
@@ -522,9 +512,9 @@ def group_detail(request, group_id):
     if request.user.is_authenticated:
         can_edit_group = (
             request.user.is_superuser or 
-            (hasattr(request.user, 'profile') and 
-             request.user.profile.is_approved_organizer and 
-             GroupRole.objects.filter(user=request.user, group=group).exists())
+            GroupRole.objects.filter(user=request.user, group=group).filter(
+                Q(can_post=True) | Q(can_manage_leadership=True)
+            ).exists()
         )
     
     # Handle POST requests
@@ -557,6 +547,10 @@ def group_detail(request, group_id):
             if form.is_valid():
                 role = form.save(commit=False)
                 role.group = group
+                # If this is the first leader for the group, give all permissions
+                if GroupRole.objects.filter(group=group).count() == 0:
+                    role.can_post = True
+                    role.can_manage_leadership = True
                 role.save()
                 messages.success(request, 'Leader added successfully.')
             else:
@@ -567,7 +561,8 @@ def group_detail(request, group_id):
             role_id = request.POST.get('role_id')
             try:
                 role = GroupRole.objects.get(pk=role_id, group=group)
-                role.role_name = request.POST.get('role_name', role.role_name)
+                role.custom_label = request.POST.get('custom_label', role.custom_label)
+                role.can_manage_leadership = bool(request.POST.get('can_manage_leadership'))
                 role.save()
                 messages.success(request, 'Leader updated successfully.')
             except GroupRole.DoesNotExist:
@@ -622,7 +617,7 @@ class PostDetailView(DetailView):
 def manage_group_leadership(request, group_id):
     group = get_object_or_404(Group, pk=group_id)
     user_roles = GroupRole.objects.filter(group=group, user=request.user)
-    can_manage = user_roles.filter(role_name__in=['founder', 'admin']).exists() or request.user.is_superuser
+    can_manage = user_roles.filter(can_manage_leadership=True).exists() or request.user.is_superuser
     if not can_manage:
         return HttpResponseForbidden('You do not have permission to manage leadership.')
 
@@ -632,10 +627,15 @@ def manage_group_leadership(request, group_id):
             if form.is_valid():
                 role = form.save(commit=False)
                 role.group = group
+                # If this is the first leader for the group, give all permissions
+                if GroupRole.objects.filter(group=group).count() == 0:
+                    role.can_post = True
+                    role.can_manage_leadership = True
                 role.save()
-                return JsonResponse({'success': True, 'msg': 'Leader added successfully.'})
+                messages.success(request, 'Leader added successfully.')
             else:
-                return JsonResponse({'success': False, 'errors': form.errors})
+                messages.error(request, 'Error adding leader. Please check the form.')
+            return redirect('group_detail', group_id=group.id)
         elif 'edit_leader' in request.POST:
             role_id = request.POST.get('role_id')
             role = get_object_or_404(GroupRole, pk=role_id, group=group)

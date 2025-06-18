@@ -11,8 +11,9 @@ class GroupRole(models.Model):
     group = models.ForeignKey('events.Group', on_delete=models.CASCADE, related_name='group_roles')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='group_roles')
     assigned_at = models.DateTimeField(auto_now_add=True)
-    custom_label = models.CharField(max_length=64, blank=True, null=True, help_text='Custom label for this leader (optional)')
-    can_post = models.BooleanField(default=False, help_text='Can this user make posts for the group?')
+    custom_label = models.CharField(max_length=64, blank=True, null=True)
+    can_post = models.BooleanField(default=False)
+    can_manage_leadership = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ('group', 'user')
@@ -25,29 +26,11 @@ class GroupRole(models.Model):
         return f"{self.user.username} - {label} ({self.group.name})"
     
     def save(self, *args, **kwargs):
-        # Set can_post True only if the user is an approved organizer
-        if hasattr(self.user, 'profile') and self.user.profile.is_approved_organizer:
-            self.can_post = True
-        else:
-            self.can_post = False
         super().save(*args, **kwargs)
     
-    def can_manage_events(self):
-        """Check if this role can create/edit/delete events"""
-        return self.role_level <= 4  # Top 4 levels can manage events
-    
-    def can_manage_members(self):
-        """Check if this role can manage other members"""
-        return self.role_level <= 3  # Top 3 levels can manage members
-    
-    def can_manage_group(self):
-        """Check if this role can edit group settings"""
-        return self.role_level <= 2  # Top 2 levels can manage group settings
-
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     profile_picture_base64 = models.TextField(blank=True, null=True)
-    is_approved_organizer = models.BooleanField(default=False)
     display_name = models.CharField(max_length=50, blank=True, null=True)
     discord_username = models.CharField(max_length=50, blank=True, null=True)
     telegram_username = models.CharField(max_length=50, blank=True, null=True)

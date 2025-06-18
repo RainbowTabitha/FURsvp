@@ -29,4 +29,4 @@ nohup "$PYTHON_PATH" "$MANAGE_PY" qcluster >> qcluster.log 2>&1 &
 QCLUSTER_PID=$!
 echo "Django-Q cluster started with PID: $QCLUSTER_PID"
 
-echo "FursVP server and Django-Q cluster initiated."
+echo "FURsvp server and Django-Q cluster initiated."

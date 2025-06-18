@@ -10,10 +10,4 @@ def create_profile(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=User)
 def save_profile(sender, instance, **kwargs):
-    instance.profile.save()
-
-# Signal to update GroupRole.can_post when is_approved_organizer changes
-@receiver(post_save, sender=Profile)
-def update_group_roles_can_post(sender, instance, **kwargs):
-    for grouprole in GroupRole.objects.filter(user=instance.user):
-        grouprole.save() 
+    instance.profile.save() 

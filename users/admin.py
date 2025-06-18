@@ -7,7 +7,7 @@ class GroupRoleInline(admin.TabularInline):
     extra = 1
 
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'is_approved_organizer', 'display_name', 'discord_username', 'telegram_username')
+    list_display = ('user', 'display_name', 'discord_username', 'telegram_username')
 
 admin.site.register(Profile, ProfileAdmin)
 

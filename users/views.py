@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from .forms import UserRegisterForm, UserProfileForm, AssistantAssignmentForm, UserPublicProfileForm, UserPasswordChangeForm
 from events.models import Group, RSVP
 from events.forms import GroupForm, RenameGroupForm
-from .models import Profile, GroupDelegation, BannedUser, Notification
+from .models import Profile, GroupDelegation, BannedUser, Notification, GroupRole
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
@@ -15,7 +15,6 @@ from django.db import models, transaction
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 from .utils import create_notification
-from .models import GroupRole
 
 # Create your views here.
 
@@ -54,11 +53,8 @@ def profile(request):
     password_change_form = UserPasswordChangeForm(user=request.user)
 
     banned_users_in_groups = []
-    if request.user.profile.is_approved_organizer:
-        # Get all groups where the current user is an approved organizer
-        organizer_groups = Group.objects.filter(group_roles__user=request.user)
-        # Filter BannedUser entries for these groups
-        banned_users_in_groups = BannedUser.objects.filter(group__in=organizer_groups).select_related('user__profile', 'group', 'banned_by').order_by('group__name', 'user__username')
+    organizer_groups = Group.objects.filter(group_roles__user=request.user)
+    banned_users_in_groups = BannedUser.objects.filter(group__in=organizer_groups).select_related('user__profile', 'group', 'banned_by').order_by('group__name', 'user__username')
 
     if request.method == 'POST':
         if 'submit_pfp_changes' in request.POST: # Handle profile picture upload
@@ -108,7 +104,8 @@ def profile(request):
                 messages.error(request, f'Error changing password: {password_change_form.errors}', extra_tags='admin_notification')
 
         elif 'create_assignment_submit' in request.POST: # Handle creating assistant assignment
-            if request.user.profile.is_approved_organizer:
+            # Allow if user is a leader of any group
+            if GroupRole.objects.filter(user=request.user).exists():
                 assistant_assignment_form = AssistantAssignmentForm(request.POST, organizer_profile=request.user.profile)
                 if assistant_assignment_form.is_valid():
                     assignment = assistant_assignment_form.save(commit=False)
@@ -126,7 +123,7 @@ def profile(request):
                 messages.error(request, 'You are not authorized to create assistant assignments.', extra_tags='admin_notification')
 
         elif 'delete_assignment_submit' in request.POST: # Handle deleting assistant assignment
-            if request.user.profile.is_approved_organizer:
+            if GroupRole.objects.filter(user=request.user).exists():
                 assignment_id = request.POST.get('assignment_id')
                 if assignment_id:
                     try:
@@ -185,7 +182,6 @@ def ban_user(request):
         can_manage_sitewide_ban = is_site_admin # Only site admins can manage sitewide bans
 
         group = None
-        is_approved_organizer_for_group = False
         is_delegated_assistant_for_group = False
 
         if group_id: # If a group_id is provided, it's a group-specific action or relates to a specific group
@@ -197,14 +193,14 @@ def ban_user(request):
                 except Profile.DoesNotExist:
                     pass
 
-                if user_profile and user_profile.is_approved_organizer and GroupRole.objects.filter(user=user_profile.user, group=group).exists():
-                    is_approved_organizer_for_group = True
+                # User is a group leader if GroupRole exists for this group
+                is_group_leader_for_group = GroupRole.objects.filter(user=request.user, group=group).exists()
 
                 is_delegated_assistant_for_group = GroupDelegation.objects.filter(
                     delegated_user=request.user,
                     group=group
                 ).exists()
-                can_manage_group_ban = is_site_admin or is_approved_organizer_for_group or is_delegated_assistant_for_group
+                can_manage_group_ban = is_site_admin or is_group_leader_for_group or is_delegated_assistant_for_group
 
             except Group.DoesNotExist:
                 return JsonResponse({'status': 'error', 'message': 'Group not found.'}, status=404)
@@ -233,7 +229,7 @@ def ban_user(request):
                 if not group:
                     return JsonResponse({'status': 'error', 'message': 'Group ID is required for a group ban.'}, status=400)
 
-                if is_approved_organizer_for_group:
+                if is_group_leader_for_group:
                     organizer_user_for_ban_entry = request.user
                 elif is_delegated_assistant_for_group:
                     delegation = GroupDelegation.objects.filter(delegated_user=request.user, group=group).first()
@@ -368,7 +364,7 @@ def administration(request):
 
     group_form = GroupForm()
     rename_group_forms = {group.id: RenameGroupForm(instance=group) for group in all_groups}
-    user_profile_forms = {user_obj.id: UserAdminProfileForm(instance=user_obj.profile, prefix=f'profile_{user_obj.id}') for user_obj in all_users}
+    user_profile_forms = {user_obj.id: UserProfileForm(instance=user_obj.profile, prefix=f'profile_{user_obj.id}') for user_obj in all_users}
     all_banned_users = BannedUser.objects.all().select_related('user', 'group', 'banned_by', 'organizer').order_by('-banned_at')
 
     if request.method == 'POST':
@@ -378,7 +374,7 @@ def administration(request):
             for user_obj in users_to_promote:
                 try:
                     user_obj.profile.refresh_from_db()
-                    profile_form = UserAdminProfileForm(request.POST, instance=user_obj.profile, prefix=f'profile_{user_obj.id}')
+                    profile_form = UserProfileForm(request.POST, instance=user_obj.profile, prefix=f'profile_{user_obj.id}')
                     if profile_form.is_valid():
                         profile_form.save()
                         success_count += 1
@@ -465,7 +461,8 @@ def user_search_autocomplete(request):
             users_query = users_query.exclude(id=request.user.id)
 
         if is_organizer_filter:
-            users_query = users_query.filter(profile__is_approved_organizer=True)
+            # Only include users who are a leader of any group
+            users_query = users_query.filter(grouprole__isnull=False).distinct()
 
         users = users_query[:10]
         results = [{
