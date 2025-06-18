@@ -439,8 +439,10 @@ def administration(request):
                 return redirect('administration')
             UserModel = get_user_model()
             users = UserModel.objects.all()
+            admin_name = request.user.profile.get_display_name() if hasattr(request.user, 'profile') else request.user.username
+            full_message = f"{admin_name}: {message}"
             for user in users:
-                Notification.objects.create(user=user, message=message, link=link)
+                Notification.objects.create(user=user, message=full_message, link=link)
             messages.success(request, f'Notification sent to {users.count()} users.')
             return redirect('administration')
 
@@ -554,8 +556,10 @@ def send_bulk_notification(request):
             return redirect('administration')
         UserModel = get_user_model()
         users = UserModel.objects.all()
+        admin_name = request.user.profile.get_display_name() if hasattr(request.user, 'profile') else request.user.username
+        full_message = f"{admin_name}: {message}"
         for user in users:
-            Notification.objects.create(user=user, message=message, link=link)
+            Notification.objects.create(user=user, message=full_message, link=link)
         messages.success(request, f'Notification sent to {users.count()} users.')
         return redirect('administration')
     else:
