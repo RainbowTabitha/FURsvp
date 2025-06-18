@@ -222,7 +222,11 @@
                         <i class="material-icons me-2">history</i> Recent Past Events
                 </div>
                 <div class="modern-card-body">
-                    <div class="row">
+                    <div class="d-flex justify-content-end mb-3">
+                        <button id="pastCardViewBtn" class="pretty-toggle-btn active">Cards</button>
+                        <button id="pastListViewBtn" class="pretty-toggle-btn outline">List</button>
+                    </div>
+                    <div id="pastEventsCardView" class="row">
                         {% for event in past_events %}
                             <div class="col-md-6 col-lg-4 mb-3">
                                 <div class="modern-event-card">
@@ -251,6 +255,38 @@
                                 </div>
                             </div>
                         {% endfor %}
+                    </div>
+                    <div id="pastEventsListView" style="display:none;">
+                        <ul class="list-group list-group-flush">
+                            {% for event in past_events %}
+                            <li class="list-group-item py-3" style="background: transparent;">
+                                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                                    <div>
+                                        <a href="{% url 'event_detail' event.id %}" class="fw-bold h5 mb-1 text-primary text-decoration-none">
+                                            {{ event.title }}
+                                        </a>
+                                        <div class="text-muted small mb-2 d-flex align-items-center">
+                                            <i class="material-icons me-1" style="font-size: 18px; vertical-align: middle; color: #6366f1;">calendar_month</i>
+                                            <span>{{ event.date }}</span>
+                                            {% if event.start_time %}
+                                                <i class="material-icons ms-3 me-1" style="font-size: 18px; vertical-align: middle; color: #06b6d4;">schedule</i>
+                                                <span>{{ event.start_time|time:"g:i A" }}</span>
+                                            {% endif %}
+                                        </div>
+                                        {% if event.capacity %}
+                                        <div class="text-muted small mb-2 d-flex align-items-center">
+                                            <i class="material-icons me-1" style="font-size: 18px; vertical-align: middle; color: #f59e42;">groups</i>
+                                            <span>{{ event.confirmed_count|default:0 }} / {{ event.capacity }} RSVPs</span>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="d-flex flex-column align-items-end ms-md-3 mt-2 mt-md-0">
+                                        <a href="{% url 'event_detail' event.id %}" class="read-more-link2">View Event</a>
+                                    </div>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -494,7 +530,7 @@
     </style>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Toggle card/list view
+        // Toggle card/list view for upcoming events
         const evCardBtn = document.getElementById('groupCardViewBtn');
         const evListBtn = document.getElementById('groupListViewBtn');
         const evCardView = document.getElementById('groupEventsCardView');
@@ -515,6 +551,29 @@
                 evCardBtn.classList.add('outline');
                 evCardView.style.display = 'none';
                 evListView.style.display = '';
+            });
+        }
+        // Toggle card/list view for past events
+        const pastCardBtn = document.getElementById('pastCardViewBtn');
+        const pastListBtn = document.getElementById('pastListViewBtn');
+        const pastCardView = document.getElementById('pastEventsCardView');
+        const pastListView = document.getElementById('pastEventsListView');
+        if (pastCardBtn && pastListBtn && pastCardView && pastListView) {
+            pastCardBtn.addEventListener('click', function() {
+                pastCardBtn.classList.add('active');
+                pastCardBtn.classList.remove('outline');
+                pastListBtn.classList.remove('active');
+                pastListBtn.classList.add('outline');
+                pastCardView.style.display = '';
+                pastListView.style.display = 'none';
+            });
+            pastListBtn.addEventListener('click', function() {
+                pastListBtn.classList.add('active');
+                pastListBtn.classList.remove('outline');
+                pastCardBtn.classList.remove('active');
+                pastCardBtn.classList.add('outline');
+                pastCardView.style.display = 'none';
+                pastListView.style.display = '';
             });
         }
         // Telegram feed toggle
@@ -576,7 +635,6 @@
                 el.textContent = 'Date unavailable';
             }
         });
-        
         // Handle form submissions for edit group modal
         const editGroupForm = document.getElementById('editGroupForm');
         if (editGroupForm) {
@@ -587,7 +645,6 @@
                 }
             });
         }
-        
         // Handle leadership form submissions
         const addLeaderForm = document.getElementById('add-leader-form');
         if (addLeaderForm) {
@@ -598,7 +655,6 @@
                 }
             });
         }
-        
         // Handle edit leader form submissions
         document.querySelectorAll('.edit-leader-form').forEach(function(form) {
             form.addEventListener('submit', function(e) {
@@ -608,7 +664,6 @@
                 }
             });
         });
-        
         // Handle remove leader form submissions
         document.querySelectorAll('.remove-leader-form').forEach(function(form) {
             form.addEventListener('submit', function(e) {
@@ -622,6 +677,102 @@
                 }
             });
         });
+        // Modern file upload button logic for logo
+        const logoInput = document.getElementById('id_logo');
+        const logoPreview = document.getElementById('logoPreview');
+        const cropperContainer = document.getElementById('cropperContainer');
+        const cropperImage = document.getElementById('cropperImage');
+        const cropLogoBtn = document.getElementById('cropLogoBtn');
+        let cropper = null;
+        if (logoInput) {
+            logoInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        cropperImage.src = e.target.result;
+                        cropperContainer.style.display = 'block';
+                        if (cropper) { cropper.destroy(); }
+                        cropper = new Cropper(cropperImage, {
+                            aspectRatio: 1,
+                            viewMode: 1,
+                            dragMode: 'move',
+                            autoCropArea: 1,
+                            responsive: true,
+                            background: false,
+                            minContainerWidth: 200,
+                            minContainerHeight: 200,
+                            ready() {
+                                cropper.crop();
+                            }
+                        });
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+        if (cropLogoBtn) {
+            cropLogoBtn.addEventListener('click', function() {
+                if (cropper) {
+                    const canvas = cropper.getCroppedCanvas({
+                        width: 300,
+                        height: 300,
+                        imageSmoothingQuality: 'high',
+                    });
+                    const base64data = canvas.toDataURL('image/png');
+                    logoPreview.src = base64data;
+                    logoPreview.style.display = 'inline-block';
+                    cropperContainer.style.display = 'none';
+                    // Set base64 (without prefix) to hidden input
+                    let hiddenInput = document.querySelector('input[name="logo_base64"]');
+                    if (!hiddenInput) {
+                        hiddenInput = document.createElement('input');
+                        hiddenInput.type = 'hidden';
+                        hiddenInput.name = 'logo_base64';
+                        logoInput.parentNode.appendChild(hiddenInput);
+                    }
+                    hiddenInput.value = base64data.split(',')[1];
+                    cropper.destroy();
+                    cropper = null;
+                }
+            });
+        }
+        const customBtn = document.getElementById('customLogoBtn');
+        const fileNameSpan = document.getElementById('logoFileName');
+        if (customBtn && logoInput) {
+            customBtn.addEventListener('click', function() {
+                logoInput.click();
+            });
+            logoInput.addEventListener('change', function() {
+                fileNameSpan.textContent = logoInput.files[0] ? logoInput.files[0].name : 'No file selected.';
+            });
+        }
+        // Discord modal logic
+        var discordModal = document.getElementById('discordModal');
+        var copyBtn = document.getElementById('copyDiscordBtn');
+        var badge = document.getElementById('discordUsernameBadge');
+        var usernameText = document.getElementById('discordUsernameText');
+        var msg = document.getElementById('copyDiscordMsg');
+        if (discordModal) {
+            discordModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                var discord = button.getAttribute('data-discord');
+                var displayName = button.getAttribute('data-display-name');
+                usernameText.textContent = discord;
+                document.getElementById('discordDisplayName').textContent = displayName;
+                msg.style.display = 'none';
+            });
+        }
+        if (copyBtn && usernameText) {
+            copyBtn.onclick = function() {
+                if (usernameText.textContent) {
+                    navigator.clipboard.writeText(usernameText.textContent).then(function() {
+                        msg.style.display = 'block';
+                        setTimeout(function(){ msg.style.display = 'none'; }, 1200);
+                    });
+                }
+            };
+        }
     });
     </script>
     {% endif %}
@@ -1394,5 +1545,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+{{ block.super }}
 {% endblock %}
 {% endblock %}

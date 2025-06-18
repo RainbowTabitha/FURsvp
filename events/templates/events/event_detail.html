@@ -1066,8 +1066,7 @@
         const rsvpSelect = document.querySelector('#{{ form.status.id_for_label }}');
         const confirmedCount = {{ confirmed_rsvps_count|default:'0' }};
         const capacity = {{ event.capacity|default:'null' }};
-        const waitlistEnabled = {{ event.waitlist_enabled|yesno:'true,false' }} === 'true';
-
+        const waitlistEnabled = {% if event.waitlist_enabled %}true{% else %}false{% endif %};
         function updateRSVPOptions() {
             const options = rsvpSelect.options;
             for (let i = 0; i < options.length; i++) {
@@ -1076,12 +1075,11 @@
                     // Disable confirmed option if event is full
                     option.disabled = capacity !== null && confirmedCount >= capacity;
                 } else if (option.value === 'waitlisted') {
-                    // Disable waitlisted option if event is not full or waitlist is not enabled
-                    option.disabled = !waitlistEnabled || (capacity !== null && confirmedCount < capacity);
+                    // Enable waitlisted only if event is full and waitlist is enabled
+                    option.disabled = !(waitlistEnabled && capacity !== null && confirmedCount >= capacity);
                 }
             }
         }
-
         updateRSVPOptions();
     });
 </script>
