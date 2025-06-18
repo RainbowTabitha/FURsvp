@@ -743,33 +743,35 @@
                                         {% endif %}
                                         <span>{{ role.user.profile.get_display_name }}</span>
                                     </td>
-                                    <td>
-                                        <form method="post" class="edit-leader-form d-inline-flex align-items-center gap-2" action="">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="role_id" value="{{ role.id }}">
+                                    <form method="post" class="edit-leader-form" action="">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="role_id" value="{{ role.id }}">
+                                        <td>
                                             <input type="text" name="custom_label" value="{{ role.custom_label }}" class="form-control form-control-sm" style="min-width: 100px; max-width: 160px; display: inline-block;">
-                                    </td>
-                                    <td class="text-center">
+                                        </td>
+                                        <td class="text-center">
                                             <input type="checkbox" name="can_post" value="true" {% if role.can_post %}checked{% endif %} class="form-check-input">
-                                            <input type="checkbox" name="can_manage_leadership" value="true" {% if role.can_manage_leadership %}checked{% endif %} class="form-check-input ms-2" title="Can manage other leaders">
-                                    </td>
-                                    <td>
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="checkbox" name="can_manage_leadership" value="true" {% if role.can_manage_leadership %}checked{% endif %} class="form-check-input" title="Can manage other leaders">
+                                        </td>
+                                        <td>
                                             <button type="submit" name="edit_leader" class="btn btn-sm btn-success me-1">
                                                 <i class="material-icons" style="font-size:1.1em; vertical-align:middle;">save</i> Save
                                             </button>
-                                        </form>
-                                        <form method="post" class="remove-leader-form d-inline" action="">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="role_id" value="{{ role.id }}">
-                                            <button type="submit" name="remove_leader" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to remove this leader?');">
-                                                <i class="material-icons" style="font-size:1.1em; vertical-align:middle;">delete</i> Remove
-                                            </button>
-                                        </form>
+                                    </form>
+                                    <form method="post" class="remove-leader-form d-inline" action="">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="role_id" value="{{ role.id }}">
+                                        <button type="submit" name="remove_leader" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to remove this leader?');">
+                                            <i class="material-icons" style="font-size:1.1em; vertical-align:middle;">delete</i> Remove
+                                        </button>
+                                    </form>
                                     </td>
                                 </tr>
                                 {% endfor %}
                             {% else %}
-                                <tr><td colspan="4" class="text-center text-muted">No leaders assigned.</td></tr>
+                                <tr><td colspan="5" class="text-center text-muted">No leaders assigned.</td></tr>
                             {% endif %}
                         </tbody>
                     </table>

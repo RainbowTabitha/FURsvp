@@ -15,29 +15,29 @@
 
 <div class="row justify-content-center">
     <div class="col-md-8">
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0">Your Notifications</h4>
+        <div class="card shadow-sm rounded-4 border-0" style="overflow: hidden;">
+            <div class="card-header" style="background: linear-gradient(90deg, #2563eb 0%, #06b6d4 100%); color: #fff; border-bottom: none; border-radius: 1.2rem 1.2rem 0 0;">
+                <h4 class="mb-0 fw-bold" style="font-size: 1.5rem; letter-spacing: 0.5px;">Your Notifications</h4>
             </div>
-            <div class="list-group list-group-flush">
+            <div class="list-group list-group-flush" style="background: #f8fafc;">
                 {% if notifications %}
                     {% for notification in notifications %}
-                        <a href="{% if notification.link %}{{ notification.link }}{% else %}#{% endif %}" class="list-group-item list-group-item-action {% if not notification.is_read %}fw-bold bg-light{% endif %}" data-notification-id="{{ notification.id }}">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h5 class="mb-1">{{ notification.message }}</h5>
-                                <small class="text-muted">{{ notification.timestamp|date:"M d, Y H:i" }}</small>
+                        <a href="{% if notification.link %}{{ notification.link }}{% else %}#{% endif %}" class="list-group-item list-group-item-action notification-modern-row d-flex justify-content-between align-items-center px-4 py-3 border-0 {% if not notification.is_read %}fw-bold bg-white shadow-sm{% else %}bg-white{% endif %}" data-notification-id="{{ notification.id }}" style="transition: background 0.15s, box-shadow 0.15s; border-radius: 0.7rem; margin-bottom: 0.5rem;">
+                            <div class="notification-modern-message" style="font-size: 1.13rem; font-weight: 500; color: #222;">
+                                {{ notification.message }}
+                            </div>
+                            <div class="notification-modern-date text-end" style="font-size: 0.98rem; color: #7b8794; min-width: 120px;">
+                                {{ notification.timestamp|date:"M d, Y H:i" }}
                             </div>
                         </a>
                     {% endfor %}
                 {% else %}
-                    <div class="list-group-item text-center text-muted">
-                        No notifications yet.
-                    </div>
+                    <div class="list-group-item text-center text-muted bg-white border-0 py-4" style="font-size: 1.13rem; border-radius: 0.7rem;">No notifications yet.</div>
                 {% endif %}
             </div>
             {% if notifications %}
-            <div class="card-footer text-center">
-                <button class="btn btn-outline-danger" id="clear-all-notifications-page-btn">
+            <div class="card-footer text-center bg-white border-0 rounded-bottom-4" style="padding: 2rem 1rem 1.5rem 1rem;">
+                <button class="btn gradient-btn-danger rounded-pill px-4 py-2 fw-bold d-inline-flex align-items-center gap-2 shadow-sm" id="clear-all-notifications-page-btn" style="font-size: 1.08rem;">
                     <i class="material-icons me-1">delete</i> Clear All Notifications
                 </button>
             </div>
@@ -45,6 +45,16 @@
         </div>
     </div>
 </div>
+<style>
+.notification-modern-row:hover {
+    background: linear-gradient(90deg, #e0edff 0%, #f8fafc 100%) !important;
+    box-shadow: 0 2px 12px rgba(59,130,246,0.08) !important;
+    text-decoration: none;
+}
+.notification-modern-row .notification-modern-message {
+    word-break: break-word;
+}
+</style>
 {% endblock %}
 
 {% block extra_js %}
