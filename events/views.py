@@ -428,6 +428,14 @@ def edit_event(request, event_id):
                 event.organizer = request.user
             event.save()
             create_notification(request.user, f'Event for {event.title} updated successfully!', link=event.get_absolute_url())
+            # Notify all RSVP'd users (except the editor)
+            for rsvp in event.rsvps.select_related('user').all():
+                if rsvp.user and rsvp.user != request.user:
+                    create_notification(
+                        rsvp.user,
+                        f'The event "{event.title}" you RSVP\'d to has been updated. Please review the changes.',
+                        link=event.get_absolute_url()
+                    )
             return redirect('event_detail', event_id=event.id)
     else:
         form = EventForm(instance=event, user=request.user)

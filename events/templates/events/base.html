@@ -239,11 +239,8 @@
         .unread-notifications-badge {
             position: absolute;
             top: -5px;
-            /* Adjusted to move up */
             right: -5px;
-            /* Adjusted to move left */
             background-color: #dc3545;
-            /* Red color for unread */
             color: white;
             border: 2px solid white;
             font-size: 0.75rem;
@@ -332,8 +329,7 @@
                 align-items: center;
                 color: var(--primary-color);
                 font-size: 0.75rem;
-                flex-grow;
-                0;
+                flex-grow: 0;
                 margin-left: 10px;
                 margin-right: 10px;
                 text-align: center;
@@ -437,20 +433,25 @@
 
         @keyframes icon-flash {
             0% {
-                color: var(--primary-color);
+                color: #dc3545;
             }
 
             100% {
-                color: #dc3545;
+                color: #ff6f6f;
             }
         }
 
-        .notification-item {
-            display: flex;
-            flex-direction: column;
-            padding: 10px 15px;
-            border-bottom: 1px solid #eee;
-            white-space: normal;
+        /* Notification bell icon flashing fix */
+        .notification-bell-icon .material-icons.flash-icon,
+        .mobile-bottom-nav .material-icons.flash-icon {
+            color: #dc3545 !important;
+            animation: icon-flash 1s infinite alternate;
+        }
+
+        .dark-mode .notification-bell-icon .material-icons.flash-icon,
+        .dark-mode .mobile-bottom-nav .material-icons.flash-icon {
+            color: #ff4c4c !important;
+            animation: icon-flash 1s infinite alternate;
         }
 
         .dark-mode {
@@ -507,22 +508,27 @@
             background: #23272b !important;
             border-color: #222 !important;
         }
+
         .dark-mode .accordion-body {
             background: #262a2e !important;
             color: #e0e0e0 !important;
         }
+
         .dark-mode .accordion-button.collapsed {
             background: #2a3faa !important;
             color: #e0e0e0 !important;
         }
+
         .dark-mode .accordion-button:not(.collapsed) {
             background: #2a3faa !important;
             color: #fff !important;
         }
+
         .dark-mode .accordion-button:focus {
             box-shadow: 0 0 0 2px #2a3faa !important;
             border-color: #2a3faa !important;
         }
+
         .dark-mode .accordion-item .accordion-button::after {
             filter: invert(1) brightness(1.5);
         }
@@ -598,6 +604,7 @@
             color: #888 !important;
             opacity: 1 !important;
         }
+
         .dark-mode input,
         .dark-mode textarea,
         .dark-mode select {
@@ -614,7 +621,7 @@
         }
 
         .dark-mode .ts-dropdown {
-            box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
             border-radius: 8px;
             border: 1px solid #444;
         }
@@ -744,29 +751,37 @@
             background: #23272b !important;
             color: #e0e0e0 !important;
         }
-        .dark-mode thead, .dark-mode th {
+
+        .dark-mode thead,
+        .dark-mode th {
             background: #222b3a !important;
             color: #fff !important;
             border-color: #444 !important;
         }
+
         .dark-mode thead tr {
             background: #222b3a !important;
         }
+
         .dark-mode tbody tr {
             background: #23272b !important;
             color: #e0e0e0 !important;
         }
+
         .dark-mode td {
             background: #23272b !important;
             color: #e0e0e0 !important;
         }
+
         .dark-mode tr {
             border-color: #444 !important;
         }
-        .dark-mode table.table-striped > tbody > tr:nth-of-type(odd) {
+
+        .dark-mode table.table-striped>tbody>tr:nth-of-type(odd) {
             background-color: #222b3a !important;
         }
-        .dark-mode table.table-hover > tbody > tr:hover {
+
+        .dark-mode table.table-hover>tbody>tr:hover {
             background-color: #2a3faa !important;
             color: #fff !important;
         }
@@ -786,18 +801,22 @@
             color: #e0e0e0 !important;
             border-color: #444 !important;
         }
+
         .dark-mode .dropdown-menu .dropdown-item,
         .dark-mode .dropdown-menu .dropdown-header {
             color: #e0e0e0 !important;
         }
+
         .dark-mode .dropdown-menu .dropdown-divider {
             border-top: 1px solid #444 !important;
         }
+
         .dark-mode .dropdown-menu .dropdown-item:active,
         .dark-mode .dropdown-menu .dropdown-item:hover {
             background: #2a3faa !important;
             color: #fff !important;
         }
+
         .dark-mode .dropdown-menu .dropdown-item.disabled,
         .dark-mode .dropdown-menu .dropdown-item:disabled {
             color: #888 !important;
@@ -814,21 +833,25 @@
             color: #e0e0e0 !important;
             border-color: #444 !important;
         }
+
         .dark-mode .ts-control {
             background: #23272b !important;
             color: #e0e0e0 !important;
             border: 1.5px solid #444 !important;
         }
+
         .dark-mode .ts-dropdown .option:hover,
         .dark-mode .ts-dropdown .active {
             background: #2a3faa !important;
             color: #fff !important;
         }
-        .dark-mode .ts-wrapper.multi .ts-control > .item {
+
+        .dark-mode .ts-wrapper.multi .ts-control>.item {
             background: #444 !important;
             color: #fff !important;
             border-color: #2a3faa !important;
         }
+
         .dark-mode .ts-dropdown .option.selected {
             background: #2a3faa !important;
             color: #fff !important;
@@ -849,11 +872,13 @@
             color: #e0e0e0 !important;
             border-color: #444 !important;
         }
+
         .dark-mode .flatpickr-day {
             background: #23272b !important;
             color: #e0e0e0 !important;
             border: 1px solid #444 !important;
         }
+
         .dark-mode .flatpickr-day.selected,
         .dark-mode .flatpickr-day.startRange,
         .dark-mode .flatpickr-day.endRange,
@@ -862,32 +887,39 @@
             color: #fff !important;
             border-color: #2a3faa !important;
         }
+
         .dark-mode .flatpickr-day.today {
             border-color: #2a3faa !important;
         }
+
         .dark-mode .flatpickr-months .flatpickr-prev-month,
         .dark-mode .flatpickr-months .flatpickr-next-month {
             color: #e0e0e0 !important;
         }
+
         .dark-mode .flatpickr-weekdays {
             background: #23272b !important;
             color: #fff !important;
             border-bottom: 1px solid #444 !important;
         }
+
         .dark-mode .flatpickr-weekday {
             background: transparent !important;
             color: #fff !important;
         }
+
         .dark-mode .flatpickr-monthDropdown-months,
         .dark-mode .flatpickr-current-month input.cur-month {
             background: #23272b !important;
             color: #e0e0e0 !important;
             border: none !important;
         }
+
         .dark-mode .flatpickr-time {
             background: #23272b !important;
             color: #e0e0e0 !important;
         }
+
         .dark-mode .flatpickr-time input,
         .dark-mode .flatpickr-time .flatpickr-am-pm {
             background: #23272b !important;
@@ -901,10 +933,12 @@
             color: #e0e0e0 !important;
             border: 1px solid #444 !important;
         }
+
         .dark-mode .autocomplete-suggestion {
             background: #23272b !important;
             color: #e0e0e0 !important;
         }
+
         .dark-mode .autocomplete-suggestion.active,
         .dark-mode .autocomplete-suggestion:hover {
             background: #2a3faa !important;
@@ -918,18 +952,22 @@
             border-color: #222 !important;
             border-radius: 8px;
         }
+
         .dark-mode .card .text-primary,
         .dark-mode .card-body .text-primary {
             color: #b3d1f7 !important;
         }
+
         .dark-mode .card .text-muted,
         .dark-mode .card-body .text-muted {
             color: #b0b8c1 !important;
         }
+
         .dark-mode .card .badge.bg-warning.text-dark {
             background: #f7c948 !important;
             color: #23272b !important;
         }
+
         .dark-mode .card .badge.bg-danger,
         .dark-mode .card .badge.bg-primary {
             color: #fff !important;
@@ -942,6 +980,7 @@
             color: #e0e0e0 !important;
             border-color: #222 !important;
         }
+
         .dark-mode .form-control,
         .dark-mode input,
         .dark-mode textarea,
@@ -958,9 +997,11 @@
         .dark-mode select {
             color: #e0e0e0 !important;
         }
+
         .dark-mode .text-primary {
             color: #b3d1f7 !important;
         }
+
         .dark-mode .text-muted {
             color: #b0b8c1 !important;
         }
@@ -972,10 +1013,12 @@
             color: #e0e0e0 !important;
             border-color: #222 !important;
         }
+
         .dark-mode .mobile-bottom-nav .nav-link,
         .dark-mode .mobile-bottom-nav .material-icons {
             color: #e0e0e0 !important;
         }
+
         .dark-mode .footer .footer-meta,
         .dark-mode .footer .footer-btn {
             color: #e0e0e0 !important;
@@ -989,9 +1032,30 @@
             color: #e0e0e0 !important;
             border-color: #222 !important;
         }
+
+        .dark-mode .mobile-header .navbar-brand img {
+            filter: brightness(0.8);
+        }
+
         .dark-mode .mobile-header .material-icons,
         .dark-mode .mobile-header .nav-link {
             color: #e0e0e0 !important;
+        }
+
+        .dark-mode .mobile-bottom-nav {
+            background: #23272b !important;
+            color: #e0e0e0 !important;
+            border-color: #222 !important;
+        }
+
+        .dark-mode .mobile-bottom-nav .nav-link,
+        .dark-mode .mobile-bottom-nav .material-icons {
+            color: #e0e0e0 !important;
+        }
+
+        .dark-mode .mobile-bottom-nav .nav-link.active,
+        .dark-mode .mobile-bottom-nav .nav-link:active {
+            color: #b3d1f7 !important;
         }
     </style>
     <!-- TomSelect CSS -->
@@ -999,7 +1063,8 @@
     <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/light.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
-    <link id="flatpickr-dark-css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css" disabled>
+    <link id="flatpickr-dark-css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css"
+        disabled>
 </head>
 
 <body>
@@ -1508,9 +1573,13 @@
                     darkModeText.textContent = 'Dark Mode';
                     localStorage.setItem('fursvpDarkMode', 'false');
                 }
-                
+
                 // Dispatch custom event for other components to listen to
-                document.dispatchEvent(new CustomEvent('darkModeChanged', { detail: { enabled } }));
+                document.dispatchEvent(new CustomEvent('darkModeChanged', {
+                    detail: {
+                        enabled
+                    }
+                }));
             }
 
             setDarkMode(localStorage.getItem('fursvpDarkMode') === 'true');
@@ -1538,5 +1607,4 @@
     </script>
 </body>
 
-</html>
 </html>
