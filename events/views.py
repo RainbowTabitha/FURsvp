@@ -202,36 +202,6 @@ def event_detail(request, event_id):
                 messages.error(request, 'You do not have an RSVP to remove.', extra_tags='admin_notification')
             return redirect('event_detail', event_id=event.id)
         
-        if 'maybe' in request.POST:
-            if user_rsvp: # Ensure there is an RSVP to remove
-                with transaction.atomic():
-                    was_confirmed = (user_rsvp.status == 'confirmed')
-                    user_rsvp.delete()
-                    create_notification(request.user, f'You have removed your RSVP for {event.title}.', link=event.get_absolute_url())
-
-                    # If a confirmed spot opened up and waitlist is enabled, promote oldest waitlisted
-                    if was_confirmed:
-                        promote_waitlisted_if_spot(event)
-            else:
-                messages.error(request, 'You do not have an RSVP to remove.', extra_tags='admin_notification')
-            return redirect('event_detail', event_id=event.id)
-
-
-        if 'not_attending' in request.POST:
-            if user_rsvp: # Ensure there is an RSVP to remove
-                with transaction.atomic():
-                    was_confirmed = (user_rsvp.status == 'confirmed')
-                    user_rsvp.delete()
-                    create_notification(request.user, f'You have removed your RSVP for {event.title}.', link=event.get_absolute_url())
-
-                    # If a confirmed spot opened up and waitlist is enabled, promote oldest waitlisted
-                    if was_confirmed:
-                        promote_waitlisted_if_spot(event)
-            else:
-                messages.error(request, 'You do not have an RSVP to remove.', extra_tags='admin_notification')
-            return redirect('event_detail', event_id=event.id)
-
-        
         if 'delete_event' in request.POST and can_ban_user:
             event_title = event.title
             event.delete()
@@ -279,11 +249,18 @@ def event_detail(request, event_id):
             else: # If status is 'maybe' or 'not_attending'
                 if user_rsvp and user_rsvp.status == 'confirmed': # If changing from confirmed to maybe/not_attending
                     with transaction.atomic():
-                        user_rsvp.status = new_status
-                        user_rsvp.save()
-                        create_notification(request.user, f'Your RSVP status has been updated to {user_rsvp.get_status_display()!s} for {event.title}.', link=event.get_absolute_url())
-                        # If a confirmed spot opened up, synchronously promote oldest waitlisted
-                        promote_waitlisted_if_spot(event)
+                        if new_status == 'maybe' and event.waitlist_enabled and event.capacity is not None and event.rsvps.filter(status='confirmed').count() >= event.capacity:
+                            # Move this user to waitlist
+                            user_rsvp.status = 'waitlisted'
+                            user_rsvp.save()
+                            create_notification(request.user, f'You have been moved to the waitlist for {event.title} because the event is full.', link=event.get_absolute_url())
+                            # Promote the oldest waitlisted user (could be this user if they're now the oldest)
+                            promote_waitlisted_if_spot(event)
+                        else:
+                            user_rsvp.status = new_status
+                            user_rsvp.save()
+                            create_notification(request.user, f'Your RSVP status has been updated to {user_rsvp.get_status_display()!s} for {event.title}.', link=event.get_absolute_url())
+                            promote_waitlisted_if_spot(event)
                 else:
                     rsvp = form.save(commit=False)
                     rsvp.event = event
