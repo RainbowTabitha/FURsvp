@@ -329,8 +329,21 @@ def ban_user(request):
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def administration(request):
-    # Get all users including superusers with pagination
+    # Get search parameters
+    user_search = request.GET.get('user_search', '').strip()
+    group_search = request.GET.get('group_search', '').strip()
+    
+    # Get all users including superusers with search and pagination
     all_users = User.objects.all().prefetch_related('profile')
+    
+    # Apply user search filter if provided
+    if user_search:
+        all_users = all_users.filter(
+            Q(username__icontains=user_search) | 
+            Q(email__icontains=user_search) |
+            Q(profile__display_name__icontains=user_search)
+        )
+    
     user_paginator = Paginator(all_users, 10)
     user_page = request.GET.get('user_page', 1)
     try:
@@ -338,8 +351,13 @@ def administration(request):
     except (PageNotAnInteger, EmptyPage):
         users_to_promote = user_paginator.page(1)
 
-    # Get all groups with pagination
+    # Get all groups with search and pagination
     all_groups = Group.objects.all()
+    
+    # Apply group search filter if provided
+    if group_search:
+        all_groups = all_groups.filter(name__icontains=group_search)
+    
     group_paginator = Paginator(all_groups, 10)
     group_page = request.GET.get('group_page', 1)
     try:
@@ -350,7 +368,7 @@ def administration(request):
     group_form = GroupForm()
     rename_group_forms = {group.id: RenameGroupForm(instance=group) for group in all_groups}
     user_profile_forms = {user_obj.id: UserAdminProfileForm(instance=user_obj.profile, prefix=f'profile_{user_obj.id}') for user_obj in all_users}
-    all_banned_users = BannedUser.objects.all().select_related('user', 'group', 'banned_by', 'organizer').order_by('-banned_at') # Changed 'organizer' to 'organizer'
+    all_banned_users = BannedUser.objects.all().select_related('user', 'group', 'banned_by', 'organizer').order_by('-banned_at')
 
     if request.method == 'POST':
         if 'promote_users_submit' in request.POST:
@@ -424,6 +442,8 @@ def administration(request):
         'rename_group_forms': rename_group_forms,
         'user_profile_forms': user_profile_forms,
         'all_banned_users': all_banned_users,
+        'user_search': user_search,
+        'group_search': group_search,
     }
     return render(request, 'users/administration.html', context)
 

@@ -36,13 +36,22 @@
                     </h2>
                     <!-- Search Bar for Users -->
                     <div class="mb-4">
-                        <div class="input-group">
-                            <span class="input-group-text bg-light">
-                                <i class="material-icons">search</i>
-                            </span>
-                            <input type="text" id="userSearchInput" class="form-control" placeholder="Search users by display name or username..." list="userSuggestions">
-                            <datalist id="userSuggestions"></datalist>
-                        </div>
+                        <form method="get" class="d-flex">
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="material-icons">search</i>
+                                </span>
+                                <input type="text" name="user_search" value="{{ user_search }}" class="form-control" placeholder="Search users by display name, username, or email...">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="material-icons">search</i> Search
+                                </button>
+                                {% if user_search %}
+                                <a href="?{% if request.GET.group_search %}group_search={{ request.GET.group_search }}{% endif %}{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}" class="btn btn-outline-secondary">
+                                    <i class="material-icons">clear</i> Clear
+                                </a>
+                                {% endif %}
+                            </div>
+                        </form>
                     </div>
                     <form method="post">
                         {% csrf_token %}
@@ -92,12 +101,12 @@
                             <ul class="pagination justify-content-center">
                                 {% if users_to_promote.has_previous %}
                                     <li class="page-item">
-                                        <a class="page-link" href="?user_page=1{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}" aria-label="First">
+                                        <a class="page-link" href="?user_page=1{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="First">
                                             <i class="material-icons" style="font-size: 24px;">first_page</i>
                                         </a>
                                     </li>
                                     <li class="page-item">
-                                        <a class="page-link" href="?user_page={{ users_to_promote.previous_page_number }}{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}" aria-label="Previous">
+                                        <a class="page-link" href="?user_page={{ users_to_promote.previous_page_number }}{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="Previous">
                                             <i class="material-icons" style="font-size: 24px;">chevron_left</i>
                                         </a>
                                     </li>
@@ -107,18 +116,18 @@
                                     {% if users_to_promote.number == num %}
                                         <li class="page-item active"><a class="page-link" href="#" style="font-size: 21px;">{{ num }}</a></li>
                                     {% elif num > users_to_promote.number|add:'-3' and num < users_to_promote.number|add:'3' %}
-                                        <li class="page-item"><a class="page-link" href="?user_page={{ num }}{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}" style="font-size: 21px;">{{ num }}</a></li>
+                                        <li class="page-item"><a class="page-link" href="?user_page={{ num }}{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" style="font-size: 21px;">{{ num }}</a></li>
                                     {% endif %}
                                 {% endfor %}
 
                                 {% if users_to_promote.has_next %}
                                     <li class="page-item">
-                                        <a class="page-link" href="?user_page={{ users_to_promote.next_page_number }}{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}" aria-label="Next">
+                                        <a class="page-link" href="?user_page={{ users_to_promote.next_page_number }}{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="Next">
                                             <i class="material-icons" style="font-size: 24px;">chevron_right</i>
                                         </a>
                                     </li>
                                     <li class="page-item">
-                                        <a class="page-link" href="?user_page={{ users_to_promote.paginator.num_pages }}{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}" aria-label="Last">
+                                        <a class="page-link" href="?user_page={{ users_to_promote.paginator.num_pages }}{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="Last">
                                             <i class="material-icons" style="font-size: 24px;">last_page</i>
                                         </a>
                                     </li>
@@ -139,12 +148,22 @@
                     </h2>
                     <!-- Search Bar for Groups -->
                     <div class="mb-4">
-                        <div class="input-group">
-                            <span class="input-group-text bg-light">
-                                <i class="material-icons">search</i>
-                            </span>
-                            <input type="text" id="groupSearch" class="form-control" placeholder="Search groups...">
-                        </div>
+                        <form method="get" class="d-flex">
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="material-icons">search</i>
+                                </span>
+                                <input type="text" name="group_search" value="{{ group_search }}" class="form-control" placeholder="Search groups...">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="material-icons">search</i> Search
+                                </button>
+                                {% if group_search %}
+                                <a href="?{% if request.GET.user_search %}user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}" class="btn btn-outline-secondary">
+                                    <i class="material-icons">clear</i> Clear
+                                </a>
+                                {% endif %}
+                            </div>
+                        </form>
                     </div>
                     <!-- Create New Group Form -->
                     <div class="d-flex justify-content-between align-items-center mb-4 mt-3">
@@ -205,12 +224,12 @@
                             <ul class="pagination justify-content-center">
                                 {% if all_groups.has_previous %}
                                     <li class="page-item">
-                                        <a class="page-link" href="?group_page=1{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}" aria-label="First">
+                                        <a class="page-link" href="?group_page=1{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="First">
                                             <i class="material-icons" style="font-size: 24px;">first_page</i>
                                         </a>
                                     </li>
                                     <li class="page-item">
-                                        <a class="page-link" href="?group_page={{ all_groups.previous_page_number }}{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}" aria-label="Previous">
+                                        <a class="page-link" href="?group_page={{ all_groups.previous_page_number }}{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="Previous">
                                             <i class="material-icons" style="font-size: 24px;">chevron_left</i>
                                         </a>
                                     </li>
@@ -220,18 +239,18 @@
                                     {% if all_groups.number == num %}
                                         <li class="page-item active"><a class="page-link" href="#" style="font-size: 21px;">{{ num }}</a></li>
                                     {% elif num > all_groups.number|add:'-3' and num < all_groups.number|add:'3' %}
-                                        <li class="page-item"><a class="page-link" href="?group_page={{ num }}{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}" style="font-size: 21px;">{{ num }}</a></li>
+                                        <li class="page-item"><a class="page-link" href="?group_page={{ num }}{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" style="font-size: 21px;">{{ num }}</a></li>
                                     {% endif %}
                                 {% endfor %}
 
                                 {% if all_groups.has_next %}
                                     <li class="page-item">
-                                        <a class="page-link" href="?group_page={{ all_groups.next_page_number }}{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}" aria-label="Next">
+                                        <a class="page-link" href="?group_page={{ all_groups.next_page_number }}{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="Next">
                                             <i class="material-icons" style="font-size: 24px;">chevron_right</i>
                                         </a>
                                     </li>
                                     <li class="page-item">
-                                        <a class="page-link" href="?group_page={{ all_groups.paginator.num_pages }}{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}" aria-label="Last">
+                                        <a class="page-link" href="?group_page={{ all_groups.paginator.num_pages }}{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="Last">
                                             <i class="material-icons" style="font-size: 24px;">last_page</i>
                                         </a>
                                     </li>
@@ -372,23 +391,6 @@
             });
         });
 
-        // Group search functionality
-        const groupSearch = document.getElementById('groupSearch');
-        const groupsTable = document.getElementById('groupsTable');
-        
-        if (groupSearch && groupsTable) {
-            groupSearch.addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase();
-                const rows = groupsTable.getElementsByTagName('tr');
-                
-                for (let i = 1; i < rows.length; i++) { // Start from 1 to skip header
-                    const row = rows[i];
-                    const groupName = row.querySelector('td:first-child').textContent.toLowerCase();
-                    row.style.display = groupName.includes(searchTerm) ? '' : 'none';
-                }
-            });
-        }
-
         // Ban search functionality
         const banSearch = document.getElementById('banSearch');
         const bansTable = document.getElementById('bansTable');
@@ -432,58 +434,6 @@
                 this.dropdown.classList.add('shadow', 'rounded-3');
             }
         });
-
-        // Remove TomSelect for userSearch and use native datalist with dynamic population
-        const userSearchInput = document.getElementById('userSearchInput');
-        const userSuggestionsDatalist = document.getElementById('userSuggestions');
-        const usersTable = document.getElementById('usersTable'); // Get the users table
-
-        if (userSearchInput && userSuggestionsDatalist && usersTable) {
-            let debounceTimeout;
-            userSearchInput.addEventListener('input', function() {
-                clearTimeout(debounceTimeout);
-                debounceTimeout = setTimeout(() => {
-                    const query = this.value.toLowerCase(); // Convert query to lowercase for case-insensitive search
-                    
-                    // Filter the table rows based on the query
-                    const rows = usersTable.getElementsByTagName('tr');
-                    for (let i = 1; i < rows.length; i++) { // Start from 1 to skip header
-                        const row = rows[i];
-                        const usernameCell = row.querySelector('td:first-child');
-                        const emailCell = row.querySelector('td:nth-child(2)');
-
-                        if (usernameCell || emailCell) {
-                            const usernameText = usernameCell ? usernameCell.textContent.toLowerCase() : '';
-                            const emailText = emailCell ? emailCell.textContent.toLowerCase() : '';
-                            
-                            // Show row if username or email contains the query
-                            if (usernameText.includes(query) || emailText.includes(query)) {
-                                row.style.display = '';
-                            } else {
-                                row.style.display = 'none';
-                            }
-                        }
-                    }
-
-                    // Also populate datalist for suggestions (optional, but good for discovery)
-                    if (query.length > 2) { 
-                        fetch('{% url "user_search_autocomplete" %}?q=' + encodeURIComponent(query))
-                            .then(response => response.json())
-                            .then(data => {
-                                userSuggestionsDatalist.innerHTML = ''; // Clear previous suggestions
-                                data.results.forEach(user => {
-                                    const option = document.createElement('option');
-                                    option.value = user.text; // Use the formatted text from the backend
-                                    userSuggestionsDatalist.appendChild(option);
-                                });
-                            })
-                            .catch(error => console.error('Error fetching user suggestions:', error));
-                    } else {
-                        userSuggestionsDatalist.innerHTML = ''; // Clear suggestions if query is too short
-                    }
-                }, 300); // Debounce search to prevent too many requests
-            });
-        }
 
         // Handle unban buttons
         document.querySelectorAll('.unban-btn').forEach(button => {
@@ -548,11 +498,13 @@
         if (adminTabs) {
             const tabButtons = adminTabs.querySelectorAll('.nav-link');
             
-            // Function to update URL with both tab and pagination state
-            function updateUrlWithState(tabId, userPage, groupPage) {
+            // Function to update URL with tab, pagination, and search state
+            function updateUrlWithState(tabId, userPage, groupPage, userSearch, groupSearch) {
                 const params = new URLSearchParams(window.location.search);
                 if (userPage) params.set('user_page', userPage);
                 if (groupPage) params.set('group_page', groupPage);
+                if (userSearch) params.set('user_search', userSearch);
+                if (groupSearch) params.set('group_search', groupSearch);
                 params.set('tab', tabId);
                 const newUrl = `${window.location.pathname}?${params.toString()}`;
                 window.history.pushState({}, '', newUrl);
@@ -563,14 +515,18 @@
                     const tabId = event.target.id;
                     const currentUserPage = new URLSearchParams(window.location.search).get('user_page');
                     const currentGroupPage = new URLSearchParams(window.location.search).get('group_page');
+                    const currentUserSearch = new URLSearchParams(window.location.search).get('user_search');
+                    const currentGroupSearch = new URLSearchParams(window.location.search).get('group_search');
                     
                     // Store the current state
                     localStorage.setItem('lastAdminTab', tabId);
                     if (currentUserPage) localStorage.setItem('lastUserPage', currentUserPage);
                     if (currentGroupPage) localStorage.setItem('lastGroupPage', currentGroupPage);
+                    if (currentUserSearch) localStorage.setItem('lastUserSearch', currentUserSearch);
+                    if (currentGroupSearch) localStorage.setItem('lastGroupSearch', currentGroupSearch);
                     
                     // Update URL with current state
-                    updateUrlWithState(tabId, currentUserPage, currentGroupPage);
+                    updateUrlWithState(tabId, currentUserPage, currentGroupPage, currentUserSearch, currentGroupSearch);
                 });
             });
 
@@ -579,6 +535,8 @@
             const tabParam = urlParams.get('tab');
             const userPage = urlParams.get('user_page');
             const groupPage = urlParams.get('group_page');
+            const userSearch = urlParams.get('user_search');
+            const groupSearch = urlParams.get('group_search');
             
             // If we have a tab parameter, use it
             if (tabParam) {
@@ -596,11 +554,13 @@
                         const bsTab = new bootstrap.Tab(lastTabButton);
                         bsTab.show();
                         
-                        // If we don't have pagination params but have stored ones, update URL
-                        if (!userPage && !groupPage) {
+                        // If we don't have pagination/search params but have stored ones, update URL
+                        if (!userPage && !groupPage && !userSearch && !groupSearch) {
                             const lastUserPage = localStorage.getItem('lastUserPage');
                             const lastGroupPage = localStorage.getItem('lastGroupPage');
-                            updateUrlWithState(lastTab, lastUserPage, lastGroupPage);
+                            const lastUserSearch = localStorage.getItem('lastUserSearch');
+                            const lastGroupSearch = localStorage.getItem('lastGroupSearch');
+                            updateUrlWithState(lastTab, lastUserPage, lastGroupPage, lastUserSearch, lastGroupSearch);
                         }
                     }
                 }
