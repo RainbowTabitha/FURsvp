@@ -16,5 +16,8 @@ MANAGE_PY="./manage.py"
 "$PYTHON_PATH" "$MANAGE_PY" makemigrations users
 "$PYTHON_PATH" "$MANAGE_PY" makemigrations
 "$PYTHON_PATH" "$MANAGE_PY" migrate
+"$PYTHON_PATH" "$MANAGE_PY" migrate users
+"$PYTHON_PATH" "$MANAGE_PY" migrate events
+
 
 echo "Done!"

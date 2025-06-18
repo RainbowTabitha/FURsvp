@@ -15,6 +15,7 @@ from django.db import models, transaction
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 from .utils import create_notification
+from django.contrib.auth import get_user_model
 
 # Create your views here.
 
@@ -430,6 +431,19 @@ def administration(request):
                 except Exception as e:
                     messages.error(request, f'Error deleting group: {str(e)}', extra_tags='admin_notification')
 
+        elif 'send_bulk_notification' in request.POST:
+            message = request.POST.get('notification_message')
+            link = request.POST.get('notification_link', None)
+            if not message:
+                messages.error(request, 'Notification message is required.')
+                return redirect('administration')
+            UserModel = get_user_model()
+            users = UserModel.objects.all()
+            for user in users:
+                Notification.objects.create(user=user, message=message, link=link)
+            messages.success(request, f'Notification sent to {users.count()} users.')
+            return redirect('administration')
+
         return redirect('administration')
 
     context = {
@@ -528,3 +542,22 @@ def purge_read_notifications(request):
 def notifications_page(request):
     notifications = Notification.objects.filter(user=request.user).order_by('-timestamp')
     return render(request, 'users/notifications.html', {'notifications': notifications})
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def send_bulk_notification(request):
+    if request.method == 'POST':
+        message = request.POST.get('notification_message')
+        link = request.POST.get('notification_link', None)
+        if not message:
+            messages.error(request, 'Notification message is required.')
+            return redirect('administration')
+        UserModel = get_user_model()
+        users = UserModel.objects.all()
+        for user in users:
+            Notification.objects.create(user=user, message=message, link=link)
+        messages.success(request, f'Notification sent to {users.count()} users.')
+        return redirect('administration')
+    else:
+        messages.error(request, 'Invalid request method.')
+        return redirect('administration')

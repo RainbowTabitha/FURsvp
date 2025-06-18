@@ -41,6 +41,32 @@
 .event-list-item-modern:hover .event-list-chevron {
     opacity: 1;
 }
+.gradient-badge-18 {
+        background: linear-gradient(90deg, #f59e42 0%, #fbbf24 100%);
+        color: #92400e;
+        border-radius: 1.2rem;
+        font-size: 1.05rem;
+        font-weight: 600;
+        padding: 0.5rem 1.2rem;
+        display: inline-flex;
+        align-items: center;
+        box-shadow: 0 2px 8px rgba(251,191,36,0.10);
+        margin-left: 0.5rem;
+        vertical-align: middle;
+    }
+    .gradient-badge-21 {
+        background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+        color: #fff;
+        border-radius: 1.2rem;
+        font-size: 1.05rem;
+        font-weight: 600;
+        padding: 0.5rem 1.2rem;
+        display: inline-flex;
+        align-items: center;
+        box-shadow: 0 2px 8px rgba(239,68,68,0.10);
+        margin-left: 0.5rem;
+        vertical-align: middle;
+    }
 </style>
 <div class="row" id="eventsGrid" style="display: flex;">
     {% for event in events %}
@@ -76,11 +102,11 @@
                         {% endif %}
                     </span>
                     {% if event.age_restriction == 'mature' %}
-                        <span class="badge bg-danger rounded-pill ms-2" style="font-size: 0.95rem;">
+                        <span class="badge gradient-badge-21 ms-2">
                             <i class="material-icons me-1 align-middle" style="font-size: 16px;">warning</i> 21+
                         </span>
                     {% elif event.age_restriction == 'adult' %}
-                        <span class="badge bg-warning text-dark rounded-pill ms-2" style="font-size: 0.95rem;">
+                        <span class="badge gradient-badge-18 ms-2">
                             <i class="material-icons me-1 align-middle" style="font-size: 16px;">warning</i> 18+
                         </span>
                     {% endif %}
@@ -129,11 +155,11 @@
                         {% endif %}
                     </span>
                     {% if event.age_restriction == 'mature' %}
-                        <span class="badge bg-danger rounded-pill ms-2" style="font-size: 0.95rem;">
+                        <span class="badge gradient-badge-21 ms-2">
                             <i class="material-icons me-1 align-middle" style="font-size: 16px;">warning</i> 21+
                         </span>
                     {% elif event.age_restriction == 'adult' %}
-                        <span class="badge bg-warning text-dark rounded-pill ms-2" style="font-size: 0.95rem;">
+                        <span class="badge gradient-badge-18 ms-2">
                             <i class="material-icons me-1 align-middle" style="font-size: 16px;">warning</i> 18+
                         </span>
                     {% endif %}

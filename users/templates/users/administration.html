@@ -27,6 +27,11 @@
                         <i class="material-icons align-middle me-1">gavel</i> Ban Users
                     </button>
                 </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="notify-tab" data-bs-toggle="tab" data-bs-target="#notify" type="button" role="tab" aria-controls="notify" aria-selected="false">
+                        <i class="material-icons align-middle me-1">campaign</i> Send Notification
+                    </button>
+                </li>
             </ul>
 
             <div class="tab-content" id="adminTabsContent">
@@ -356,6 +361,26 @@
                                 {% endfor %}
                             </tbody>
                         </table>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="notify" role="tabpanel" aria-labelledby="notify-tab">
+                    <div class="mb-4 mt-4">
+                        <form method="post" action="{% url 'send_bulk_notification' %}" class="row g-2 align-items-end">
+                            {% csrf_token %}
+                            <div class="col-md-7">
+                                <label for="notification_message" class="form-label fw-bold">Send Notification to All Users</label>
+                                <input type="text" class="form-control" id="notification_message" name="notification_message" placeholder="Enter notification message..." required>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="notification_link" class="form-label">Optional Link</label>
+                                <input type="url" class="form-control" id="notification_link" name="notification_link" placeholder="https://...">
+                            </div>
+                            <div class="col-md-2 d-grid">
+                                <button type="submit" class="btn btn-warning btn-lg rounded-pill shadow-sm" name="send_bulk_notification">
+                                    <i class="material-icons me-1">campaign</i> Send
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
