@@ -85,7 +85,7 @@
                                         </td>
                                         <td>
                                             {% with profile_form=user_profile_forms|get_item:user_obj.id %}
-                                                {{ profile_form.admin_groups|add_class:"tomselect-allowed-groups form-select form-select-sm" }}
+                                                {{ profile_form.admin_groups|add_class:"tomselect-allowed-groups form-select form-select-sm"|attr:"multiple:true" }}
                                             {% endwith %}
                                         </td>
                                     </tr>
