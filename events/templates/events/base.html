@@ -205,37 +205,6 @@
             border-color: var(--primary-color);
         }
 
-        .notification-bell-container {
-            position: fixed;
-            top: 30px;
-            right: 20px;
-            z-index: 1050;
-            /* Ensure it's above other elements */
-        }
-
-        @media (max-width: 768px) {
-            .notification-bell-container {
-                top: auto;
-                bottom: 20px;
-                right: 20px;
-            }
-        }
-
-        .notification-bell-icon {
-            background-color: var(--primary-color);
-            color: white !important;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            width: 60px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: all 0.3s ease;
-            font-size: 32px;
-            position: relative;
-        }
-
         .unread-notifications-badge {
             position: absolute;
             top: -5px;
@@ -245,12 +214,6 @@
             border: 2px solid white;
             font-size: 0.75rem;
             padding: .35em .65em;
-        }
-
-        .notification-bell-icon:hover {
-            background-color: #1a2f9a;
-            transform: scale(1.05);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
         }
 
         .notification-item {
@@ -441,7 +404,6 @@
             }
         }
 
-        /* Notification bell icon flashing fix */
         .notification-bell-icon .material-icons.flash-icon,
         .mobile-bottom-nav .material-icons.flash-icon {
             color: #dc3545 !important;
@@ -538,7 +500,7 @@
             background-color: #23272b !important;
             color: #e0e0e0 !important;
         }
-        
+
         .dark-mode .btn-danger {
             background-color: #dc3545 !important;
             color: #fff !important;
@@ -1045,6 +1007,318 @@
         .dark-mode .mobile-bottom-nav .nav-link:active {
             color: #b3d1f7 !important;
         }
+
+        /* Modern Header Styles */
+        .main-header {
+            background: var(--secondary-color);
+            padding: 1rem 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .notification-container {
+            position: relative;
+        }
+
+        .notification-bell-icon {
+            background-color: #f8f9fa;
+            color: #198754 !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            font-size: 24px;
+            position: relative;
+            text-decoration: none;
+        }
+        .notification-bell-icon.has-unread {
+            background-color: var(--primary-color);
+            color: white !important;
+        }
+        .notification-bell-icon:hover {
+            background-color: #1a2f9a;
+            color: white !important;
+        }
+
+        .user-profile-container {
+            position: relative;
+        }
+
+        .user-profile-icon {
+            background-color: white;
+            color: var(--primary-color) !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            font-size: 28px;
+            text-decoration: none;
+            border: 2px solid transparent;
+        }
+
+        .user-profile-icon:hover {
+            background-color: var(--primary-color);
+            color: white !important;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            border-color: var(--primary-color);
+        }
+
+        .logout-form {
+            margin: 0;
+        }
+
+        .logout-btn {
+            background-color: white;
+            color: #dc3545 !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            font-size: 24px;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            background-color: #dc3545;
+            color: white !important;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+            border-color: #dc3545;
+        }
+
+        .auth-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .auth-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .login-btn {
+            background-color: white;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+
+        .login-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(42, 63, 170, 0.3);
+        }
+
+        .register-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: 2px solid var(--primary-color);
+        }
+
+        .register-btn:hover {
+            background-color: #1a2f9a;
+            border-color: #1a2f9a;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(42, 63, 170, 0.3);
+        }
+
+        .navigation-subheader {
+            background: var(--secondary-color);
+            padding: 0.25rem 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: center;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            gap: 2rem;
+        }
+
+        .nav-menu .nav-item {
+            margin: 0;
+        }
+
+        .nav-menu .nav-link {
+            color: var(--primary-color) !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            padding: 0.5rem 1rem !important;
+            border-radius: 20px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-menu .nav-link:hover {
+            color: #1a2f9a !important;
+            background-color: rgba(42, 63, 170, 0.08);
+            transform: translateY(-1px);
+            text-decoration: underline;
+        }
+
+        .nav-menu .nav-link i.material-icons {
+            font-size: 20px !important;
+            vertical-align: middle;
+            line-height: 1;
+        }
+
+        /* Mobile responsive adjustments */
+        @media (max-width: 768px) {
+            .main-header,
+            .navigation-subheader {
+                display: none;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .user-actions {
+                gap: 0.75rem;
+            }
+
+            .notification-bell-icon,
+            .user-profile-icon,
+            .logout-btn {
+                width: 44px;
+                height: 44px;
+                font-size: 22px;
+            }
+
+            .user-profile-icon {
+                font-size: 26px;
+            }
+
+            .auth-actions {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .auth-btn {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .nav-menu {
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: center;
+            }
+
+            .nav-menu .nav-link {
+                padding: 0.75rem 1.5rem !important;
+                font-size: 0.95rem;
+            }
+        }
+
+        /* Dark mode for new header elements */
+        .dark-mode .main-header {
+            background-color: #23272b !important;
+            border-color: #444 !important;
+        }
+
+        .dark-mode .navigation-subheader {
+            background-color: #23272b !important;
+        }
+
+        .dark-mode .user-profile-icon {
+            background-color: #23272b !important;
+            color: #b3d1f7 !important;
+            border-color: #444 !important;
+        }
+
+        .dark-mode .user-profile-icon:hover {
+            background-color: #2a3faa !important;
+            color: white !important;
+            border-color: #2a3faa !important;
+        }
+
+        .dark-mode .logout-btn {
+            background-color: #23272b !important;
+            color: #ff6b6b !important;
+            border-color: #444 !important;
+        }
+
+        .dark-mode .logout-btn:hover {
+            background-color: #dc3545 !important;
+            color: white !important;
+            border-color: #dc3545 !important;
+        }
+
+        .dark-mode .login-btn {
+            background-color: transparent !important;
+            color: #b3d1f7 !important;
+            border-color: #b3d1f7 !important;
+        }
+
+        .dark-mode .login-btn:hover {
+            background-color: #2a3faa !important;
+            color: white !important;
+            border-color: #2a3faa !important;
+        }
+
+        .dark-mode .register-btn {
+            background-color: #2a3faa !important;
+            color: white !important;
+            border-color: #2a3faa !important;
+        }
+
+        .dark-mode .register-btn:hover {
+            background-color: #1a2f9a !important;
+            border-color: #1a2f9a !important;
+        }
+
+        .dark-mode .nav-menu .nav-link {
+            color: #b3d1f7 !important;
+        }
+
+        .dark-mode .nav-menu .nav-link:hover {
+            color: white !important;
+            background-color: rgba(179, 209, 247, 0.1) !important;
+        }
     </style>
     <!-- TomSelect CSS -->
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
@@ -1067,99 +1341,103 @@
         </a>
     </div>
 
-    <!-- Regular Navbar -->
-    <nav class="navbar navbar-expand-lg top-bar">
+    <!-- Main Header -->
+    <header class="main-header">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'home' %}">
-                {% if request.get_host == 'nj.fursvp.org' %}
-                <img src="{% static 'fursvp-nj.png' %}" alt="FURsvp Logo">
-                {% else %}
-                <img src="{% static 'fursvp-logo.png' %}" alt="FURsvp Logo">
-                {% endif %}
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-center">
+            <div class="header-content">
+                <!-- Logo -->
+                <a class="navbar-brand" href="{% url 'home' %}">
+                    {% if request.get_host == 'nj.fursvp.org' %}
+                    <img src="{% static 'fursvp-nj.png' %}" alt="FURsvp Logo">
+                    {% else %}
+                    <img src="{% static 'fursvp-logo.png' %}" alt="FURsvp Logo">
+                    {% endif %}
+                </a>
+                
+                <!-- User Actions -->
+                <div class="user-actions">
+                    {% if user.is_authenticated %}
+                        <!-- Notifications -->
+                        <div class="notification-container">
+                            <a class="notification-bell-icon" href="#" id="notificationsDropdown" role="button"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="material-icons">notifications</i>
+                                <span class="badge rounded-pill unread-notifications-badge"
+                                    id="unread-notifications-badge">0</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 notifications-dropdown"
+                                aria-labelledby="notificationsDropdown" id="notifications-list">
+                                <li>
+                                    <h6 class="dropdown-header notification-header">Notifications</h6>
+                                </li>
+                                <li id="no-notifications-message-item"><a class="dropdown-item text-center text-muted"
+                                        href="#" id="no-notifications-message" style="padding: 15px;">No new
+                                        notifications</a></li>
+                                <li>
+                                    <hr class="dropdown-divider my-0">
+                                </li>
+                                <li><button class="dropdown-item text-center text-primary notification-footer"
+                                        id="clear-notifications-btn">Clear All Notifications</button></li>
+                            </ul>
+                        </div>
+                        
+                        <!-- User Profile -->
+                        <div class="user-profile-container">
+                            <a class="user-profile-icon" href="{% url 'profile' %}" title="Profile">
+                                <i class="material-icons">account_circle</i>
+                            </a>
+                        </div>
+                        
+                        <!-- Logout -->
+                        <form action="{% url 'logout' %}" method="post" class="d-inline logout-form">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-btn" title="Logout">
+                                <i class="material-icons">logout</i>
+                            </button>
+                        </form>
+                    {% else %}
+                        <!-- Login/Register for non-authenticated users -->
+                        <div class="auth-actions">
+                            <a href="{% url 'login' %}" class="auth-btn login-btn">
+                                <i class="material-icons">login</i>
+                                <span>Login</span>
+                            </a>
+                            <a href="{% url 'register' %}" class="auth-btn register-btn">
+                                <i class="material-icons">person_add</i>
+                                <span>Register</span>
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Subheader -->
+    <nav class="navigation-subheader">
+        <div class="container">
+            <div class="nav-content">
+                <ul class="nav-menu">
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'home' %}">
-                            <i class="material-icons"
-                                style="vertical-align: middle; line-height: 1; font-size: 20px;">home</i> Home
+                            <i class="material-icons">home</i> Home
                         </a>
                     </li>
                     {% if user.is_authenticated %}
-                    <li class="nav-item dropdown notification-bell-container">
-                        <a class="nav-link notification-bell-icon" href="#" id="notificationsDropdown" role="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="material-icons">notifications</i>
-                            <span class="badge rounded-pill unread-notifications-badge"
-                                id="unread-notifications-badge">0</span>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 notifications-dropdown"
-                            aria-labelledby="notificationsDropdown" id="notifications-list">
-                            <li>
-                                <h6 class="dropdown-header notification-header">Notifications</h6>
-                            </li>
-                            <li id="no-notifications-message-item"><a class="dropdown-item text-center text-muted"
-                                    href="#" id="no-notifications-message" style="padding: 15px;">No new
-                                    notifications</a></li>
-                            <li>
-                                <hr class="dropdown-divider my-0">
-                            </li>
-                            <li><button class="dropdown-item text-center text-primary notification-footer"
-                                    id="clear-notifications-btn">Clear All Notifications</button></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'profile' %}">
-                            <i class="material-icons"
-                                style="vertical-align: middle; line-height: 1; font-size: 20px;">person</i> Profile
-                        </a>
-                    </li>
-                    {% if user.is_superuser %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'administration' %}">
-                            <i class="material-icons"
-                                style="vertical-align: middle; line-height: 1; font-size: 20px;">admin_panel_settings</i>
-                            Administration
-                        </a>
-                    </li>
-                    {% endif %}
-                    {% if user.profile.is_approved_organizer or user.delegated_groups_as_delegate.exists %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'create_event' %}">
-                            <i class="material-icons"
-                                style="vertical-align: middle; line-height: 1; font-size: 20px;">add_circle</i> Create
-                            Event
-                        </a>
-                    </li>
-                    {% endif %}
-                    <li class="nav-item">
-                        <form action="{% url 'logout' %}" method="post" class="d-inline" style="margin: 0;">
-                            {% csrf_token %}
-                            <button type="submit" class="nav-link"
-                                style="background: none; border: none; padding: 0; cursor: pointer; display: flex; align-items: center; color: #2a3faa; font-size: 1.1rem; font-weight: 500;">
-                                <i class="material-icons"
-                                    style="font-size: 24px; vertical-align: middle; line-height: 1;">logout</i>
-                                <span style="margin-left: 0.5rem; font-size: 1.1rem;">Logout</span>
-                            </button>
-                        </form>
-                    </li>
-                    {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'register' %}">
-                            <i class="material-icons"
-                                style="vertical-align: middle; line-height: 1; font-size: 20px;">person_add</i> Create
-                            an account
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'login' %}">
-                            <i class="material-icons"
-                                style="vertical-align: middle; line-height: 1; font-size: 20px;">login</i> Login
-                        </a>
-                    </li>
+                        {% if user.is_superuser %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'administration' %}">
+                                <i class="material-icons">admin_panel_settings</i> Administration
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% if user.profile.is_approved_organizer or user.delegated_groups_as_delegate.exists %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'create_event' %}">
+                                <i class="material-icons">add_circle</i> Create Event
+                            </a>
+                        </li>
+                        {% endif %}
                     {% endif %}
                 </ul>
             </div>
@@ -1320,8 +1598,10 @@
                         if (unreadCount > 0) {
                             unreadBadge.textContent = unreadCount;
                             unreadBadge.style.display = 'block';
+                            notificationsDropdown.classList.add('has-unread');
                         } else {
                             unreadBadge.style.display = 'none';
+                            notificationsDropdown.classList.remove('has-unread');
                         }
                     }
 

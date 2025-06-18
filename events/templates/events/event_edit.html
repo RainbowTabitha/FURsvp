@@ -66,31 +66,31 @@
                                 Date and Time
                             </label>
                             <div class="row">
-                                <div class="col-md-4">
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light">
-                                            <i class="material-icons text-primary">event</i>
-                                        </span>
-                                        {{ form.date }}
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light">
-                                            <i class="material-icons text-primary">schedule</i>
-                                        </span>
-                                        {{ form.start_time }}
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light">
-                                            <i class="material-icons text-primary">schedule</i>
-                                        </span>
-                                        {{ form.end_time }}
-                                    </div>
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light">
+                                        <i class="material-icons text-primary">event</i>
+                                    </span>
+                                    {{ form.date }}
                                 </div>
                             </div>
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light">
+                                        <i class="material-icons text-primary">schedule</i>
+                                    </span>
+                                    {{ form.start_time }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light">
+                                        <i class="material-icons text-primary">schedule</i>
+                                    </span>
+                                    {{ form.end_time }}
+                                </div>
+                            </div>
+                        </div>
                         </div>
 
                         <!-- Location Details Fields -->
@@ -105,7 +105,8 @@
                                         <i class="material-icons text-primary">place</i>
                                     </span>
                                     {{ form.address|attr:'placeholder:Street address'|add_class:'rounded-0' }}
-                                    <button type="button" id="locationButton" class="btn btn-outline-primary rounded-end" tabindex="-1">
+                                    <button type="button" id="locationButton"
+                                        class="btn btn-outline-primary rounded-end" tabindex="-1">
                                         <i class="material-icons">my_location</i>
                                     </button>
                                 </div>
@@ -376,7 +377,8 @@
                             // Build the full address for display
                             fullAddress = streetAddress;
                             if (address.city || address.town || address.village) {
-                                fullAddress += ', ' + (address.city || address.town || address.village);
+                                fullAddress += ', ' + (address.city || address.town || address
+                                    .village);
                             }
                             if (address.state) {
                                 fullAddress += ', ' + address.state;
@@ -546,29 +548,30 @@
                     (error) => {
                         console.error('Geolocation error:', error);
                         alert(
-                            'Error getting your location. Please make sure location services are enabled.');
+                            'Error getting your location. Please make sure location services are enabled.'
+                            );
                         locationButton.disabled = false;
                         locationButton.innerHTML = '<i class="material-icons">my_location</i>';
                     }
             );
         });
 
-        // Initialize TinyMCE
+    // Initialize TinyMCE
         function initTinyMCE() {
             const isDark = document.body.classList.contains('dark-mode');
-            tinymce.init({
+    tinymce.init({
                 selector: '#{{ form.description.id_for_label }}',
-                height: 300,
-                width: '100%',
-                menubar: false,
+        height: 300,
+        width: '100%',
+        menubar: false,
                 plugins: 'advlist autolink lists image charmap anchor searchreplace visualblocks code insertdatetime table help wordcount textcolor backcolor',
                 toolbar: 'bold italic strikethrough | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | image code | removeformat',
-                branding: false,
-                promotion: false,
+        branding: false,
+        promotion: false,
                 license_key: 'gpl',
-                automatic_uploads: true,
-                file_picker_types: 'image',
-                images_reuse_filename: true,
+        automatic_uploads: true,
+        file_picker_types: 'image',
+        images_reuse_filename: true,
                 statusbar: false,
                 resize: false,
                 menubar: false,
@@ -579,63 +582,63 @@
                 toolbar_sticky_offset: 0,
                 content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; } img { max-width: 100%; height: auto; display: block; margin: 1em auto; } .tox-statusbar { display: none !important; }',
                 document_base_url: '{{ request.scheme }}://{{ request.get_host }}/',
-                file_picker_callback: function (callback, value, meta) {
-                    if (meta.filetype === 'image') {
-                        const input = document.createElement('input');
-                        input.setAttribute('type', 'file');
-                        input.setAttribute('accept', 'image/*');
+        file_picker_callback: function (callback, value, meta) {
+            if (meta.filetype === 'image') {
+                const input = document.createElement('input');
+                input.setAttribute('type', 'file');
+                input.setAttribute('accept', 'image/*');
 
-                        input.onchange = function () {
-                            const file = this.files[0];
-                            const reader = new FileReader();
-                            reader.onload = function () {
-                                const base64data = reader.result;
-
-                                // Create an image element to get dimensions
-                                const img = new Image();
+                input.onchange = function () {
+                    const file = this.files[0];
+                    const reader = new FileReader();
+                    reader.onload = function () {
+                        const base64data = reader.result;
+                        
+                        // Create an image element to get dimensions
+                        const img = new Image();
                                 img.onload = function () {
-                                    // Calculate dimensions to fit within modal
-                                    const maxWidth = 800; // Maximum width for images
-                                    let width = img.width;
-                                    let height = img.height;
-
-                                    if (width > maxWidth) {
-                                        const ratio = maxWidth / width;
-                                        width = maxWidth;
-                                        height = height * ratio;
-                                    }
-
-                                    // Insert the image with calculated dimensions
+                            // Calculate dimensions to fit within modal
+                            const maxWidth = 800; // Maximum width for images
+                            let width = img.width;
+                            let height = img.height;
+                            
+                            if (width > maxWidth) {
+                                const ratio = maxWidth / width;
+                                width = maxWidth;
+                                height = height * ratio;
+                            }
+                            
+                            // Insert the image with calculated dimensions
                                     const imageHtml =
                                         `<img src="${base64data}" alt="${file.name}" style="max-width: 100%; width: ${width}px; height: ${height}px; object-fit: contain;" />`;
                                     callback(base64data, {
                                         alt: file.name
                                     });
-                                };
-                                img.src = base64data;
-                            };
-                            reader.readAsDataURL(file);
                         };
+                        img.src = base64data;
+                    };
+                    reader.readAsDataURL(file);
+                };
 
-                        input.click();
-                    }
-                },
+                input.click();
+            }
+        },
                 setup: function (editor) {
                     editor.on('init', function () {
                         editor.getContainer().style.transition =
                             'border-color 0.15s ease-in-out';
                     });
                     editor.on('change', function () {
-                        console.log('Editor content changed');
-                    });
+                console.log('Editor content changed');
+            });
                     editor.on('ObjectResized', function (e) {
-                        console.log('Object resized:', e);
-                    });
+                console.log('Object resized:', e);
+            });
                     editor.on('SetContent', function (e) {
-                        console.log('Content set:', e);
-                    });
+                console.log('Content set:', e);
+            });
                     editor.on('BeforeSetContent', function (e) {
-                        console.log('Before content set:', e);
+                console.log('Before content set:', e);
                     });
                 }
             });
@@ -654,22 +657,22 @@
         }
 
         // Listen for dark mode changes
-        document.addEventListener('darkModeChanged', function(event) {
+        document.addEventListener('darkModeChanged', function (event) {
             setTimeout(reinitTinyMCE, 200);
-        });
+    });
 
-        // Initialize Flatpickr
-        flatpickr("#{{ form.date.id_for_label }}", {
-            dateFormat: "Y-m-d",
-            minDate: "today",
-            disableMobile: "true",
+    // Initialize Flatpickr
+    flatpickr("#{{ form.date.id_for_label }}", {
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        disableMobile: "true",
             theme: "light",
-            allowInput: true,
-            altInput: true,
-            altFormat: "F j, Y",
-            altInputClass: "form-control",
+        allowInput: true,
+        altInput: true,
+        altFormat: "F j, Y",
+        altInputClass: "form-control",
             onChange: function (selectedDates, dateStr, instance) {
-                document.getElementById("{{ form.date.id_for_label }}").value = dateStr;
+            document.getElementById("{{ form.date.id_for_label }}").value = dateStr;
             },
             onReady: function (selectedDates, dateStr, instance) {
                 // Add custom styles to match theme
@@ -733,8 +736,8 @@
             altInputClass: "form-control",
             onChange: function (selectedDates, dateStr, instance) {
                 document.getElementById("{{ form.end_time.id_for_label }}").value = dateStr;
-            }
-        });
+        }
     });
+});
 </script>
-{% endblock %}
+{% endblock %} 
