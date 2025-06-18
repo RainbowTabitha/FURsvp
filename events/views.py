@@ -427,15 +427,15 @@ def edit_event(request, event_id):
         messages.error(request, "You are not authorized to edit this event.")
         return redirect('event_detail', event_id=event.id)
 
-    # Check if user is a group leader or a delegated assistant
-    is_delegated_assistant = False
-    if request.user.is_authenticated and event.group:
-        is_delegated_assistant = GroupDelegation.objects.filter(delegated_user=request.user, group=event.group, organizer=event.organizer).exists()
-    
-    is_leader = GroupRole.objects.filter(user=request.user, group=event.group).exists()
-    if not request.user.is_superuser and not (is_leader or is_delegated_assistant):
-        messages.error(request, "You are not authorized to edit events for this group.")
-        return redirect('event_detail', event_id=event.id)
+    # Only check group role/delegation if user is not the organizer or superuser
+    if not request.user.is_superuser and request.user != event.organizer:
+        is_delegated_assistant = False
+        if request.user.is_authenticated and event.group:
+            is_delegated_assistant = GroupDelegation.objects.filter(delegated_user=request.user, group=event.group, organizer=event.organizer).exists()
+        is_leader = GroupRole.objects.filter(user=request.user, group=event.group).exists()
+        if not (is_leader or is_delegated_assistant):
+            messages.error(request, "You are not authorized to edit events for this group.")
+            return redirect('event_detail', event_id=event.id)
 
     if request.method == 'POST':
         form = EventForm(request.POST, instance=event, user=request.user)

@@ -870,10 +870,26 @@
                             <i class="material-icons">event_available</i> Status:
                         </label>
                         <select name="status" id="{{ form.status.id_for_label }}" class="modern-select">
-                            {% for option in form.status.field.choices %}
-                            <option value="{{ option.0 }}" {% if form.status.value == option.0 %}selected{% endif %}>
-                                {{ option.1 }}</option>
-                            {% endfor %}
+                            {% with choices=form.status.field.choices %}
+                                {# Confirmed first #}
+                                {% for option in choices %}
+                                    {% if option.0 == 'confirmed' %}
+                                        <option value="{{ option.0 }}" {% if form.status.value == option.0 %}selected{% endif %}>{{ option.1 }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                                {# Waitlisted second #}
+                                {% for option in choices %}
+                                    {% if option.0 == 'waitlisted' %}
+                                        <option value="{{ option.0 }}" {% if form.status.value == option.0 %}selected{% endif %}>{{ option.1 }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                                {# All others except confirmed and waitlisted #}
+                                {% for option in choices %}
+                                    {% if option.0 != 'confirmed' and option.0 != 'waitlisted' %}
+                                        <option value="{{ option.0 }}" {% if form.status.value == option.0 %}selected{% endif %}>{{ option.1 }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endwith %}
                         </select>
                         <button type="submit" class="rsvp-submit-btn"><i class="material-icons">event</i> Submit
                             RSVP</button>
