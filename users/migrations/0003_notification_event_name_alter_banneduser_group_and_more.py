@@ -34,7 +34,6 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('role_name', models.CharField(choices=[('founder', 'Founder'), ('admin', 'Admin'), ('moderator', 'Moderator'), ('event_manager', 'Event Manager'), ('helper', 'Helper')], max_length=32)),
-                ('is_active', models.BooleanField(default=True)),
                 ('assigned_at', models.DateTimeField(auto_now_add=True)),
                 ('custom_label', models.CharField(blank=True, help_text='Custom label for this leader (optional)', max_length=64, null=True)),
                 ('can_post', models.BooleanField(default=False, help_text='Can this user make posts for the group?')),

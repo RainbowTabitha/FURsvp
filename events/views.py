@@ -508,9 +508,9 @@ def privacy(request):
 def group_detail(request, group_id):
     group = get_object_or_404(Group, pk=group_id)
     
-    # Get organizers and assistants
-    organizers = group.get_organizers()
-    assistants = group.get_assistants()
+    # Remove legacy organizers and assistants
+    organizers = []
+    assistants = []
     
     # Get upcoming and past events
     upcoming_events = group.get_upcoming_events()
@@ -567,7 +567,6 @@ def group_detail(request, group_id):
             try:
                 role = GroupRole.objects.get(pk=role_id, group=group)
                 role.role_name = request.POST.get('role_name', role.role_name)
-                role.is_active = 'is_active' in request.POST
                 role.save()
                 messages.success(request, 'Leader updated successfully.')
             except GroupRole.DoesNotExist:
@@ -621,7 +620,7 @@ class PostDetailView(DetailView):
 @login_required
 def manage_group_leadership(request, group_id):
     group = get_object_or_404(Group, pk=group_id)
-    user_roles = GroupRole.objects.filter(group=group, user=request.user, is_active=True)
+    user_roles = GroupRole.objects.filter(group=group, user=request.user)
     can_manage = user_roles.filter(role_name__in=['founder', 'admin']).exists() or request.user.is_superuser
     if not can_manage:
         return HttpResponseForbidden('You do not have permission to manage leadership.')
@@ -651,6 +650,6 @@ def manage_group_leadership(request, group_id):
             role.delete()
             return JsonResponse({'success': True, 'msg': 'Leader removed successfully.'})
     else:
-        roles = GroupRole.objects.filter(group=group, is_active=True).select_related('user')
+        roles = GroupRole.objects.filter(group=group).select_related('user')
         form = GroupRoleForm(group=group)
         return render(request, 'events/leadership_editor.html', {'group': group, 'roles': roles, 'form': form, 'can_manage': can_manage})

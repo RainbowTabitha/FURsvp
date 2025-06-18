@@ -8,41 +8,20 @@ from events.models import Group
 
 class GroupRole(models.Model):
     """Custom hierarchy system for group leadership roles"""
-    ROLE_CHOICES = [
-        ('founder', 'Founder'),
-        ('admin', 'Admin'),
-        ('moderator', 'Moderator'),
-        ('event_manager', 'Event Manager'),
-        ('helper', 'Helper'),
-    ]
-    
     group = models.ForeignKey('events.Group', on_delete=models.CASCADE, related_name='group_roles')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='group_roles')
-    role_name = models.CharField(max_length=32, choices=ROLE_CHOICES)
-    is_active = models.BooleanField(default=True)
     assigned_at = models.DateTimeField(auto_now_add=True)
     custom_label = models.CharField(max_length=64, blank=True, null=True, help_text='Custom label for this leader (optional)')
     can_post = models.BooleanField(default=False, help_text='Can this user make posts for the group?')
-    
+
     class Meta:
         unique_together = ('group', 'user')
-        ordering = ['role_name', 'assigned_at']
+        ordering = ['assigned_at']
         verbose_name = 'Group Role'
         verbose_name_plural = 'Group Roles'
-    
-    @property
-    def role_level(self):
-        mapping = {
-            'founder': 1,
-            'admin': 2,
-            'moderator': 3,
-            'event_manager': 4,
-            'helper': 5,
-        }
-        return mapping.get(self.role_name, 99)
-    
+
     def __str__(self):
-        label = self.custom_label or self.get_role_name_display()
+        label = self.custom_label or self.user.username
         return f"{self.user.username} - {label} ({self.group.name})"
     
     def can_manage_events(self):

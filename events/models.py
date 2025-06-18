@@ -21,99 +21,10 @@ class Group(models.Model):
         return reverse('group_detail', args=[str(self.id)])
     
     def get_leadership(self):
-        """Get all leadership roles for this group, ordered by hierarchy"""
         from users.models import GroupRole
-        return GroupRole.objects.filter(group=self, is_active=True).order_by('role_level', 'assigned_at')
-    
-    def get_role_members(self, role_level):
-        """Get all members with a specific role level or higher"""
-        from users.models import GroupRole
-        # Map role levels to role names
-        role_mapping = {
-            1: ['founder'],
-            2: ['founder', 'admin'],
-            3: ['founder', 'admin', 'moderator'],
-            4: ['founder', 'admin', 'moderator', 'event_manager'],
-            5: ['founder', 'admin', 'moderator', 'event_manager', 'helper'],
-        }
-        role_names = role_mapping.get(role_level, [])
-        return User.objects.filter(group_roles__group=self, group_roles__role_name__in=role_names, group_roles__is_active=True)
-    
-    def get_role_members_by_name(self, role_name):
-        """Get all members with a specific role name"""
-        from users.models import GroupRole
-        return User.objects.filter(group_roles__group=self, group_roles__role_name__iexact=role_name, group_roles__is_active=True)
-    
-    def get_top_leadership(self):
-        """Get top level leadership (level 1-2)"""
-        return self.get_role_members(2)
-    
-    def get_management(self):
-        """Get management level (level 1-3)"""
-        return self.get_role_members(3)
-    
-    def get_event_managers(self):
-        """Get users who can manage events (level 1-4)"""
-        return self.get_role_members(4)
-    
-    def user_has_role_level(self, user, max_level):
-        """Check if a user has a role at or above a specific level"""
-        from users.models import GroupRole
-        # Map role levels to role names
-        role_mapping = {
-            1: ['founder'],
-            2: ['founder', 'admin'],
-            3: ['founder', 'admin', 'moderator'],
-            4: ['founder', 'admin', 'moderator', 'event_manager'],
-            5: ['founder', 'admin', 'moderator', 'event_manager', 'helper'],
-        }
-        role_names = role_mapping.get(max_level, [])
-        return GroupRole.objects.filter(user=user, group=self, role_name__in=role_names, is_active=True).exists()
-    
-    def user_has_role_name(self, user, role_name):
-        """Check if a user has a specific role name"""
-        from users.models import GroupRole
-        return GroupRole.objects.filter(user=user, group=self, role_name__iexact=role_name, is_active=True).exists()
-    
-    def user_can_manage_events(self, user):
-        """Check if a user can manage events in this group"""
-        return self.user_has_role_level(user, 4)
-    
-    def user_can_manage_group(self, user):
-        """Check if a user can manage group settings"""
-        return self.user_has_role_level(user, 2)
-    
-    # Legacy methods for backward compatibility
-    def get_organizers(self):
-        """Legacy method - returns users who can manage events"""
-        return self.get_event_managers()
-    
-    def get_assistants(self):
-        """Legacy method - returns all active role members"""
-        return User.objects.filter(group_roles__group=self, group_roles__is_active=True)
-    
-    def get_founders(self):
-        """Get all founders of this group"""
-        return self.get_role_members(1)
-    
-    def get_admins(self):
-        """Get all administrators of this group"""
-        return self.get_role_members(2)
-    
-    def get_moderators(self):
-        """Get all moderators of this group"""
-        return self.get_role_members(3)
-    
-    def get_coordinators(self):
-        """Get all event coordinators of this group"""
-        return self.get_role_members(4)
-    
-    def get_helpers(self):
-        """Get all helpers of this group"""
-        return self.get_role_members(5)
+        return GroupRole.objects.filter(group=self).order_by('assigned_at')
     
     def get_upcoming_events(self):
-        """Get upcoming events for this group"""
         from django.utils import timezone
         from datetime import datetime
         now = timezone.now()
@@ -124,7 +35,6 @@ class Group(models.Model):
         ).order_by('date', 'start_time')
     
     def get_past_events(self):
-        """Get past events for this group"""
         from django.utils import timezone
         from datetime import datetime
         now = timezone.now()

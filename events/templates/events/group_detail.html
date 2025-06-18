@@ -2,7 +2,6 @@
 {% load static %}
 {% load users_extras %}
 {% load tz %}
-{% load widget_tweaks %}
 
 {% block title %}{{ group.name }} - FURsvp{% endblock %}
 
@@ -89,32 +88,21 @@
                     {% if leadership_roles %}
                         <div class="row">
                             {% for role in leadership_roles %}
-                                {% if role.is_active %}
                                 <div class="col-md-6 col-lg-4 mb-3">
                                     <div class="d-flex flex-column align-items-center p-4 border rounded shadow-sm h-100 bg-white">
                                         <div class="mb-3">
                                             {% if role.user.profile.profile_picture_base64 %}
-                                                {% if role.user.profile.profile_picture_base64|slice:':10' == 'data:image' %}
-                                                    <img src="{{ role.user.profile.profile_picture_base64 }}" alt="{{ role.user.profile.get_display_name }}" class="rounded-circle shadow" style="width: 100px; height: 100px; object-fit: cover; border: 3px solid #6366f1;">
-                                                {% else %}
-                                                    <img src="data:image/png;base64,{{ role.user.profile.profile_picture_base64 }}" alt="{{ role.user.profile.get_display_name }}" class="rounded-circle shadow" style="width: 100px; height: 100px; object-fit: cover; border: 3px solid #6366f1;">
-                                                {% endif %}
+                                                <img src="{{ role.user.profile.profile_picture_base64 }}" alt="{{ role.user.profile.get_display_name }}" class="rounded-circle shadow" style="width: 100px; height: 100px; object-fit: cover; border: 3px solid #6366f1;">
                                             {% else %}
-                                                <div class="rounded-circle shadow d-flex align-items-center justify-content-center" style="width: 100px; height: 100px; background: {{ role.user.profile.get_avatar_color }}; border: 3px solid #6366f1; font-size: 2.2rem; color: #fff; font-weight: 700;">
+                                                <div class="rounded-circle d-inline-flex align-items-center justify-content-center shadow" style="width: 100px; height: 100px; background: #6366f1; color: #fff; font-weight: bold; font-size: 2rem;">
                                                     {{ role.user.profile.get_initials }}
                                                 </div>
                                             {% endif %}
                                         </div>
                                         <div class="text-center mb-2">
-                                            <div class="fw-bold" style="font-size: 1.25rem;">
-                                                {{ role.user.profile.get_display_name }}
-                                            </div>
+                                            <div class="fw-bold" style="font-size: 1.25rem;">{{ role.user.profile.get_display_name }}</div>
                                             {% if role.custom_label %}
-                                                <div class="text-muted small mb-1" style="font-size: 1.08rem; font-weight: 500;">{{ role.custom_label }}</div>
-                                            {% endif %}
-                                            <div class="text-muted small mb-2">{{ role.get_role_name_display }}</div>
-                                            {% if role.can_post %}
-                                                <span class="badge bg-success ms-2" title="Can make posts"><i class="material-icons" style="font-size: 1em; vertical-align: middle;">edit</i> Can Post</span>
+                                                <div class="text-muted small mb-2">{{ role.custom_label }}</div>
                                             {% endif %}
                                         </div>
                                         <div class="d-flex justify-content-center gap-2 mt-auto">
@@ -131,7 +119,6 @@
                                         </div>
                                     </div>
                                 </div>
-                                {% endif %}
                             {% endfor %}
                         </div>
                     {% else %}
@@ -331,7 +318,7 @@
                                                     <span>{{ entry.est_datetime|date:'g:i A' }}</span>
                                                 {% else %}
                                                     Date unavailable
-        {% endif %}
+                                                {% endif %}
                                             </div>
                                             <div class="mb-2" style="font-size: 1.05rem;">
                                                 {{ entry.summary|striptags|truncatechars:200 }}
@@ -708,51 +695,27 @@
 <div class="modal fade" id="leadershipModal" tabindex="-1" aria-labelledby="leadershipModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header" style="background: linear-gradient(90deg, #2563eb 0%, #6366f1 100%); color: #fff; border-top-left-radius: 1.25rem; border-top-right-radius: 1.25rem; box-shadow: 0 2px 12px rgba(59,130,246,0.10); align-items: center;">
-                <h5 class="modal-title d-flex align-items-center" id="leadershipModalLabel" style="font-size: 1.25rem; font-weight: 700; gap: 0.5rem; color: #fff;">
-                    <i class="material-icons me-2" style="font-size: 1.5rem; color: #fff; background: rgba(59,130,246,0.18); border-radius: 50%; padding: 0.2em; box-shadow: 0 2px 8px rgba(59,130,246,0.10);">groups</i> Manage Group Leadership
+            <div class="modal-header">
+                <h5 class="modal-title" id="leadershipModalLabel">
+                    <i class="material-icons me-2">groups</i> Manage Group Leadership
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="filter: invert(1); opacity: 0.8;"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form method="post" action="" id="add-leader-form">
                     {% csrf_token %}
                     <div class="mb-3">
-                        <label for="id_user" class="form-label">User</label>
-                        {{ leadership_form.user }}
+                        <h6>Add New Leader</h6>
+                        {{ leadership_form.as_p }}
+                        <button type="submit" name="add_leader" class="btn btn-primary mb-3">Add Leader</button>
                     </div>
-                    <div class="mb-3">
-                        <label for="id_role_name" class="form-label">Role</label>
-                        {{ leadership_form.role_name }}
-                    </div>
-                    <div class="mb-3">
-                        <label for="id_custom_label" class="form-label">
-                            <i class="material-icons align-middle me-1" style="color: #6366f1;">badge</i>
-                            Role <span class="text-danger">*</span>
-                        </label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0" style="border-radius: 2rem 0 0 2rem;">
-                                <i class="material-icons" style="color: #6366f1;">badge</i>
-                            </span>
-                            {{ leadership_form.custom_label|add_class:'form-control border-start-0 rounded-end-pill'|attr:'placeholder:Enter role (e.g. Owner, Admin, etc.)' }}
-                        </div>
-                    </div>
-                    <div class="form-check mb-3">
-                        {{ leadership_form.can_post }}
-                        <label class="form-check-label" for="id_can_post">Can make posts for this group</label>
-                    </div>
-                    <div class="form-check mb-3">
-                        {{ leadership_form.is_active }}
-                        <label class="form-check-label" for="id_is_active">Active</label>
-                    </div>
-                    <button type="submit" name="add_leader" class="btn btn-primary mb-3">Add Leader</button>
                 </form>
                 
                 <hr class="my-4">
                 
                 <div class="mb-3">
                     <h6>Current Leaders</h6>
-                    <table class="table table-bordered">
+                    <table class="table table-bordered align-middle">
                         <thead>
                             <tr>
                                 <th>User</th>
@@ -762,36 +725,46 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for role in leadership_roles %}
-                                {% if role.is_active %}
+                            {% if leadership_roles %}
+                                {% for role in leadership_roles %}
                                 <tr data-role-id="{{ role.id }}">
-                                    <td>{{ role.user.profile.get_display_name }}</td>
-                                    <td>
-                                        <form class="edit-leader-role-form d-inline-flex align-items-center" method="post" action="">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="role_id" value="{{ role.id }}">
-                                            <input type="text" name="custom_label" value="{{ role.custom_label }}" class="form-control border-0 border-bottom fw-bold" style="background: transparent; color: #234; font-size: 1.08em; min-width: 90px; max-width: 180px; box-shadow: none; border-radius: 0; padding-left: 0;" autocomplete="off" onblur="this.form.submit()" onkeydown="if(event.key==='Enter'){this.form.submit();return false;}">
-                                        </form>
+                                    <td class="d-flex align-items-center gap-2">
+                                        {% if role.user.profile.profile_picture_base64 %}
+                                            <img src="{{ role.user.profile.profile_picture_base64 }}" alt="{{ role.user.profile.get_display_name }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: #6366f1; color: #fff; font-weight: bold; font-size: 1.1rem;">
+                                                {{ role.user.profile.get_initials }}
+                                            </div>
+                                        {% endif %}
+                                        <span>{{ role.user.profile.get_display_name }}</span>
                                     </td>
                                     <td>
-                                        <form class="edit-leader-canpost-form d-inline" method="post" action="">
+                                        <form method="post" class="edit-leader-form d-inline-flex align-items-center gap-2" action="">
                                             {% csrf_token %}
                                             <input type="hidden" name="role_id" value="{{ role.id }}">
-                                            <input type="checkbox" name="can_post" value="true" {% if role.can_post %}checked{% endif %} onchange="this.form.submit()">
-                                        </form>
+                                            <input type="text" name="custom_label" value="{{ role.custom_label }}" class="form-control form-control-sm" style="min-width: 100px; max-width: 160px; display: inline-block;">
+                                    </td>
+                                    <td class="text-center">
+                                            <input type="checkbox" name="can_post" value="true" {% if role.can_post %}checked{% endif %} class="form-check-input">
                                     </td>
                                     <td>
-                                        <form class="remove-leader-form d-inline" method="post" action="" style="display:inline;">
+                                            <button type="submit" name="edit_leader" class="btn btn-sm btn-success me-1">
+                                                <i class="material-icons" style="font-size:1.1em; vertical-align:middle;">save</i> Save
+                                            </button>
+                                        </form>
+                                        <form method="post" class="remove-leader-form d-inline" action="">
                                             {% csrf_token %}
                                             <input type="hidden" name="role_id" value="{{ role.id }}">
-                                            <button type="submit" name="remove_leader" class="btn btn-sm btn-danger">Remove</button>
+                                            <button type="submit" name="remove_leader" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to remove this leader?');">
+                                                <i class="material-icons" style="font-size:1.1em; vertical-align:middle;">delete</i> Remove
+                                            </button>
                                         </form>
                                     </td>
                                 </tr>
-                                {% endif %}
-                            {% empty %}
-                            <tr><td colspan="4" class="text-center text-muted">No leaders assigned.</td></tr>
-                            {% endfor %}
+                                {% endfor %}
+                            {% else %}
+                                <tr><td colspan="4" class="text-center text-muted">No leaders assigned.</td></tr>
+                            {% endif %}
                         </tbody>
                     </table>
                 </div>
@@ -1175,6 +1148,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .copy-btn:hover {
   color: #b3baff;
+}
 
 .read-more-link2:hover {
   color: #8b5cf6;
@@ -1417,4 +1391,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
-{% endblock %} 
+{% endblock %}
