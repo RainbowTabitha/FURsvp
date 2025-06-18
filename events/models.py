@@ -28,7 +28,16 @@ class Group(models.Model):
     def get_role_members(self, role_level):
         """Get all members with a specific role level or higher"""
         from users.models import GroupRole
-        return User.objects.filter(group_roles__group=self, group_roles__role_level__lte=role_level, group_roles__is_active=True)
+        # Map role levels to role names
+        role_mapping = {
+            1: ['founder'],
+            2: ['founder', 'admin'],
+            3: ['founder', 'admin', 'moderator'],
+            4: ['founder', 'admin', 'moderator', 'event_manager'],
+            5: ['founder', 'admin', 'moderator', 'event_manager', 'helper'],
+        }
+        role_names = role_mapping.get(role_level, [])
+        return User.objects.filter(group_roles__group=self, group_roles__role_name__in=role_names, group_roles__is_active=True)
     
     def get_role_members_by_name(self, role_name):
         """Get all members with a specific role name"""
@@ -50,7 +59,16 @@ class Group(models.Model):
     def user_has_role_level(self, user, max_level):
         """Check if a user has a role at or above a specific level"""
         from users.models import GroupRole
-        return GroupRole.objects.filter(user=user, group=self, role_level__lte=max_level, is_active=True).exists()
+        # Map role levels to role names
+        role_mapping = {
+            1: ['founder'],
+            2: ['founder', 'admin'],
+            3: ['founder', 'admin', 'moderator'],
+            4: ['founder', 'admin', 'moderator', 'event_manager'],
+            5: ['founder', 'admin', 'moderator', 'event_manager', 'helper'],
+        }
+        role_names = role_mapping.get(max_level, [])
+        return GroupRole.objects.filter(user=user, group=self, role_name__in=role_names, is_active=True).exists()
     
     def user_has_role_name(self, user, role_name):
         """Check if a user has a specific role name"""

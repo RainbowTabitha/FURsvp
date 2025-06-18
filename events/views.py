@@ -4,19 +4,20 @@ from django.utils import timezone
 from datetime import timedelta, datetime
 from django.contrib.auth.decorators import login_required
 from .forms import EventForm, RSVPForm, Group
-from users.models import Profile, GroupDelegation, BannedUser, Notification
+from users.models import Profile, GroupDelegation, BannedUser, Notification, GroupRole
 from django.contrib import messages
 from django.db import models, transaction
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseForbidden
 from users.utils import create_notification
 import feedparser
 from django.views.generic import ListView, DetailView
 import pytz
 import time
+from events.forms import GroupRoleForm
 
 # Create your views here.
 
-def get_telegram_feed(channel='furcationland', limit=5):
+def get_telegram_feed(channel='', limit=5):
     url = f"https://rss.tabithahanegan.com/telegram/channel/{channel}"
     feed = feedparser.parse(url)
     entries = feed.entries[:limit]
@@ -525,32 +526,72 @@ def group_detail(request, group_id):
              group in request.user.profile.allowed_groups.all())
         )
     
-    # Handle POST requests for editing group
-    if request.method == 'POST' and 'edit_group' in request.POST and can_edit_group:
-        try:
-            # Update group fields
-            group.name = request.POST.get('name', group.name)
-            group.description = request.POST.get('description', group.description)
-            group.website = request.POST.get('website', group.website)
-            group.contact_email = request.POST.get('contact_email', group.contact_email)
-            group.telegram_channel = request.POST.get('telegram_channel', group.telegram_channel)
-            
-            # Handle logo upload
-            logo_base64 = request.POST.get('logo_base64')
-            if logo_base64:
-                group.logo_base64 = logo_base64
-            
-            group.save()
-            messages.success(request, f'Group "{group.name}" has been updated successfully.')
+    # Handle POST requests
+    if request.method == 'POST' and can_edit_group:
+        # Handle group editing
+        if 'edit_group' in request.POST:
+            try:
+                # Update group fields
+                group.name = request.POST.get('name', group.name)
+                group.description = request.POST.get('description', group.description)
+                group.website = request.POST.get('website', group.website)
+                group.contact_email = request.POST.get('contact_email', group.contact_email)
+                group.telegram_channel = request.POST.get('telegram_channel', group.telegram_channel)
+                
+                # Handle logo upload
+                logo_base64 = request.POST.get('logo_base64')
+                if logo_base64:
+                    group.logo_base64 = logo_base64
+                
+                group.save()
+                messages.success(request, f'Group "{group.name}" has been updated successfully.')
+                return redirect('group_detail', group_id=group.id)
+                
+            except Exception as e:
+                messages.error(request, f'Error updating group: {str(e)}')
+        
+        # Handle leadership management
+        elif 'add_leader' in request.POST:
+            form = GroupRoleForm(request.POST, group=group)
+            if form.is_valid():
+                role = form.save(commit=False)
+                role.group = group
+                role.save()
+                messages.success(request, 'Leader added successfully.')
+            else:
+                messages.error(request, 'Error adding leader. Please check the form.')
             return redirect('group_detail', group_id=group.id)
-            
-        except Exception as e:
-            messages.error(request, f'Error updating group: {str(e)}')
+        
+        elif 'edit_leader' in request.POST:
+            role_id = request.POST.get('role_id')
+            try:
+                role = GroupRole.objects.get(pk=role_id, group=group)
+                role.role_name = request.POST.get('role_name', role.role_name)
+                role.is_active = 'is_active' in request.POST
+                role.save()
+                messages.success(request, 'Leader updated successfully.')
+            except GroupRole.DoesNotExist:
+                messages.error(request, 'Leader not found.')
+            return redirect('group_detail', group_id=group.id)
+        
+        elif 'remove_leader' in request.POST:
+            role_id = request.POST.get('role_id')
+            try:
+                role = GroupRole.objects.get(pk=role_id, group=group)
+                role.delete()
+                messages.success(request, 'Leader removed successfully.')
+            except GroupRole.DoesNotExist:
+                messages.error(request, 'Leader not found.')
+            return redirect('group_detail', group_id=group.id)
     
     # Get Telegram feed for this group (if channel set), else default
-    telegram_channel = group.telegram_channel or 'furcationland'
+    telegram_channel = group.telegram_channel
     telegram_feed = get_telegram_feed(telegram_channel)
 
+    # Leadership roles and form
+    leadership_roles = GroupRole.objects.filter(group=group).select_related('user')
+    leadership_form = GroupRoleForm(group=group)
+    
     context = {
         'group': group,
         'organizers': organizers,
@@ -559,6 +600,9 @@ def group_detail(request, group_id):
         'past_events': past_events,
         'can_edit_group': can_edit_group,
         'telegram_feed': telegram_feed,
+        'leadership_roles': leadership_roles,
+        'leadership_form': leadership_form,
+        'can_manage_leadership': can_edit_group,  # or use your own logic
     }
     
     return render(request, 'events/group_detail.html', context)
@@ -573,3 +617,40 @@ class PostDetailView(DetailView):
     model = Post
     template_name = 'events/post_detail.html'
     context_object_name = 'post'
+
+@login_required
+def manage_group_leadership(request, group_id):
+    group = get_object_or_404(Group, pk=group_id)
+    user_roles = GroupRole.objects.filter(group=group, user=request.user, is_active=True)
+    can_manage = user_roles.filter(role_name__in=['founder', 'admin']).exists() or request.user.is_superuser
+    if not can_manage:
+        return HttpResponseForbidden('You do not have permission to manage leadership.')
+
+    if request.method == 'POST':
+        if 'add_leader' in request.POST:
+            form = GroupRoleForm(request.POST, group=group)
+            if form.is_valid():
+                role = form.save(commit=False)
+                role.group = group
+                role.save()
+                return JsonResponse({'success': True, 'msg': 'Leader added successfully.'})
+            else:
+                return JsonResponse({'success': False, 'errors': form.errors})
+        elif 'edit_leader' in request.POST:
+            role_id = request.POST.get('role_id')
+            role = get_object_or_404(GroupRole, pk=role_id, group=group)
+            form = GroupRoleForm(request.POST, instance=role, group=group)
+            if form.is_valid():
+                form.save()
+                return JsonResponse({'success': True, 'msg': 'Leader updated successfully.'})
+            else:
+                return JsonResponse({'success': False, 'errors': form.errors})
+        elif 'remove_leader' in request.POST:
+            role_id = request.POST.get('role_id')
+            role = get_object_or_404(GroupRole, pk=role_id, group=group)
+            role.delete()
+            return JsonResponse({'success': True, 'msg': 'Leader removed successfully.'})
+    else:
+        roles = GroupRole.objects.filter(group=group, is_active=True).select_related('user')
+        form = GroupRoleForm(group=group)
+        return render(request, 'events/leadership_editor.html', {'group': group, 'roles': roles, 'form': form, 'can_manage': can_manage})

@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from events.models import Group
 
 # Create your models here.
 
@@ -9,28 +10,37 @@ class GroupRole(models.Model):
     """Custom hierarchy system for group leadership roles"""
     ROLE_CHOICES = [
         ('founder', 'Founder'),
-        ('admin', 'Administrator'),
+        ('admin', 'Admin'),
         ('moderator', 'Moderator'),
-        ('coordinator', 'Event Coordinator'),
+        ('event_manager', 'Event Manager'),
         ('helper', 'Helper'),
     ]
     
+    group = models.ForeignKey('events.Group', on_delete=models.CASCADE, related_name='group_roles')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='group_roles')
-    group = models.ForeignKey('events.Group', on_delete=models.CASCADE, related_name='member_roles')
-    role_name = models.CharField(max_length=50, help_text="Custom name for this role (e.g., 'Event Planner', 'Social Media Manager')")
-    role_level = models.IntegerField(default=5, help_text="Hierarchy level (1=highest, 10=lowest)")
-    assigned_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_roles')
-    assigned_at = models.DateTimeField(auto_now_add=True)
+    role_name = models.CharField(max_length=32, choices=ROLE_CHOICES)
     is_active = models.BooleanField(default=True)
+    assigned_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        unique_together = ('user', 'group')
-        ordering = ['role_level', 'assigned_at']
+        unique_together = ('group', 'user')
+        ordering = ['role_name', 'assigned_at']
         verbose_name = 'Group Role'
         verbose_name_plural = 'Group Roles'
     
+    @property
+    def role_level(self):
+        mapping = {
+            'founder': 1,
+            'admin': 2,
+            'moderator': 3,
+            'event_manager': 4,
+            'helper': 5,
+        }
+        return mapping.get(self.role_name, 99)
+    
     def __str__(self):
-        return f'{self.user.username} - {self.role_name} at {self.group.name}'
+        return f"{self.user.username} - {self.get_role_name_display()} ({self.group.name})"
     
     def can_manage_events(self):
         """Check if this role can create/edit/delete events"""
@@ -48,7 +58,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     profile_picture_base64 = models.TextField(blank=True, null=True)
     is_approved_organizer = models.BooleanField(default=False)
-    allowed_groups = models.ManyToManyField('events.Group', blank=True)
+    allowed_groups = models.ManyToManyField('events.Group', blank=True, help_text='DEPRECATED: Use GroupRole instead')
     display_name = models.CharField(max_length=50, blank=True, null=True)
     discord_username = models.CharField(max_length=50, blank=True, null=True)
     telegram_username = models.CharField(max_length=50, blank=True, null=True)
