@@ -6,3 +6,4 @@ gunicorn
 django-cors-headers
 django-q2
 feedparser
+pytz
