@@ -503,19 +503,28 @@
             border-color: #444 !important;
         }
 
-        .dark-mode .accordion-button {
-            background-color: #23272b !important;
+        .dark-mode .accordion-item {
+            background: #23272b !important;
+            border-color: #222 !important;
+        }
+        .dark-mode .accordion-body {
+            background: #262a2e !important;
             color: #e0e0e0 !important;
         }
-
+        .dark-mode .accordion-button.collapsed {
+            background: #2a3faa !important;
+            color: #e0e0e0 !important;
+        }
         .dark-mode .accordion-button:not(.collapsed) {
-            background-color: #2a3faa !important;
+            background: #2a3faa !important;
             color: #fff !important;
         }
-
-        .dark-mode .accordion-body {
-            background-color: #23272b !important;
-            color: #e0e0e0 !important;
+        .dark-mode .accordion-button:focus {
+            box-shadow: 0 0 0 2px #2a3faa !important;
+            border-color: #2a3faa !important;
+        }
+        .dark-mode .accordion-item .accordion-button::after {
+            filter: invert(1) brightness(1.5);
         }
 
         .dark-mode .dropdown-menu {
@@ -956,7 +965,6 @@
             color: #b0b8c1 !important;
         }
 
-        /* Dark mode for mobile header and footer */
         .dark-mode .navbar,
         .dark-mode .footer,
         .dark-mode .mobile-bottom-nav {
@@ -1530,4 +1538,5 @@
     </script>
 </body>
 
+</html>
 </html>
