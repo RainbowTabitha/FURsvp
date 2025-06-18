@@ -65,7 +65,219 @@
         color: #222;
         font-size: 1.08rem;
     }
+    /* Dark mode improvements for home screen */
+    .dark-mode .modern-card {
+        background: #181a20;
+        color: #f3f4f6;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+    }
+    .dark-mode .modern-card-header.events {
+        background: linear-gradient(90deg, #42f56c 0%, #66f43f 100%);
+        color: #fff;
+    }
+    .dark-mode .modern-card-header {
+        border-bottom: none;
+    }
+    .dark-mode .modern-card-body {
+        background: #181a20;
+        color: #f3f4f6;
+    }
+    .dark-mode .pretty-toggle-btn,
+    .dark-mode .sort-btn,
+    .dark-mode .order-toggle-btn,
+    .dark-mode .btn-group .btn {
+        background: #23272f !important;
+        color: #f3f4f6 !important;
+        border-color: #374151 !important;
+    }
+    .dark-mode .pretty-toggle-btn.active,
+    .dark-mode .sort-btn.active,
+    .dark-mode .order-toggle-btn.active {
+        background: linear-gradient(90deg, #2563eb 0%, #0ea5e9 100%) !important;
+        color: #fff !important;
+    }
+    .dark-mode .btn-danger {
+        background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%) !important;
+        color: #fff !important;
+        border: none !important;
+    }
+    .dark-mode .card,
+    .dark-mode .fancy-post-card,
+    .dark-mode .modern-event-card {
+        background: #23272f !important;
+        color: #f3f4f6 !important;
+        border: none !important;
+    }
+    .dark-mode .card-title,
+    .dark-mode .fw-bold,
+    .dark-mode .display-3,
+    .dark-mode .display-6 {
+        color: #60a5fa !important;
+    }
+    .dark-mode .badge.bg-primary {
+        background: linear-gradient(90deg, #2563eb 0%, #06b6d4 100%) !important;
+        color: #fff !important;
+    }
+    .dark-mode .badge.bg-danger {
+        background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%) !important;
+        color: #fff !important;
+    }
+    .dark-mode .badge.bg-warning {
+        background: linear-gradient(90deg, #f59e42 0%, #fbbf24 100%) !important;
+        color: #92400e !important;
+    }
+    .dark-mode .btn-light {
+        background: #23272f !important;
+        color: #f3f4f6 !important;
+        border-color: #374151 !important;
+    }
+    .dark-mode .btn-outline-primary {
+        color: #60a5fa !important;
+        border-color: #60a5fa !important;
+    }
+    .dark-mode .btn-outline-primary:hover {
+        background: #2563eb !important;
+        color: #fff !important;
+    }
+    .dark-mode .read-more-link,
+    .dark-mode .read-more-link2 {
+        color: #38bdf8 !important;
+    }
+    .dark-mode .read-more-link:hover,
+    .dark-mode .read-more-link2:hover {
+        color: #a5b4fc !important;
+    }
+    .gradient-sort-btn {
+        border: none;
+        border-radius: 2rem;
+        padding: 0.7rem 2.2rem;
+        font-size: 1.13rem;
+        font-weight: 700;
+        background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%);
+        color: #fff;
+        box-shadow: 0 2px 12px rgba(59,130,246,0.10);
+        transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
+        margin-right: 0.7rem;
+        outline: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .gradient-sort-btn:hover, .gradient-sort-btn.active {
+        background: linear-gradient(90deg, #2563eb 0%, #0ea5e9 100%);
+        color: #fff;
+        box-shadow: 0 4px 18px rgba(59,130,246,0.18);
+        transform: translateY(-2px) scale(1.04);
+    }
+    .outline-sort-btn {
+        border: 2px solid #3b82f6;
+        border-radius: 2rem;
+        padding: 0.7rem 2.2rem;
+        font-size: 1.13rem;
+        font-weight: 700;
+        background: transparent;
+        color: #3b82f6;
+        transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+        margin-right: 0.7rem;
+        outline: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .outline-sort-btn:hover, .outline-sort-btn:focus {
+        background: linear-gradient(90deg, #e0e7ef 0%, #f8fafc 100%);
+        color: #2563eb;
+        box-shadow: 0 4px 18px rgba(59,130,246,0.10);
+    }
+    .gradient-sfw-btn {
+        border: none;
+        border-radius: 2rem;
+        padding: 0.7rem 2.2rem;
+        font-size: 1.13rem;
+        font-weight: 700;
+        background: linear-gradient(90deg, #10b981 0%, #22d3ee 100%);
+        color: #fff;
+        box-shadow: 0 2px 12px rgba(16,185,129,0.10);
+        transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
+        margin-right: 0.7rem;
+        outline: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 48px;
+        line-height: 48px;
+    }
+    .gradient-sfw-btn:hover, .gradient-sfw-btn:focus {
+        background: linear-gradient(90deg, #22d3ee 0%, #10b981 100%);
+        color: #fff;
+        box-shadow: 0 4px 18px rgba(16,185,129,0.18);
+        transform: translateY(-2px) scale(1.04);
+    }
+    .gradient-danger-btn {
+        border: none;
+        border-radius: 2rem;
+        padding: 0.7rem 2.2rem;
+        font-size: 1.13rem;
+        font-weight: 700;
+        background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+        color: #fff;
+        box-shadow: 0 2px 12px rgba(239,68,68,0.10);
+        transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
+        margin: 0.7rem 0;
+        outline: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 48px;
+        line-height: 48px;
+    }
+    .gradient-danger-btn:hover, .gradient-danger-btn:focus {
+        background: linear-gradient(90deg, #dc2626 0%, #b91c1c 100%);
+        color: #fff;
+        box-shadow: 0 4px 18px rgba(239,68,68,0.18);
+        transform: translateY(-2px) scale(1.04);
+    }
+    .gradient-toggle-btn {
+        border: none;
+        border-radius: 1.5rem;
+        background: linear-gradient(90deg, #6366f1 0%, #06b6d4 100%);
+        color: #fff;
+        font-size: 1.13rem;
+        padding: 0.7rem 1.2rem;
+        margin-left: 0.5rem;
+        transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
+        box-shadow: 0 2px 12px rgba(99,102,241,0.10);
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+    .gradient-toggle-btn:hover, .gradient-toggle-btn.active {
+        background: linear-gradient(90deg, #2563eb 0%, #0ea5e9 100%);
+        color: #fff;
+        box-shadow: 0 4px 18px rgba(99,102,241,0.18);
+        transform: translateY(-2px) scale(1.04);
+    }
+    .order-toggle-btn, .order-toggle-btn .material-icons {
+        text-decoration: none !important;
+    }
+    .sort-btn, .sort-btn .material-icons {
+        text-decoration: none !important;
+    }
+    /* Remove underline from up/down icon */
+    #orderToggleBtn .material-icons {
+        text-decoration: none !important;
+        border-bottom: none !important;
+    }
 </style>
+<nav aria-label="breadcrumb" class="mb-4">
+    <div class="modern-breadcrumbs">
+        <span class="breadcrumb-current"><i class="material-icons me-1">home</i> Home</span>
+    </div>
+</nav>
 <div class="container">
     <div class="row justify-content-center mb-5">
         <div class="col-lg-10">
@@ -102,22 +314,22 @@
                     <div class="d-flex flex-wrap justify-content-center gap-2">
                         <div class="btn-group" role="group">
                             <a href="#" data-sort="date" data-order="{{ current_order }}"
-                                class="btn {% if current_sort == 'date' %}btn-primary text-white{% else %}btn-outline-primary{% endif %} d-flex align-items-center justify-content-center sort-btn"
+                                class="gradient-sort-btn{% if current_sort == 'date' %} active{% else %} outline-sort-btn{% endif %} d-flex align-items-center justify-content-center sort-btn"
                                 style="padding: .5rem 1rem; font-size: 1.1rem;">
                                 <i class="material-icons me-1 align-middle" style="font-size: 20px;">calendar_today</i> Date
                             </a>
                             <a href="#" data-sort="group" data-order="{{ current_order }}"
-                                class="btn {% if current_sort == 'group' %}btn-primary text-white{% else %}btn-outline-primary{% endif %} d-flex align-items-center justify-content-center sort-btn"
+                                class="{% if current_sort == 'group' %}gradient-sort-btn active{% else %}outline-sort-btn{% endif %} d-flex align-items-center justify-content-center sort-btn"
                                 style="padding: .5rem 1rem; font-size: 1.1rem;">
                                 <i class="material-icons me-1 align-middle" style="font-size: 20px;">group</i> Group
                             </a>
                             <a href="#" data-sort="title" data-order="{{ current_order }}"
-                                class="btn {% if current_sort == 'title' %}btn-primary text-white{% else %}btn-outline-primary{% endif %} d-flex align-items-center justify-content-center sort-btn"
+                                class="{% if current_sort == 'title' %}gradient-sort-btn active{% else %}outline-sort-btn{% endif %} d-flex align-items-center justify-content-center sort-btn"
                                 style="padding: .5rem 1rem; font-size: 1.1rem;">
                                 <i class="material-icons me-1 align-middle" style="font-size: 20px;">title</i> Title
                             </a>
                             <a href="#" data-sort="rsvps" data-order="{{ current_order }}"
-                                class="btn {% if current_sort == 'rsvps' %}btn-primary text-white{% else %}btn-outline-primary{% endif %} d-flex align-items-center justify-content-center sort-btn"
+                                class="{% if current_sort == 'rsvps' %}gradient-sort-btn active{% else %}outline-sort-btn{% endif %} d-flex align-items-center justify-content-center sort-btn"
                                 style="padding: .5rem 1rem; font-size: 1.1rem;">
                                 <i class="material-icons me-1 align-middle" style="font-size: 20px;">people</i> RSVPs
                             </a>
@@ -126,19 +338,21 @@
                 </div>
                 <div class="col-12">
                     <div class="d-flex flex-wrap justify-content-center gap-2">
-                        <button type="button" id="toggleAdultEvents" class="btn btn-danger flex-shrink-0"
-                            style="width: 190px; min-width: 190px; max-width: 190px; padding: .5rem 1rem; white-space: nowrap;">
-                            Hide 18+/21+
+                        <button type="button" id="toggleAdultEvents" class="gradient-sfw-btn flex-shrink-0"
+                            style="width: 190px; min-width: 190px; max-width: 190px; white-space: nowrap; height: 48px; line-height: 48px; display: flex; align-items: center; justify-content: center; margin-top: 0px;">
+                            Show 18+/21+
                         </button>
                         <div class="btn-group" role="group">
                             <a href="#" id="orderToggleBtn" data-sort="{{ current_sort }}" data-order="{% if current_order == 'asc' %}desc{% else %}asc{% endif %}"
-                                class="btn btn-light d-flex align-items-center justify-content-center order-toggle-btn flex-shrink-0"
-                                style="width: 40px !important; height: 40px !important; padding: 0 !important; overflow: hidden !important;" title="Toggle Order">
-                                <i class="material-icons"
-                                    style="font-size: 18px;">{% if current_order == 'desc' %}arrow_downward{% else %}arrow_upward{% endif %}</i>
+                                class="gradient-toggle-btn d-flex align-items-center justify-content-center order-toggle-btn flex-shrink-0"
+                                style="width: 48px; height: 48px; border-radius: 24px; font-size: 1.15rem; padding: 0; margin-left: 0.5rem;"
+                                title="Toggle Order">
+                                <i class="material-icons" style="font-size: 24px;">{% if current_order == 'desc' %}arrow_downward{% else %}arrow_upward{% endif %}</i>
                             </a>
-                            <button type="button" class="btn btn-light d-flex align-items-center justify-content-center flex-shrink-0" id="viewToggle" style="width: 40px !important; height: 40px !important; padding: 0 !important; overflow: hidden !important;" title="Toggle View">
-                                <i class="material-icons align-middle" style="font-size: 18px;">grid_view</i>
+                            <button type="button" class="gradient-toggle-btn d-flex align-items-center justify-content-center flex-shrink-0" id="viewToggle"
+                                style="width: 48px; height: 48px; border-radius: 24px; font-size: 1.15rem; padding: 0; margin-left: 0.5rem;"
+                                title="Toggle View">
+                                <i class="material-icons align-middle" style="font-size: 24px;">grid_view</i>
                             </button>
                         </div>
                     </div>
@@ -164,7 +378,7 @@
 
         // Set initial state
         let isListView = localStorage.getItem('eventViewPreference') === 'list';
-        let showAdult = localStorage.getItem('showAdultEvents') !== 'false'; // Default to true if not set
+        let showAdult = false; // Start in SFW mode (green)
         let currentSort = '{{ current_sort }}';
         let currentOrder = '{{ current_order }}';
 
@@ -238,13 +452,13 @@
                     eventsList.style.display = 'none';
                 }
 
-                // Update active state for sort buttons
+                // Update active state for sort buttons (custom classes)
                 sortButtons.forEach(button => {
-                    button.classList.remove('btn-primary', 'text-white');
-                    button.classList.add('btn-outline-primary');
+                    button.classList.remove('gradient-sort-btn', 'outline-sort-btn', 'active');
                     if (button.dataset.sort === currentSort) {
-                        button.classList.remove('btn-outline-primary');
-                        button.classList.add('btn-primary', 'text-white');
+                        button.classList.add('gradient-sort-btn', 'active');
+                    } else {
+                        button.classList.add('outline-sort-btn');
                     }
                 });
 
@@ -288,12 +502,12 @@
             localStorage.setItem('showAdultEvents', showAdult);
             if (showAdult) {
                 toggleAdult.textContent = 'Hide 18+/21+';
-                toggleAdult.classList.remove('btn-success');
-                toggleAdult.classList.add('btn-danger');
+                toggleAdult.classList.remove('gradient-sfw-btn');
+                toggleAdult.classList.add('gradient-danger-btn');
             } else {
                 toggleAdult.textContent = 'Show 18+/21+';
-                toggleAdult.classList.remove('btn-danger');
-                toggleAdult.classList.add('btn-success');
+                toggleAdult.classList.remove('gradient-danger-btn');
+                toggleAdult.classList.add('gradient-sfw-btn');
             }
             fetchEvents(currentSort, currentOrder, showAdult);
         }
@@ -308,10 +522,12 @@
                 eventsGrid.style.display = 'none';
                 eventsList.style.display = 'block';
                 toggleIcon.textContent = 'view_list';
+                viewToggle.classList.add('active');
             } else {
                 eventsGrid.style.display = 'flex';
                 eventsList.style.display = 'none';
                 toggleIcon.textContent = 'grid_view';
+                viewToggle.classList.remove('active');
             }
         }
 
@@ -322,21 +538,23 @@
             eventsGrid.style.display = 'none';
             eventsList.style.display = 'block';
             toggleIcon.textContent = 'view_list';
+            viewToggle.classList.add('active');
         } else {
             eventsGrid.style.display = 'flex';
             eventsList.style.display = 'none';
             toggleIcon.textContent = 'grid_view';
+            viewToggle.classList.remove('active');
         }
 
-        // On page load, set the correct color
+        // Initial color and text setup
         if (showAdult) {
             toggleAdult.textContent = 'Hide 18+/21+';
-            toggleAdult.classList.remove('btn-success');
-            toggleAdult.classList.add('btn-danger');
+            toggleAdult.classList.remove('gradient-sfw-btn');
+            toggleAdult.classList.add('gradient-danger-btn');
         } else {
             toggleAdult.textContent = 'Show 18+/21+';
-            toggleAdult.classList.remove('btn-danger');
-            toggleAdult.classList.add('btn-success');
+            toggleAdult.classList.remove('gradient-danger-btn');
+            toggleAdult.classList.add('gradient-sfw-btn');
         }
 
         // Handle browser back/forward buttons

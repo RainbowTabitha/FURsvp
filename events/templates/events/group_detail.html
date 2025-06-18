@@ -6,6 +6,17 @@
 {% block title %}{{ group.name }} - FURsvp{% endblock %}
 
 {% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <div class="modern-breadcrumbs">
+        <a href="/" class="d-flex align-items-center">
+            <i class="material-icons me-1">home</i> Home
+        </a>
+        <span class="breadcrumb-chevron">›</span>
+        <a href="/" class="d-flex align-items-center">Groups</a>
+        <span class="breadcrumb-chevron">›</span>
+        <span class="breadcrumb-current">{{ group.name }}</span>
+    </div>
+</nav>
 <div class="container py-4">
     <!-- Hero Section -->
     <div class="row align-items-center mb-4">
@@ -305,7 +316,7 @@
                                                     <span>{{ entry.est_datetime|date:'g:i A' }}</span>
                                                 {% else %}
                                                     Date unavailable
-                                                {% endif %}
+        {% endif %}
                                             </div>
                                             <div class="mb-2" style="font-size: 1.05rem;">
                                                 {{ entry.summary|striptags|truncatechars:200 }}

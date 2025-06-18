@@ -7,21 +7,15 @@
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <nav aria-label="breadcrumb" class="mb-4">
-                <ol class="breadcrumb bg-transparent p-0">
-                    <li class="breadcrumb-item">
-                        <a href="/" class="text-decoration-none d-flex align-items-center">
-                            <i class="material-icons me-1">home</i> Events
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'event_detail' event.id %}" class="text-decoration-none">
-                            {{ event.title }}
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">
-                        <span class="text-primary">Edit Event</span>
-                    </li>
-                </ol>
+                <div class="modern-breadcrumbs">
+                    <a href="/" class="d-flex align-items-center">
+                        <i class="material-icons me-1">home</i> Events
+                    </a>
+                    <span class="breadcrumb-chevron">›</span>
+                    <a href="{% url 'event_detail' event.id %}">{{ event.title }}</a>
+                    <span class="breadcrumb-chevron">›</span>
+                    <span class="breadcrumb-current">Edit Event</span>
+                </div>
             </nav>
 
             <div class="card shadow-sm">
@@ -377,7 +371,7 @@
                             // Build the full address for display
                             fullAddress = streetAddress;
                             if (address.city || address.town || address.village) {
-                                fullAddress += ', ' + (address.city || address.town || address
+                                fullAddress += ', ' + (address.city || address.town ||
                                     .village);
                             }
                             if (address.state) {
