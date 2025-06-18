@@ -16,4 +16,5 @@ urlpatterns = [
     path('posts/', PostListView.as_view(), name='post_list'),
     path('posts/<int:pk>/', PostDetailView.as_view(), name='post_detail'),
     path('group/<int:group_id>/leadership/', manage_group_leadership, name='manage_group_leadership'),
+    path('group/', views.groups_list, name='groups_list'),
 ] 

@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Event, RSVP, Post
+from .models import Event, RSVP, Post, Group
 from django.utils import timezone
 from datetime import timedelta, datetime
 from django.contrib.auth.decorators import login_required
@@ -15,6 +15,7 @@ import pytz
 import time
 from events.forms import GroupRoleForm
 from django.db.models import Q
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
 # Create your views here.
 
@@ -654,3 +655,18 @@ def manage_group_leadership(request, group_id):
         roles = GroupRole.objects.filter(group=group).select_related('user')
         form = GroupRoleForm(group=group)
         return render(request, 'events/leadership_editor.html', {'group': group, 'roles': roles, 'form': form, 'can_manage': can_manage})
+
+def groups_list(request):
+    groups = Group.objects.all().order_by('name')
+    paginator = Paginator(groups, 9)  # 9 groups per page
+    page = request.GET.get('page', 1)
+    try:
+        paginated_groups = paginator.page(page)
+    except PageNotAnInteger:
+        paginated_groups = paginator.page(1)
+    except EmptyPage:
+        paginated_groups = paginator.page(paginator.num_pages)
+    context = {
+        'groups': paginated_groups,
+    }
+    return render(request, 'events/groups_list.html', context)

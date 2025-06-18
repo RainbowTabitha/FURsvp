@@ -1,0 +1,77 @@
+{% extends 'events/base.html' %}
+{% block title %}Groups - FURsvp{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4 fw-bold text-primary">All Groups</h1>
+    <div class="row">
+        {% for group in groups %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <a href="{{ group.get_absolute_url }}" class="card event-card-modern shadow-sm h-100 text-decoration-none d-flex flex-column align-items-center justify-content-center p-4">
+                {% if group.logo_base64 %}
+                    <img src="data:image/png;base64,{{ group.logo_base64 }}" alt="{{ group.name }} Logo" class="rounded-circle shadow mb-3" style="width: 90px; height: 90px; object-fit: cover; border: 3px solid #6366f1;">
+                {% else %}
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center shadow mb-3" style="width: 90px; height: 90px; background: #6366f1; color: #fff; font-weight: bold; font-size: 2rem;">
+                        <i class="material-icons">group</i>
+                    </div>
+                {% endif %}
+                <div class="fw-bold text-center mb-2" style="font-size: 1.25rem; color: #2563eb;">{{ group.name }}</div>
+                <div class="text-muted text-center mb-2" style="font-size: 1.05rem; min-height: 48px;">{{ group.description|truncatechars:80|striptags }}</div>
+            </a>
+        </div>
+        {% empty %}
+        <div class="col-12 text-muted text-center py-5">No groups found.</div>
+        {% endfor %}
+    </div>
+    {% if groups.paginator.num_pages > 1 %}
+    <nav aria-label="Group list pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if groups.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1" aria-label="First">
+                        <i class="material-icons" style="font-size: 24px;">first_page</i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ groups.previous_page_number }}" aria-label="Previous">
+                        <i class="material-icons" style="font-size: 24px;">chevron_left</i>
+                    </a>
+                </li>
+            {% endif %}
+            {% for num in groups.paginator.page_range %}
+                {% if groups.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% elif num > groups.number|add:'-3' and num < groups.number|add:'3' %}
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+            {% if groups.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ groups.next_page_number }}" aria-label="Next">
+                        <i class="material-icons" style="font-size: 24px;">chevron_right</i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ groups.paginator.num_pages }}" aria-label="Last">
+                        <i class="material-icons" style="font-size: 24px;">last_page</i>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+<style>
+.event-card-modern {
+    border-radius: 1.25rem;
+    box-shadow: 0 4px 24px 0 rgba(31, 38, 135, 0.10);
+    background: #fff;
+    transition: box-shadow 0.18s, transform 0.12s;
+    border: none;
+}
+.event-card-modern:hover {
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.16);
+    transform: translateY(-2px) scale(1.02);
+}
+</style>
+{% endblock %} 

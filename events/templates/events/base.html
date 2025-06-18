@@ -1634,6 +1634,11 @@
                             <i class="material-icons">home</i> Home
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'groups_list' %}">
+                            <i class="material-icons">groups</i> Groups
+                        </a>
+                    </li>
                     {% if user.is_authenticated %}
                     {% if user.is_superuser %}
                     <li class="nav-item">
@@ -1681,6 +1686,11 @@
             class="nav-link home-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
             <i class="material-icons">home</i>
             <span>Home</span>
+        </a>
+        <a href="{% url 'groups_list' %}"
+            class="nav-link {% if request.resolver_match.url_name == 'groups_list' %}active{% endif %}">
+            <i class="material-icons">groups</i>
+            <span>Groups</span>
         </a>
         {% if user.is_authenticated %}
         <a href="{% url 'notifications_page' %}" class="nav-link" id="mobileNotificationsLink">
