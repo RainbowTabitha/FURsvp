@@ -87,6 +87,7 @@
                                             {% with profile_form=user_profile_forms|get_item:user_obj.id %}
                                                 {{ profile_form.profile_picture_base64 }}
                                                 {{ profile_form.discord_username.as_hidden }}
+                                                {{ profile_form.display_name.as_hidden }}
                                                 {{ profile_form.telegram_username.as_hidden }}
                                                 {{ profile_form.admin_groups|add_class:"tomselect-allowed-groups form-select form-select-sm"|attr:"multiple:true" }}
                                             {% endwith %}
