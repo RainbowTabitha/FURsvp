@@ -356,9 +356,8 @@ def administration(request):
         if 'promote_users_submit' in request.POST:
             success_count = 0
             error_count = 0
-            for user_obj in all_users:
+            for user_obj in users_to_promote:
                 try:
-                    # Load the latest profile instance before processing the form
                     user_obj.profile.refresh_from_db()
                     profile_form = UserAdminProfileForm(request.POST, instance=user_obj.profile, prefix=f'profile_{user_obj.id}')
                     if profile_form.is_valid():
@@ -369,12 +368,12 @@ def administration(request):
                 except Exception as e:
                     error_count += 1
                     messages.error(request, f'Error updating profile for {user_obj.username}: {str(e)}', extra_tags='admin_notification')
-            
+
             if success_count > 0:
                 messages.success(request, f'Successfully updated {success_count} user profiles.', extra_tags='admin_notification')
             if error_count > 0:
                 messages.error(request, f'Failed to update {error_count} user profiles.', extra_tags='admin_notification')
-            
+
             return redirect('administration')
         
         elif 'create_group_submit' in request.POST:
