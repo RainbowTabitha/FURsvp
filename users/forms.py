@@ -5,6 +5,18 @@ from events.models import Event, Group
 from users.models import Profile, GroupDelegation
 
 class UserRegisterForm(UserCreationForm):
+    eula_agreement = forms.BooleanField(
+        required=True,
+        label="I agree to the End User License Agreement (EULA)",
+        widget=forms.CheckboxInput(attrs={
+            'class': 'form-check-input',
+            'id': 'id_eula_agreement'
+        }),
+        error_messages={
+            'required': 'You must agree to the End User License Agreement to create an account.'
+        }
+    )
+    
     class Meta:
         model = User
         fields = ['username', 'email']

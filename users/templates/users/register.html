@@ -68,6 +68,63 @@
         text-align: center;
         box-shadow: 0 2px 8px rgba(169, 68, 66, 0.05);
     }
+
+    .form-check {
+        padding: 1rem;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        background-color: #f8f9fa;
+        margin-bottom: 1rem;
+    }
+
+    .form-check-input {
+        margin-top: 0.2rem;
+    }
+
+    .form-check-label {
+        font-size: 1rem;
+        line-height: 1.5;
+        margin-left: 0.5rem;
+    }
+
+    .form-check-label a {
+        color: #2a3faa;
+        font-weight: 500;
+    }
+
+    .form-check-label a:hover {
+        text-decoration: underline !important;
+    }
+
+    .eula-check {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        padding: 1rem;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        background-color: #f8f9fa;
+        margin-bottom: 1rem;
+        box-sizing: border-box;
+    }
+    .eula-check .form-check-input {
+        margin: 0 0.75rem 0 0;
+        position: relative;
+        top: 0;
+    }
+    .eula-check .form-check-label {
+        font-size: 1rem;
+        line-height: 1.5;
+        margin: 0;
+        width: 100%;
+    }
+    .eula-check .form-check-label a {
+        color: #2a3faa;
+        font-weight: 500;
+    }
+    .eula-check .form-check-label a:hover {
+        text-decoration: underline !important;
+    }
 </style>
 <div class="container">
     <div class="row justify-content-center">
@@ -157,8 +214,23 @@
                                     name="password2" required autocomplete="new-password">
                             </div>
                         </div>
+                        <div class="mb-4">
+                            <div class="form-check eula-check w-100">
+                                <input type="checkbox" class="form-check-input" id="id_eula_agreement" name="eula_agreement" required>
+                                <label class="form-check-label w-100" for="id_eula_agreement">
+                                    I agree to the <a href="{% url 'eula' %}" target="_blank" class="text-decoration-none">End User License Agreement (EULA)</a>
+                                </label>
+                                {% if form.eula_agreement.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.eula_agreement.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg">
+                            <button type="submit" class="btn btn-secondary btn-lg" disabled>
                                 <i class="material-icons">how_to_reg</i> Register
                             </button>
                         </div>
@@ -174,4 +246,55 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const eulaCheckbox = document.getElementById('id_eula_agreement');
+    const submitButton = document.querySelector('button[type="submit"]');
+    const form = document.querySelector('form');
+
+    // Function to update button state
+    function updateSubmitButton() {
+        if (eulaCheckbox.checked) {
+            submitButton.disabled = false;
+            submitButton.classList.remove('btn-secondary');
+            submitButton.classList.add('btn-primary');
+        } else {
+            submitButton.disabled = true;
+            submitButton.classList.remove('btn-primary');
+            submitButton.classList.add('btn-secondary');
+        }
+    }
+
+    // Initialize button state
+    updateSubmitButton();
+
+    // Update button state when checkbox changes
+    eulaCheckbox.addEventListener('change', updateSubmitButton);
+
+    // Form submission validation
+    form.addEventListener('submit', function(e) {
+        if (!eulaCheckbox.checked) {
+            e.preventDefault();
+            alert('You must agree to the End User License Agreement to create an account.');
+            eulaCheckbox.focus();
+            return false;
+        }
+    });
+
+    // Add visual feedback when clicking the EULA link
+    const eulaLink = document.querySelector('a[href*="eula"]');
+    if (eulaLink) {
+        eulaLink.addEventListener('click', function() {
+            // Add a small visual indicator that the link was clicked
+            this.style.textDecoration = 'underline';
+            setTimeout(() => {
+                this.style.textDecoration = 'none';
+            }, 200);
+        });
+    }
+});
+</script>
 {% endblock %}
