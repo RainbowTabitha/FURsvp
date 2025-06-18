@@ -1,16 +1,42 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Event, RSVP
+from .models import Event, RSVP, Post
 from django.utils import timezone
 from datetime import timedelta, datetime
 from django.contrib.auth.decorators import login_required
-from .forms import EventForm, RSVPForm
+from .forms import EventForm, RSVPForm, Group
 from users.models import Profile, GroupDelegation, BannedUser, Notification
 from django.contrib import messages
 from django.db import models, transaction
 from django.http import JsonResponse
 from users.utils import create_notification
+import feedparser
+from django.views.generic import ListView, DetailView
+import pytz
+import time
 
 # Create your views here.
+
+def get_telegram_feed(channel='furcationland', limit=5):
+    url = f"https://rss.tabithahanegan.com/telegram/channel/{channel}"
+    feed = feedparser.parse(url)
+    entries = feed.entries[:limit]
+    eastern = pytz.timezone('America/New_York')
+    for entry in entries:
+        # Try published_parsed first
+        if hasattr(entry, 'published_parsed') and entry.published_parsed:
+            dt_utc = datetime.fromtimestamp(time.mktime(entry.published_parsed), pytz.utc)
+            entry.est_datetime = dt_utc.astimezone(eastern)
+        # Fallback: try published (RFC822 string)
+        elif hasattr(entry, 'published') and entry.published:
+            try:
+                dt_utc = datetime.strptime(entry.published, '%a, %d %b %Y %H:%M:%S %Z')
+                dt_utc = pytz.utc.localize(dt_utc)
+                entry.est_datetime = dt_utc.astimezone(eastern)
+            except Exception:
+                entry.est_datetime = None
+        else:
+            entry.est_datetime = None
+    return entries
 
 def home(request):
     # Get sort parameters from request
@@ -477,3 +503,73 @@ def eula(request):
 
 def privacy(request):
     return render(request, 'events/privacy.html')
+
+def group_detail(request, group_id):
+    group = get_object_or_404(Group, pk=group_id)
+    
+    # Get organizers and assistants
+    organizers = group.get_organizers()
+    assistants = group.get_assistants()
+    
+    # Get upcoming and past events
+    upcoming_events = group.get_upcoming_events()
+    past_events = group.get_past_events()[:10]  # Limit to 10 most recent past events
+    
+    # Check if user can edit this group
+    can_edit_group = False
+    if request.user.is_authenticated:
+        can_edit_group = (
+            request.user.is_superuser or 
+            (hasattr(request.user, 'profile') and 
+             request.user.profile.is_approved_organizer and 
+             group in request.user.profile.allowed_groups.all())
+        )
+    
+    # Handle POST requests for editing group
+    if request.method == 'POST' and 'edit_group' in request.POST and can_edit_group:
+        try:
+            # Update group fields
+            group.name = request.POST.get('name', group.name)
+            group.description = request.POST.get('description', group.description)
+            group.website = request.POST.get('website', group.website)
+            group.contact_email = request.POST.get('contact_email', group.contact_email)
+            group.telegram_channel = request.POST.get('telegram_channel', group.telegram_channel)
+            
+            # Handle logo upload
+            logo_base64 = request.POST.get('logo_base64')
+            if logo_base64:
+                group.logo_base64 = logo_base64
+            
+            group.save()
+            messages.success(request, f'Group "{group.name}" has been updated successfully.')
+            return redirect('group_detail', group_id=group.id)
+            
+        except Exception as e:
+            messages.error(request, f'Error updating group: {str(e)}')
+    
+    # Get Telegram feed for this group (if channel set), else default
+    telegram_channel = group.telegram_channel or 'furcationland'
+    telegram_feed = get_telegram_feed(telegram_channel)
+
+    context = {
+        'group': group,
+        'organizers': organizers,
+        'assistants': assistants,
+        'upcoming_events': upcoming_events,
+        'past_events': past_events,
+        'can_edit_group': can_edit_group,
+        'telegram_feed': telegram_feed,
+    }
+    
+    return render(request, 'events/group_detail.html', context)
+
+class PostListView(ListView):
+    model = Post
+    template_name = 'events/post_list.html'
+    context_object_name = 'posts'
+    ordering = ['-published']
+
+class PostDetailView(DetailView):
+    model = Post
+    template_name = 'events/post_detail.html'
+    context_object_name = 'post'

@@ -1,0 +1,50 @@
+{% extends 'events/base.html' %}
+{% block title %}News & Updates - FURsvp{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4 fw-bold">News & Updates</h1>
+    <div class="row">
+        {% for post in posts %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="fancy-post-card shadow-sm rounded-4 p-4 bg-white h-100 d-flex flex-column">
+                <a href="{% url 'post_detail' post.pk %}" class="fw-bold h5 mb-2 text-primary text-decoration-none">
+                    {{ post.title }}
+                </a>
+                <div class="text-muted small mb-2">
+                    <i class="material-icons me-1" style="font-size: 16px;">calendar_today</i>
+                    {{ post.published|date:'F j, Y, g:i A' }} EST
+                </div>
+                <div class="mb-3 flex-grow-1" style="font-size: 1.05rem;">
+                    {{ post.get_excerpt|safe }}
+                </div>
+                <div>
+                    <a href="{% url 'post_detail' post.pk %}" class="read-more-link">Read more…</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-muted">No posts available.</div>
+        {% endfor %}
+    </div>
+</div>
+<style>
+.fancy-post-card {
+  transition: box-shadow 0.18s, transform 0.12s;
+  border: none;
+}
+.fancy-post-card:hover {
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+  transform: translateY(-2px) scale(1.02);
+}
+.read-more-link {
+  color: #3b82f6;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.read-more-link:hover {
+  color: #8b5cf6;
+  text-decoration: underline;
+}
+</style>
+{% endblock %} 

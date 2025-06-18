@@ -5,6 +5,45 @@ from django.dispatch import receiver
 
 # Create your models here.
 
+class GroupRole(models.Model):
+    """Custom hierarchy system for group leadership roles"""
+    ROLE_CHOICES = [
+        ('founder', 'Founder'),
+        ('admin', 'Administrator'),
+        ('moderator', 'Moderator'),
+        ('coordinator', 'Event Coordinator'),
+        ('helper', 'Helper'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='group_roles')
+    group = models.ForeignKey('events.Group', on_delete=models.CASCADE, related_name='member_roles')
+    role_name = models.CharField(max_length=50, help_text="Custom name for this role (e.g., 'Event Planner', 'Social Media Manager')")
+    role_level = models.IntegerField(default=5, help_text="Hierarchy level (1=highest, 10=lowest)")
+    assigned_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_roles')
+    assigned_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        unique_together = ('user', 'group')
+        ordering = ['role_level', 'assigned_at']
+        verbose_name = 'Group Role'
+        verbose_name_plural = 'Group Roles'
+    
+    def __str__(self):
+        return f'{self.user.username} - {self.role_name} at {self.group.name}'
+    
+    def can_manage_events(self):
+        """Check if this role can create/edit/delete events"""
+        return self.role_level <= 4  # Top 4 levels can manage events
+    
+    def can_manage_members(self):
+        """Check if this role can manage other members"""
+        return self.role_level <= 3  # Top 3 levels can manage members
+    
+    def can_manage_group(self):
+        """Check if this role can edit group settings"""
+        return self.role_level <= 2  # Top 2 levels can manage group settings
+
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     profile_picture_base64 = models.TextField(blank=True, null=True)

@@ -98,7 +98,11 @@
                         <div class="card-body d-flex align-items-center">
                             <i class="material-icons text-primary me-2" style="font-size: 24px;">group</i>
                             <strong class="text-primary">Group:</strong>
-                            <span class="ms-2">{{ event.group.name }}</span>
+                            <span class="ms-2">
+                                <a href="{% url 'group_detail' event.group.id %}" class="text-decoration-none">
+                                    {{ event.group.name }}
+                                </a>
+                            </span>
                         </div>
                     </div>
                 </div>

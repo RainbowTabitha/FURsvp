@@ -1,0 +1,1068 @@
+{% extends 'events/base.html' %}
+{% load static %}
+{% load users_extras %}
+{% load tz %}
+
+{% block title %}{{ group.name }} - FURsvp{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Hero Section -->
+    <div class="row align-items-center mb-4">
+        <div class="col-md-2 text-center mb-3 mb-md-0">
+                            {% if group.logo_base64 %}
+                <img src="data:image/png;base64,{{ group.logo_base64 }}" alt="{{ group.name }} Logo" class="img-fluid rounded-circle shadow" style="width: 140px; height: 140px; object-fit: cover; border: 4px solid #fff;">
+                            {% else %}
+                <div class="bg-secondary rounded-circle d-inline-flex align-items-center justify-content-center shadow" style="width: 140px; height: 140px;">
+                                    <i class="material-icons text-white" style="font-size: 4rem;">group</i>
+                                </div>
+                            {% endif %}
+                        </div>
+        <div class="col-md-10">
+            <div class="d-flex align-items-center flex-wrap group-title-row mb-2">
+                <h1 class="display-4 fw-bold text-primary mb-0 me-3">{{ group.name }}</h1>
+                                {% if can_edit_group %}
+                    <a href="#" class="edit-group-btn ms-2" data-bs-toggle="modal" data-bs-target="#editGroupModal" title="Edit this group's info">
+                                        <i class="material-icons me-1">edit</i> Edit Group
+                                    </a>
+                                {% endif %}
+                            </div>
+            <div class="group-action-btn-row mb-2">
+                {% if group.website %}
+                    <a href="{{ group.website }}" target="_blank" class="group-action-btn website"><i class="material-icons">language</i> Website</a>
+                {% endif %}
+                {% if group.telegram_channel %}
+                    <a href="https://t.me/{{ group.telegram_channel }}" target="_blank" class="group-action-btn telegram"><i class="material-icons">telegram</i> Telegram</a>
+                {% endif %}
+                {% if group.contact_email %}
+                    <a href="mailto:{{ group.contact_email }}" class="group-action-btn contact"><i class="material-icons">email</i> Contact</a>
+                {% endif %}
+            </div>
+                        </div>
+    </div>
+
+    <!-- Description Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="modern-card">
+                <div class="modern-card-header about">
+                    <i class="material-icons me-2">info</i> About This Group
+                </div>
+                <div class="modern-card-body">
+                    {% if group.description %}
+                        <div class="group-description-html" style="font-size:1.1rem;">{{ group.description|safe }}</div>
+                    {% else %}
+                        <div class="text-muted fst-italic">No description provided yet.</div>
+                    {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <!-- Leadership Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="modern-card">
+                <div class="modern-card-header leadership">
+                        <i class="material-icons me-2">people</i> Group Leadership
+                </div>
+                <div class="modern-card-body">
+                    {% with leadership=group.get_leadership %}
+                        {% if leadership %}
+                            <div class="row">
+                                {% for role in leadership %}
+                                    <div class="col-md-6 col-lg-4 mb-3">
+                                        <div class="d-flex align-items-center p-3 border rounded bg-light">
+                                            <div class="me-3">{{ role.user.profile|get_avatar_sized_html:40|safe }}</div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-0">{{ role.user.profile.get_display_name }}</h6>
+                                                <small class="text-muted">{{ role.user.username }}</small>
+                                                <div class="mt-1">
+                                                    <span class="badge bg-primary rounded-pill">{{ role.role_name }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-muted">No group leadership assigned.</div>
+                        {% endif %}
+                    {% endwith %}
+                </div>
+                </div>
+            </div>
+        </div>
+
+    <!-- Upcoming Events Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="modern-card">
+                <div class="modern-card-header events">
+                    <i class="material-icons me-2">event</i> Upcoming Events
+                </div>
+                <div class="modern-card-body">
+                    {% if upcoming_events %}
+                        <div class="d-flex justify-content-end mb-3">
+                            <button id="groupCardViewBtn" class="pretty-toggle-btn active">Cards</button>
+                            <button id="groupListViewBtn" class="pretty-toggle-btn outline">List</button>
+                        </div>
+                        <div id="groupEventsCardView" class="row">
+                            {% for event in upcoming_events %}
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="fancy-post-card shadow-sm rounded-4 p-4 bg-white h-100 d-flex flex-column">
+                                        <a href="{% url 'event_detail' event.id %}" class="fw-bold h5 mb-2 text-primary text-decoration-none">
+                                            {{ event.title }}
+                                        </a>
+                                        <div class="text-muted small mb-2 d-flex align-items-center">
+                                            <i class="material-icons me-1" style="font-size: 18px; vertical-align: middle; color: #6366f1;">calendar_month</i>
+                                            <span>{{ event.date }}</span>
+                                            {% if event.start_time %}
+                                                <i class="material-icons ms-3 me-1" style="font-size: 18px; vertical-align: middle; color: #06b6d4;">schedule</i>
+                                                <span>{{ event.start_time|time:"g:i A" }}</span>
+                                            {% endif %}
+                                        </div>
+                                        {% if event.capacity %}
+                                        <div class="text-muted small mb-2 d-flex align-items-center">
+                                            <i class="material-icons me-1" style="font-size: 18px; vertical-align: middle; color: #f59e42;">groups</i>
+                                            <span>{{ event.confirmed_count|default:0 }} / {{ event.capacity }} RSVPs</span>
+                                        </div>
+                                        {% endif %}
+                                        <div class="mt-auto">
+                                            <a href="{% url 'event_detail' event.id %}" class="read-more-link2">View Event</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div id="groupEventsListView" style="display:none;">
+                            <ul class="list-group list-group-flush">
+                                {% for event in upcoming_events %}
+                                <li class="list-group-item py-3" style="background: transparent;">
+                                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                                        <div>
+                                            <a href="{% url 'event_detail' event.id %}" class="fw-bold h5 mb-1 text-primary text-decoration-none">
+                                                {{ event.title }}
+                                            </a>
+                                            <div class="text-muted small mb-2 d-flex align-items-center">
+                                                <i class="material-icons me-1" style="font-size: 18px; vertical-align: middle; color: #6366f1;">calendar_month</i>
+                                                <span>{{ event.date }}</span>
+                                                {% if event.start_time %}
+                                                    <i class="material-icons ms-3 me-1" style="font-size: 18px; vertical-align: middle; color: #06b6d4;">schedule</i>
+                                                    <span>{{ event.start_time|time:"g:i A" }}</span>
+                                                {% endif %}
+                                            </div>
+                                            {% if event.capacity %}
+                                            <div class="text-muted small mb-2 d-flex align-items-center">
+                                                <i class="material-icons me-1" style="font-size: 18px; vertical-align: middle; color: #f59e42;">groups</i>
+                                                <span>{{ event.confirmed_count|default:0 }} / {{ event.capacity }} RSVPs</span>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="d-flex flex-column align-items-end ms-md-3 mt-2 mt-md-0">
+                                            <a href="{% url 'event_detail' event.id %}" class="read-more-link2">View Event</a>
+                                        </div>
+                                    </div>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% else %}
+                        <div class="text-muted">No upcoming events scheduled.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Past Events Section -->
+        {% if past_events %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="modern-card">
+                <div class="modern-card-header past">
+                        <i class="material-icons me-2">history</i> Recent Past Events
+                </div>
+                <div class="modern-card-body">
+                    <div class="row">
+                        {% for event in past_events %}
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <div class="modern-event-card">
+                                    <h5 class="card-title mb-2">
+                                            <a href="{% url 'event_detail' event.id %}" class="text-decoration-none">
+                                                {{ event.title }}
+                                            </a>
+                                        </h5>
+                                    <p class="card-text mb-1">
+                                            <small class="text-muted">
+                                                <i class="material-icons me-1" style="font-size: 16px;">calendar_today</i>
+                                                {{ event.date }}
+                                                {% if event.start_time %}
+                                                    at {{ event.start_time|time:"g:i A" }}
+                                                {% endif %}
+                                            </small>
+                                        </p>
+                                        {% if event.capacity %}
+                                        <p class="card-text mb-0">
+                                                <small class="text-muted">
+                                                    <i class="material-icons me-1" style="font-size: 16px;">people</i>
+                                                    {{ event.confirmed_count|default:0 }} / {{ event.capacity }} RSVPs
+                                                </small>
+                                            </p>
+                                        {% endif %}
+                                    </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Telegram Feed Section -->
+    {% if telegram_feed %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="modern-card">
+                <div class="modern-card-header tg">
+                    <i class="material-icons me-2">rss_feed</i> Latest from Telegram
+                </div>
+                <div class="modern-card-body">
+                    <div class="d-flex justify-content-end mb-3">
+                        <button id="telegramCardViewBtn" class="pretty-toggle-btn active">Cards</button>
+                        <button id="telegramListViewBtn" class="pretty-toggle-btn outline">List</button>
+                    </div>
+                    <!-- Card View -->
+                    <div id="telegramCardView" class="row">
+                        {% for entry in telegram_feed %}
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="fancy-post-card shadow-sm rounded-4 p-4 bg-white h-100 d-flex flex-column">
+                                    <a href="#" class="fw-bold h5 mb-2 text-primary text-decoration-none open-modal-link" data-index="{{ forloop.counter0 }}">
+                                        {{ entry.title|default:"Telegram Post" }}
+                                    </a>
+                                    <div class="text-muted small mb-2 telegram-feed-time d-flex align-items-center">
+                                        <i class="material-icons me-1" style="font-size: 18px; vertical-align: middle; color: #6366f1;">calendar_today</i>
+                                        {% if entry.est_datetime %}
+                                            <span class="me-3">{{ entry.est_datetime|date:'F j, Y' }}</span>
+                                            <i class="material-icons me-1" style="font-size: 18px; vertical-align: middle; color: #06b6d4;">schedule</i>
+                                            <span>{{ entry.est_datetime|date:'g:i A' }}</span>
+                                        {% else %}
+                                            Date unavailable
+                                        {% endif %}
+                                    </div>
+                                    <div class="mb-3 flex-grow-1" style="font-size: 1.05rem;">
+                                        {{ entry.summary|striptags|truncatechars:200 }}
+                                    </div>
+                                    <div class="d-flex justify-content-end align-items-end mt-auto">
+                                        <a href="#" class="read-more-link ms-2" data-index="{{ forloop.counter0 }}">Read more…</a>
+                                    </div>
+                                    <div class="d-none telegram-full-content" id="telegram-full-{{ forloop.counter0 }}">{{ entry.summary|safe }}</div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <!-- List View -->
+                    <div id="telegramListView" style="display:none;">
+                        <ul class="list-group list-group-flush">
+                            {% for entry in telegram_feed %}
+                                <li class="list-group-item py-3" style="background: transparent;">
+                                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                                        <div>
+                                            <a href="#" class="fw-bold h5 mb-1 text-primary text-decoration-none open-modal-link" data-index="{{ forloop.counter0 }}">
+                                                {{ entry.title|default:"Telegram Post" }}
+                                            </a>
+                                            <div class="text-muted small mb-2 telegram-feed-time d-flex align-items-center">
+                                                <i class="material-icons me-1" style="font-size: 18px; vertical-align: middle; color: #6366f1;">calendar_today</i>
+                                                {% if entry.est_datetime %}
+                                                    <span class="me-3">{{ entry.est_datetime|date:'F j, Y' }}</span>
+                                                    <i class="material-icons me-1" style="font-size: 18px; vertical-align: middle; color: #06b6d4;">schedule</i>
+                                                    <span>{{ entry.est_datetime|date:'g:i A' }}</span>
+                                                {% else %}
+                                                    Date unavailable
+                                                {% endif %}
+                                            </div>
+                                            <div class="mb-2" style="font-size: 1.05rem;">
+                                                {{ entry.summary|striptags|truncatechars:200 }}
+                                            </div>
+                                        </div>
+                                        <div class="d-flex flex-column align-items-end ms-md-3 mt-2 mt-md-0">
+                                            <a href="#" class="read-more-link" data-index="{{ forloop.counter0 }}">Read more…</a>
+                                            <div class="d-none telegram-full-content" id="telegram-full-list-{{ forloop.counter0 }}">{{ entry.summary|safe }}</div>
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal for Full Article -->
+    <div class="modal fade" id="fullArticleModal" tabindex="-1" aria-labelledby="fullArticleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content modern-modal-content">
+                <div class="modal-header modern-modal-header">
+                    <h5 class="modal-title d-flex align-items-center" id="fullArticleModalLabel">
+                        <i class="material-icons me-2">description</i> <span id="fullArticleModalTitle">Full Article</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body modern-modal-body" id="fullArticleModalBody">
+                    <!-- Full article content will be injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>
+    .fancy-post-card {
+      transition: box-shadow 0.18s, transform 0.12s;
+      border: none;
+    }
+    .fancy-post-card:hover {
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+      transform: translateY(-2px) scale(1.02);
+    }
+    .read-more-link {
+      color: #3b82f6;
+      font-weight: 600;
+      text-decoration: none;
+      transition: color 0.15s;
+      cursor: pointer;
+      display: inline-block;
+      margin-top: 0.2rem;
+      padding-right: 1.2rem;
+      white-space: nowrap;
+    }
+    .read-more-link:hover {
+      color: #8b5cf6;
+      text-decoration: underline;
+    }
+    .modern-modal-content {
+        border-radius: 1.25rem;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+        border: none;
+        overflow: hidden;
+    }
+    .modern-modal-header {
+        background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+        color: #fff;
+        border-bottom: none;
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+        align-items: center;
+    }
+    .modern-modal-header .modal-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .modern-modal-header .material-icons {
+        font-size: 2rem;
+        vertical-align: middle;
+    }
+    .modern-modal-header .btn-close {
+        filter: invert(1);
+        opacity: 0.8;
+    }
+    .modern-modal-header .btn-close:hover {
+        opacity: 1;
+    }
+    .modern-modal-body {
+        padding: 2rem 2.5rem 1.5rem 2.5rem;
+        background: #f8fafc;
+        color: #222;
+        font-size: 1.13rem;
+        border-radius: 0 0 1.25rem 1.25rem;
+    }
+    .modern-modal-body img {
+        display: block;
+        margin: 2rem auto 2rem auto;
+        max-width: 90%;
+        height: auto;
+        border-radius: 1rem;
+        box-shadow: 0 2px 12px rgba(59,130,246,0.10);
+    }
+    @media (max-width: 600px) {
+        .modern-modal-body {
+            padding: 1.2rem 0.7rem 1rem 0.7rem;
+        }
+        .modern-modal-body img {
+            margin: 1rem auto;
+            max-width: 100%;
+            border-radius: 0.7rem;
+        }
+    }
+    .group-description-html img {
+      display: block;
+      margin: 2rem auto;
+      max-width: 100%;
+      max-height: 350px;
+      height: auto;
+      border-radius: 1.2rem;
+      box-shadow: 0 2px 12px rgba(59,130,246,0.10);
+    }
+    </style>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle card/list view
+        const evCardBtn = document.getElementById('groupCardViewBtn');
+        const evListBtn = document.getElementById('groupListViewBtn');
+        const evCardView = document.getElementById('groupEventsCardView');
+        const evListView = document.getElementById('groupEventsListView');
+        if (evCardBtn && evListBtn && evCardView && evListView) {
+            evCardBtn.addEventListener('click', function() {
+                evCardBtn.classList.add('active');
+                evCardBtn.classList.remove('outline');
+                evListBtn.classList.remove('active');
+                evListBtn.classList.add('outline');
+                evCardView.style.display = '';
+                evListView.style.display = 'none';
+            });
+            evListBtn.addEventListener('click', function() {
+                evListBtn.classList.add('active');
+                evListBtn.classList.remove('outline');
+                evCardBtn.classList.remove('active');
+                evCardBtn.classList.add('outline');
+                evCardView.style.display = 'none';
+                evListView.style.display = '';
+            });
+        }
+        // Telegram feed toggle
+        const tgCardBtn = document.getElementById('telegramCardViewBtn');
+        const tgListBtn = document.getElementById('telegramListViewBtn');
+        const tgCardView = document.getElementById('telegramCardView');
+        const tgListView = document.getElementById('telegramListView');
+        if (tgCardBtn && tgListBtn && tgCardView && tgListView) {
+            tgCardBtn.addEventListener('click', function() {
+                tgCardBtn.classList.add('active');
+                tgCardBtn.classList.remove('outline');
+                tgListBtn.classList.remove('active');
+                tgListBtn.classList.add('outline');
+                tgCardView.style.display = '';
+                tgListView.style.display = 'none';
+            });
+            tgListBtn.addEventListener('click', function() {
+                tgListBtn.classList.add('active');
+                tgListBtn.classList.remove('outline');
+                tgCardBtn.classList.remove('active');
+                tgCardBtn.classList.add('outline');
+                tgCardView.style.display = 'none';
+                tgListView.style.display = '';
+            });
+        }
+        // Full article modal logic
+        function showFullArticle(content, title) {
+            const modalBody = document.getElementById('fullArticleModalBody');
+            const modalTitle = document.getElementById('fullArticleModalTitle');
+            modalBody.innerHTML = content;
+            modalTitle.textContent = title || 'Full Article';
+            const modal = new bootstrap.Modal(document.getElementById('fullArticleModal'));
+            modal.show();
+        }
+        // Card and list view links
+        document.querySelectorAll('.read-more-link, .open-modal-link').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const idx = link.getAttribute('data-index');
+                let contentDiv = document.getElementById('telegram-full-' + idx);
+                if (!contentDiv) {
+                    contentDiv = document.getElementById('telegram-full-list-' + idx);
+                }
+                // Get the title from the corresponding element
+                let title = 'Full Article';
+                const titleElem = document.querySelector('[data-index="' + idx + '"]');
+                if (titleElem) {
+                    title = titleElem.textContent.trim();
+                }
+                if (contentDiv) {
+                    showFullArticle(contentDiv.innerHTML, title);
+                }
+            });
+        });
+        // Fix Telegram time display if missing
+        document.querySelectorAll('.telegram-feed-time').forEach(function(el) {
+            if (!el.textContent.trim()) {
+                // Try to get a fallback date from data attributes or similar
+                el.textContent = 'Date unavailable';
+            }
+        });
+    });
+    </script>
+    {% endif %}
+</div>
+
+<!-- Edit Group Modal -->
+{% if can_edit_group %}
+<div class="modal fade" id="editGroupModal" tabindex="-1" aria-labelledby="editGroupModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editGroupModalLabel">
+                    <i class="material-icons me-2">edit</i> Edit Group
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="id_name" class="form-label">Group Name</label>
+                        <input type="text" class="form-control" id="id_name" name="name" value="{{ group.name|default_if_none:'' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_logo" class="form-label">Group Logo</label>
+                        <div class="custom-file-upload">
+                            <input type="file" id="id_logo" name="logo" accept="image/*" style="display:none;">
+                            <button type="button" class="btn btn-outline-primary" id="customLogoBtn">
+                                <i class="material-icons" style="vertical-align:middle;">upload</i> Choose Logo
+                            </button>
+                            <span id="logoFileName" class="ms-2 text-muted">No file selected.</span>
+                        </div>
+                        <div class="form-text">Upload a new logo to replace the current one.</div>
+                        <div class="mt-3 text-center">
+                            <img id="logoPreview" src="{% if group.logo_base64 %}data:image/png;base64,{{ group.logo_base64 }}{% endif %}" alt="Logo Preview" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; {% if group.logo_base64 %}display: inline-block;{% else %}display: none;{% endif %}">
+                        </div>
+                        <div id="cropperContainer" style="display:none; margin-top: 1em; text-align:center;">
+                            <img id="cropperImage" style="max-width:100%; max-height:300px;">
+                            <button type="button" class="btn btn-sm btn-primary mt-2" id="cropLogoBtn">Crop & Save</button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_description" class="form-label">Description</label>
+                        <textarea class="form-control tinymce" id="id_description" name="description" rows="4">{{ group.description|default_if_none:'' }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_website" class="form-label">Website URL</label>
+                        <input type="url" class="form-control" id="id_website" name="website" value="{{ group.website|default_if_none:'' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_contact_email" class="form-label">Contact Email</label>
+                        <input type="email" class="form-control" id="id_contact_email" name="contact_email" value="{{ group.contact_email|default_if_none:'' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_telegram_channel" class="form-label">Telegram Channel (without @)</label>
+                        <input type="text" class="form-control" id="id_telegram_channel" name="telegram_channel" value="{{ group.telegram_channel|default_if_none:'' }}">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" name="edit_group" class="btn btn-primary">
+                        <i class="material-icons me-1">save</i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<style>
+#editGroupModal .modal-content {
+    border-radius: 1.25rem;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
+    border: none;
+    overflow: hidden;
+}
+#editGroupModal .modal-header {
+    background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+    color: #fff;
+    border-bottom: none;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    align-items: center;
+}
+#editGroupModal .modal-title {
+    font-size: 1.7rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+#editGroupModal .modal-header .material-icons {
+    font-size: 2.2rem;
+    vertical-align: middle;
+}
+#editGroupModal .modal-header .btn-close {
+    filter: invert(1);
+    opacity: 0.8;
+}
+#editGroupModal .modal-header .btn-close:hover {
+    opacity: 1;
+}
+#editGroupModal .modal-divider {
+    height: 3px;
+    background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+    border: none;
+    margin: 0;
+}
+#editGroupModal .modal-body {
+    padding: 2rem 2.5rem 1.5rem 2.5rem;
+    background: #f8fafc;
+}
+#editGroupModal .modal-footer {
+    background: #f3f4f6;
+    border-top: none;
+    padding: 1.5rem 2.5rem;
+}
+#editGroupModal .btn-primary {
+    background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+    border: none;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.10);
+    transition: background 0.2s, box-shadow 0.2s;
+}
+#editGroupModal .btn-primary:hover, #editGroupModal .btn-primary:focus {
+    background: linear-gradient(90deg, #2563eb 0%, #7c3aed 100%);
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.18);
+}
+#editGroupModal .btn-secondary {
+    background: #e0e7ef;
+    color: #374151;
+    border: none;
+    font-weight: 500;
+}
+#editGroupModal .btn-secondary:hover, #editGroupModal .btn-secondary:focus {
+    background: #cbd5e1;
+    color: #111827;
+}
+#editGroupModal label.form-label {
+    font-weight: 500;
+    color: #4f46e5;
+}
+#editGroupModal input.form-control, #editGroupModal textarea.form-control {
+    border-radius: 0.75rem;
+    border: 1.5px solid #d1d5db;
+    background: #fff;
+    font-size: 1rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+}
+#editGroupModal input.form-control:focus, #editGroupModal textarea.form-control:focus {
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 2px #c7d2fe;
+}
+#editGroupModal .form-text {
+    color: #6b7280;
+    font-size: 0.95rem;
+}
+#editGroupModal .mt-3.text-center img#logoPreview {
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.12);
+    border: 3px solid #fff;
+}
+.custom-file-upload .btn {
+    font-weight: 500;
+    border-radius: 0.75rem;
+    padding: 0.5rem 1.25rem;
+}
+.group-action-btn-row {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 1.2rem;
+    margin-bottom: 1.5rem;
+}
+.group-action-btn {
+    margin-right: 0;
+    margin-bottom: 0;
+}
+@media (max-width: 600px) {
+    .group-action-btn-row {
+        flex-direction: column;
+        gap: 0.8rem;
+        align-items: stretch;
+    }
+}
+.group-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    font-size: 1.08rem;
+    border: none;
+    border-radius: 0.9rem;
+    padding: 0.7rem 1.5rem;
+    color: #fff !important;
+    box-shadow: 0 2px 12px rgba(59,130,246,0.10);
+    transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+    text-decoration: none !important;
+}
+.group-action-btn i.material-icons {
+    font-size: 1.3em;
+    vertical-align: middle;
+    margin-right: 0.3em;
+}
+.group-action-btn.website {
+    background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%);
+}
+.group-action-btn.website:hover {
+    background: linear-gradient(90deg, #2563eb 0%, #0ea5e9 100%);
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 4px 18px rgba(59,130,246,0.18);
+}
+.group-action-btn.telegram {
+    background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+}
+.group-action-btn.telegram:hover {
+    background: linear-gradient(90deg, #7c3aed 0%, #a78bfa 100%);
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 4px 18px rgba(139,92,246,0.18);
+}
+.group-action-btn.contact {
+    background: linear-gradient(90deg, #111827 0%, #374151 100%);
+}
+.group-action-btn.contact:hover {
+    background: linear-gradient(90deg, #374151 0%, #111827 100%);
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 4px 18px rgba(17,24,39,0.18);
+}
+.edit-group-btn-row {
+    margin-top: 1.2rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+@media (min-width: 768px) {
+    .edit-group-btn-row {
+        text-align: left;
+    }
+}
+.edit-group-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 0.9rem;
+    padding: 0.8rem 2.1rem;
+    color: #fff !important;
+    background: linear-gradient(90deg, #f59e42 0%, #f43f5e 100%);
+    box-shadow: 0 2px 12px rgba(244,63,94,0.10);
+    transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
+    text-decoration: none !important;
+}
+.edit-group-btn:hover, .edit-group-btn:focus {
+    background: linear-gradient(90deg, #f43f5e 0%, #f59e42 100%);
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 4px 18px rgba(244,63,94,0.18);
+}
+.edit-group-btn i.material-icons {
+    font-size: 1.3em;
+    vertical-align: middle;
+    margin-right: 0.3em;
+}
+.group-title-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+@media (max-width: 600px) {
+    .group-title-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    .edit-group-btn {
+        margin-left: 0 !important;
+        margin-top: 0.5rem;
+    }
+}
+.modern-card {
+    border-radius: 1.25rem;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.10);
+    background: #f8fafc;
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+.modern-card-header {
+    padding: 1.2rem 2rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    border-bottom: none;
+}
+.modern-card-header.about {
+    background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%);
+}
+.modern-card-header.leadership {
+    background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+}
+.modern-card-header.events {
+    background: linear-gradient(90deg, #42f56c 0%, #66f43f 100%);
+}
+.modern-card-header.tg {
+    background: linear-gradient(90deg, #f59e42 0%, #f43f5e 100%);
+}
+.modern-card-header.past {
+    background: linear-gradient(90deg, #64748b 0%, #a1a1aa 100%);
+}
+.modern-card-body {
+    padding: 2rem 2.5rem 1.5rem 2.5rem;
+    background: #f8fafc;
+    color: #222;
+    font-size: 1.08rem;
+}
+.modern-event-card {
+    border-radius: 1rem;
+    background: #fff;
+    box-shadow: 0 2px 12px rgba(59,130,246,0.08);
+    transition: box-shadow 0.18s, transform 0.12s;
+    margin-bottom: 1.2rem;
+    padding: 1.2rem 1.5rem;
+}
+.modern-event-card:hover {
+    box-shadow: 0 6px 24px rgba(59,130,246,0.16);
+    transform: translateY(-2px) scale(1.02);
+}
+.fancy-post-card {
+  transition: box-shadow 0.18s, transform 0.12s;
+  border: none;
+}
+.fancy-post-card:hover {
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+  transform: translateY(-2px) scale(1.02);
+}
+.read-more-link2 {
+  color: #3b82f6;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.15s;
+  cursor: pointer;
+}
+.read-more-link2:hover {
+  color: #8b5cf6;
+  text-decoration: underline;
+}
+
+/* Prettified toggle and action buttons */
+.pretty-toggle-btn {
+  border: none;
+  border-radius: 1.2rem;
+  padding: 0.7rem 2.2rem;
+  font-size: 1.13rem;
+  font-weight: 600;
+  background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%);
+  color: #fff;
+  box-shadow: 0 2px 12px rgba(59,130,246,0.10);
+  transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
+  margin-right: 0.7rem;
+  outline: none;
+}
+.pretty-toggle-btn.active, .pretty-toggle-btn:focus {
+  background: linear-gradient(90deg, #2563eb 0%, #0ea5e9 100%);
+  color: #fff;
+  box-shadow: 0 4px 18px rgba(59,130,246,0.18);
+  transform: translateY(-2px) scale(1.04);
+}
+.pretty-toggle-btn.outline {
+  background: #f8fafc;
+  color: #2563eb;
+  border: 2px solid #3b82f6;
+  box-shadow: none;
+}
+.pretty-toggle-btn.outline.active, .pretty-toggle-btn.outline:focus {
+  background: linear-gradient(90deg, #2563eb 0%, #0ea5e9 100%);
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 18px rgba(59,130,246,0.18);
+}
+.pretty-action-btn {
+  border: none;
+  border-radius: 1.2rem;
+  padding: 0.7rem 2.2rem;
+  font-size: 1.13rem;
+  font-weight: 600;
+  background: linear-gradient(90deg, #ff7e5f 0%, #feb47b 100%);
+  color: #fff;
+  box-shadow: 0 2px 12px rgba(255,126,95,0.10);
+  transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
+  margin-bottom: 1.2rem;
+  outline: none;
+  display: inline-block;
+}
+.pretty-action-btn:hover, .pretty-action-btn:focus {
+  background: linear-gradient(90deg, #feb47b 0%, #ff7e5f 100%);
+  color: #fff;
+  box-shadow: 0 4px 18px rgba(255,126,95,0.18);
+  transform: translateY(-2px) scale(1.04);
+}
+</style>
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/tinymce@7.9.1/tinymce.min.js" referrerpolicy="origin"></script>
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
+<script>
+    function initTinyMCE() {
+        const isDark = document.body.classList.contains('dark-mode');
+        tinymce.init({
+            selector: '#id_description',
+            height: 300,
+            width: '100%',
+            menubar: false,
+            plugins: 'advlist autolink lists image charmap anchor searchreplace visualblocks code insertdatetime table help wordcount textcolor backcolor',
+            toolbar: 'bold italic strikethrough | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | image code | removeformat',
+            branding: false,
+            promotion: false,
+            license_key: 'gpl',
+            automatic_uploads: true,
+            file_picker_types: 'image',
+            images_reuse_filename: true,
+            statusbar: false,
+            resize: false,
+            skin: isDark ? 'oxide-dark' : 'oxide',
+            content_css: isDark ? '/static/tinymce-dark-content.css' : '',
+            toolbar_mode: 'wrap',
+            toolbar_location: 'top',
+            toolbar_sticky: true,
+            toolbar_sticky_offset: 0,
+            content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; } img { max-width: 100%; height: auto; display: block; margin: 1em auto; } .tox-statusbar { display: none !important; }',
+            document_base_url: window.location.origin + '/',
+            file_picker_callback: function (callback, value, meta) {
+                if (meta.filetype === 'image') {
+                    const input = document.createElement('input');
+                    input.setAttribute('type', 'file');
+                    input.setAttribute('accept', 'image/*');
+                    input.onchange = function () {
+                        const file = this.files[0];
+                        const reader = new FileReader();
+                        reader.onload = function () {
+                            const base64data = reader.result;
+                            // Create an image element to get dimensions
+                            const img = new Image();
+                            img.onload = function () {
+                                const maxWidth = 800;
+                                let width = img.width;
+                                let height = img.height;
+                                if (width > maxWidth) {
+                                    const ratio = maxWidth / width;
+                                    width = maxWidth;
+                                    height = height * ratio;
+                                }
+                                // Insert the image with calculated dimensions
+                                const imageHtml = `<img src="${base64data}" alt="${file.name}" style="max-width: 100%; width: ${width}px; height: ${height}px; object-fit: contain;" />`;
+                                callback(base64data, { alt: file.name });
+                            };
+                            img.src = base64data;
+                        };
+                        reader.readAsDataURL(file);
+                    };
+                    input.click();
+                }
+            },
+            setup: function (editor) {
+                editor.on('init', function () {
+                    editor.getContainer().style.transition = 'border-color 0.15s ease-in-out';
+                });
+                editor.on('change', function () {
+                    // You can add custom logic here if needed
+                });
+                editor.on('ObjectResized', function (e) {
+                    // Custom logic for object resize
+                });
+                editor.on('SetContent', function (e) {
+                    // Custom logic for set content
+                });
+                editor.on('BeforeSetContent', function (e) {
+                    // Custom logic before set content
+                });
+            }
+        });
+    }
+    // Initialize TinyMCE on page load
+    initTinyMCE();
+    // Function to re-initialize TinyMCE when dark mode changes
+    function reinitTinyMCE() {
+        const editor = tinymce.get('id_description');
+        if (editor) {
+            editor.destroy();
+        }
+        setTimeout(initTinyMCE, 100);
+    }
+    // Listen for dark mode changes
+    document.addEventListener('darkModeChanged', function (event) {
+        setTimeout(reinitTinyMCE, 200);
+    });
+    // Existing logo upload logic
+document.addEventListener('DOMContentLoaded', function() {
+    const logoInput = document.getElementById('id_logo');
+        const logoPreview = document.getElementById('logoPreview');
+        const cropperContainer = document.getElementById('cropperContainer');
+        const cropperImage = document.getElementById('cropperImage');
+        const cropLogoBtn = document.getElementById('cropLogoBtn');
+        let cropper = null;
+    if (logoInput) {
+        logoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                        cropperImage.src = e.target.result;
+                        cropperContainer.style.display = 'block';
+                        if (cropper) { cropper.destroy(); }
+                        cropper = new Cropper(cropperImage, {
+                            aspectRatio: 1,
+                            viewMode: 1,
+                            dragMode: 'move',
+                            autoCropArea: 1,
+                            responsive: true,
+                            background: false,
+                            minContainerWidth: 200,
+                            minContainerHeight: 200,
+                            ready() {
+                                cropper.crop();
+                            }
+                        });
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+        if (cropLogoBtn) {
+            cropLogoBtn.addEventListener('click', function() {
+                if (cropper) {
+                    const canvas = cropper.getCroppedCanvas({
+                        width: 300,
+                        height: 300,
+                        imageSmoothingQuality: 'high',
+                    });
+                    const base64data = canvas.toDataURL('image/png');
+                    logoPreview.src = base64data;
+                    logoPreview.style.display = 'inline-block';
+                    cropperContainer.style.display = 'none';
+                    // Set base64 (without prefix) to hidden input
+                    let hiddenInput = document.querySelector('input[name="logo_base64"]');
+                    if (!hiddenInput) {
+                        hiddenInput = document.createElement('input');
+                        hiddenInput.type = 'hidden';
+                        hiddenInput.name = 'logo_base64';
+                        logoInput.parentNode.appendChild(hiddenInput);
+                    }
+                    hiddenInput.value = base64data.split(',')[1];
+                    cropper.destroy();
+                    cropper = null;
+            }
+        });
+    }
+        // Modern file upload button logic
+        const customBtn = document.getElementById('customLogoBtn');
+        const fileNameSpan = document.getElementById('logoFileName');
+        if (customBtn && logoInput) {
+            customBtn.addEventListener('click', function() {
+                logoInput.click();
+            });
+            logoInput.addEventListener('change', function() {
+                fileNameSpan.textContent = logoInput.files[0] ? logoInput.files[0].name : 'No file selected.';
+            });
+        }
+});
+</script>
+{% endblock %}
+{% endblock %} 
