@@ -62,6 +62,13 @@ class EventForm(forms.ModelForm):
         instance = kwargs.get('instance', None)
         super().__init__(*args, **kwargs)
 
+        if instance:
+            self.fields['eula_agreement'].required = False
+            self.fields['state_agreement'].required = False
+        else:
+            self.fields['eula_agreement'].required = True
+            self.fields['state_agreement'].required = True
+
         if user:
             # Initialize empty querysets
             leader_groups = Group.objects.filter(group_roles__user=user)
