@@ -150,23 +150,23 @@
         .breadcrumb {
             font-size: 1.1rem;
         }
-
+        
         .breadcrumb-item+.breadcrumb-item::before {
             content: "›";
             font-size: 1.5rem;
             line-height: 1;
             color: #6c757d;
         }
-
+        
         .breadcrumb-item a {
             color: #6c757d;
             transition: color 0.2s ease-in-out;
         }
-
+        
         .breadcrumb-item a:hover {
             color: var(--primary-color);
         }
-
+        
         .breadcrumb-item.active {
             color: var(--primary-color);
         }
@@ -1044,6 +1044,7 @@
             transition: all 0.3s ease;
             font-size: 24px;
             position: relative;
+            border: 2px solid transparent;
             text-decoration: none;
         }
         .notification-bell-icon.has-unread {
@@ -1276,6 +1277,13 @@
             border-color: #2a3faa !important;
         }
 
+
+        .dark-mode .notification-bell-icon {
+            background-color: #23272b !important;
+            color: #198754 !important;
+            border-color: #444 !important;
+        }
+
         .dark-mode .logout-btn {
             background-color: #23272b !important;
             color: #ff6b6b !important;
@@ -1327,7 +1335,7 @@
     <!-- TomSelect CSS -->
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/light.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/light.css" rel="sty lesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
     <link id="flatpickr-dark-css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css"
         disabled>
@@ -1350,7 +1358,7 @@
         <div class="container">
             <div class="header-content">
                 <!-- Logo -->
-                <a class="navbar-brand" href="{% url 'home' %}">
+            <a class="navbar-brand" href="{% url 'home' %}">
                     {% if request.get_host == 'nj.fursvp.org' %}
                     <img src="{% static 'fursvp-nj.png' %}" alt="FURsvp Logo">
                     {% else %}
@@ -1397,7 +1405,7 @@
                             {% csrf_token %}
                             <button type="submit" class="logout-btn" title="Logout">
                                 <i class="material-icons">logout</i>
-                            </button>
+            </button>
                         </form>
                     {% else %}
                         <!-- Login/Register for non-authenticated users -->
@@ -1436,11 +1444,11 @@
                         </li>
                         {% endif %}
                         {% if user.profile.is_approved_organizer or user.delegated_groups_as_delegate.exists %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'create_event' %}">
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'create_event' %}">
                                 <i class="material-icons">add_circle</i> Create Event
-                            </a>
-                        </li>
+                                </a>
+                            </li>
                         {% endif %}
                     {% endif %}
                 </ul>
@@ -1451,17 +1459,17 @@
     <div class="main-content">
         <div class="container">
             {% if messages %}
-            <div class="message-container">
-                {% for message in messages %}
-                {% if not "admin_notification" in message.tags %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    <i class="material-icons me-2">info</i>
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <div class="message-container">
+                    {% for message in messages %}
+                        {% if not "admin_notification" in message.tags %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                <i class="material-icons me-2">info</i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
                 </div>
-                {% endif %}
-                {% endfor %}
-            </div>
             {% endif %}
             {% block content %}
             {% endblock %}
@@ -1879,4 +1887,4 @@
     </script>
 </body>
 
-</html>
+</html> 
