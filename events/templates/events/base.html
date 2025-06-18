@@ -1787,6 +1787,7 @@
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     {% block extra_js %}
+    {{ block.super }}
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const notificationsDropdown = document.getElementById('notificationsDropdown');
@@ -1795,7 +1796,7 @@
             // Function to fetch and display notifications
             async function fetchNotifications() {
                 try {
-                    const response = await fetch('/accounts/notifications/');
+                    const response = await fetch('/accounts/notifications/all/');
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
@@ -2087,6 +2088,17 @@
             }
             updateFlatpickrTheme();
             document.addEventListener('darkModeChanged', updateFlatpickrTheme);
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var bell = document.getElementById('notificationsDropdown');
+            if (bell) {
+                bell.addEventListener('dblclick', function(e) {
+                    e.preventDefault();
+                    window.location.href = '/accounts/notifications/all/';
+                });
+            }
         });
     </script>
 </body>
