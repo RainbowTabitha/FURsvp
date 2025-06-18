@@ -16,7 +16,7 @@
                     </div>
                 {% endif %}
                 <div class="fw-bold text-center mb-2" style="font-size: 1.25rem; color: #2563eb;">{{ group.name }}</div>
-                <div class="text-muted text-center mb-2" style="font-size: 1.05rem; min-height: 48px;">{{ group.description|truncatechars:80|striptags }}</div>
+                <div class="text-muted text-center mb-2" style="font-size: 1.05rem; min-height: 48px;">{{ group.description|truncatechars:240|striptags }}</div>
             </a>
         </div>
         {% empty %}
