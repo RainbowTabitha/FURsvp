@@ -108,7 +108,7 @@ def event_detail(request, event_id):
     if request.user.is_authenticated:
         try:
             profile = request.user.profile
-            if profile.is_approved_organizer and event.group in profile.allowed_groups.all():
+            if profile.is_approved_organizer and GroupRole.objects.filter(user=profile.user, group=event.group).exists():
                 can_access_group_contact_info = True
         except Profile.DoesNotExist:
             pass
@@ -441,7 +441,8 @@ def edit_event(request, event_id):
     if request.user.is_authenticated and event.group:
         is_delegated_assistant = GroupDelegation.objects.filter(delegated_user=request.user, group=event.group, organizer=event.organizer).exists()
     
-    if not request.user.is_superuser and not (request.user.profile.is_approved_organizer and event.group in request.user.profile.allowed_groups.all()) and not is_delegated_assistant:
+    is_leader = GroupRole.objects.filter(user=request.user, group=event.group).exists()
+    if not request.user.is_superuser and not (request.user.profile.is_approved_organizer and is_leader) and not is_delegated_assistant:
         messages.error(request, "You are not authorized to edit events for this group.")
         return redirect('event_detail', event_id=event.id)
 
@@ -523,7 +524,7 @@ def group_detail(request, group_id):
             request.user.is_superuser or 
             (hasattr(request.user, 'profile') and 
              request.user.profile.is_approved_organizer and 
-             group in request.user.profile.allowed_groups.all())
+             GroupRole.objects.filter(user=request.user, group=group).exists())
         )
     
     # Handle POST requests

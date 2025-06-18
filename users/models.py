@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
 from events.models import Group
 
@@ -24,6 +24,14 @@ class GroupRole(models.Model):
         label = self.custom_label or self.user.username
         return f"{self.user.username} - {label} ({self.group.name})"
     
+    def save(self, *args, **kwargs):
+        # Set can_post True only if the user is an approved organizer
+        if hasattr(self.user, 'profile') and self.user.profile.is_approved_organizer:
+            self.can_post = True
+        else:
+            self.can_post = False
+        super().save(*args, **kwargs)
+    
     def can_manage_events(self):
         """Check if this role can create/edit/delete events"""
         return self.role_level <= 4  # Top 4 levels can manage events
@@ -40,7 +48,6 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     profile_picture_base64 = models.TextField(blank=True, null=True)
     is_approved_organizer = models.BooleanField(default=False)
-    allowed_groups = models.ManyToManyField('events.Group', blank=True, help_text='DEPRECATED: Use GroupRole instead')
     display_name = models.CharField(max_length=50, blank=True, null=True)
     discord_username = models.CharField(max_length=50, blank=True, null=True)
     telegram_username = models.CharField(max_length=50, blank=True, null=True)
@@ -127,15 +134,3 @@ def create_profile(sender, instance, created, **kwargs):
 @receiver(post_save, sender=User)
 def save_profile(sender, instance, **kwargs):
     instance.profile.save()
-
-# The m2m_changed signal logic will be moved to signals.py
-# @receiver(m2m_changed, sender=Profile.allowed_groups)
-# def update_approved_organizer_status(sender, instance, action, **kwargs):
-#     if action == 'post_add':
-#         if not instance.is_approved_organizer:
-#             instance.is_approved_organizer = True
-#             instance.save()
-#     elif action == 'post_remove':
-#         if not instance.allowed_groups.exists() and instance.is_approved_organizer:
-#             instance.is_approved_organizer = False
-#             instance.save()

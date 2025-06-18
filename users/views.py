@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.models import User
-from .forms import UserRegisterForm, UserProfileForm, AssistantAssignmentForm, UserPublicProfileForm, UserAdminProfileForm, UserPasswordChangeForm
+from .forms import UserRegisterForm, UserProfileForm, AssistantAssignmentForm, UserPublicProfileForm, UserPasswordChangeForm
 from events.models import Group, RSVP
 from events.forms import GroupForm, RenameGroupForm
 from .models import Profile, GroupDelegation, BannedUser, Notification
@@ -15,6 +15,7 @@ from django.db import models, transaction
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 from .utils import create_notification
+from .models import GroupRole
 
 # Create your views here.
 
@@ -55,7 +56,7 @@ def profile(request):
     banned_users_in_groups = []
     if request.user.profile.is_approved_organizer:
         # Get all groups where the current user is an approved organizer
-        organizer_groups = request.user.profile.allowed_groups.all()
+        organizer_groups = Group.objects.filter(group_roles__user=request.user)
         # Filter BannedUser entries for these groups
         banned_users_in_groups = BannedUser.objects.filter(group__in=organizer_groups).select_related('user__profile', 'group', 'banned_by').order_by('group__name', 'user__username')
 
@@ -196,7 +197,7 @@ def ban_user(request):
                 except Profile.DoesNotExist:
                     pass
 
-                if user_profile and user_profile.is_approved_organizer and group in user_profile.allowed_groups.all():
+                if user_profile and user_profile.is_approved_organizer and GroupRole.objects.filter(user=user_profile.user, group=group).exists():
                     is_approved_organizer_for_group = True
 
                 is_delegated_assistant_for_group = GroupDelegation.objects.filter(

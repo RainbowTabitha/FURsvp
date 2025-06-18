@@ -69,7 +69,7 @@ class EventForm(forms.ModelForm):
 
         if user:
             # Initialize empty querysets
-            allowed_groups = Group.objects.none()
+            leader_groups = Group.objects.filter(group_roles__user=user)
             assistant_groups = Group.objects.none()
             
             # Admins can see all groups
@@ -79,13 +79,9 @@ class EventForm(forms.ModelForm):
             
             # For editing an existing event
             if instance:
-                # If user is the organizer, they can only select from their allowed groups
+                # If user is the organizer, they can only select from their leader groups
                 if instance.organizer == user:
-                    try:
-                        if user.profile.is_approved_organizer:
-                            allowed_groups = user.profile.allowed_groups.all()
-                    except Profile.DoesNotExist:
-                        pass
+                    leader_groups = Group.objects.filter(group_roles__user=user)
                 # If user is an assistant, they can only select from groups they're an assistant for
                 else:
                     assistant_groups = Group.objects.filter(
@@ -94,24 +90,15 @@ class EventForm(forms.ModelForm):
                     )
             # For creating a new event
             else:
-                # Check for approved organizer status
-                try:
-                    if user.profile.is_approved_organizer:
-                        allowed_groups = user.profile.allowed_groups.all()
-                except Profile.DoesNotExist:
-                    pass
-                
-                # Check for assistant status
+                leader_groups = Group.objects.filter(group_roles__user=user)
                 assistant_groups = Group.objects.filter(
                     groupdelegation__delegated_user=user
                 )
-            
-            # Combine querysets with consistent distinct settings
+            # Combine querysets
             combined_groups = Group.objects.filter(
-                id__in=allowed_groups.values_list('id', flat=True) | 
+                id__in=leader_groups.values_list('id', flat=True) |
                       assistant_groups.values_list('id', flat=True)
             ).distinct()
-            
             if combined_groups.exists():
                 self.fields['group'].queryset = combined_groups
             else:

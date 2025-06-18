@@ -79,9 +79,13 @@
                                             </span>
                                         </td>
                                         <td>
-                                            {% with profile_form=user_profile_forms|get_item:user_obj.id %}
-                                                {{ profile_form.allowed_groups|add_class:"tomselect-allowed-groups form-select form-select-sm" }}
-                                            {% endwith %}
+                                            <ul class="list-unstyled mb-0">
+                                                {% for grouprole in user_obj.group_roles.all %}
+                                                    <li>{{ grouprole.group.name }}</li>
+                                                {% empty %}
+                                                    <li class="text-muted">No groups</li>
+                                                {% endfor %}
+                                            </ul>
                                         </td>
                                     </tr>
                                     {% empty %}
