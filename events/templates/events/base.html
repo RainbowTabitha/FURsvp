@@ -103,6 +103,36 @@
             color: var(--primary-color);
         }
 
+        .footer-btn-modern {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5em;
+            padding: 0.7em 1.4em;
+            border-radius: 1.2em;
+            border: none;
+            background: #e0edff;
+            color: #2563eb;
+            font-weight: 600;
+            font-size: 1.08rem;
+            box-shadow: 0 2px 8px rgba(59,130,246,0.07);
+            transition: background 0.18s, color 0.18s, box-shadow 0.18s, transform 0.12s;
+            margin: 0.3em 0.4em 0.3em 0;
+            outline: none;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .footer-btn-modern:hover, .footer-btn-modern.active {
+            background: linear-gradient(90deg, #2563eb 0%, #6366f1 100%);
+            color: #fff;
+            box-shadow: 0 4px 18px rgba(59,130,246,0.13);
+            transform: translateY(-2px) scale(1.04);
+            text-decoration: none;
+        }
+        .footer-btn-modern i, .footer-btn-modern .material-icons {
+            font-size: 1.25em;
+            vertical-align: middle;
+        }
+
         .footer {
             background-color: var(--secondary-color);
             padding: 3.5rem 0;
@@ -1381,6 +1411,23 @@
             color: #fff !important;
         }
 
+        /* Gradient Footer */
+        .gradient-footer {
+            background: linear-gradient(90deg, #a7c7f9 0%, #b4e0fa 100%);
+            border-top-left-radius: 1.5rem;
+            border-top-right-radius: 1.5rem;
+            box-shadow: 0 -4px 24px 0 rgba(31, 38, 135, 0.10);
+            padding: 2.5rem 1.5rem 1.5rem 1.5rem;
+            margin-top: 3rem;
+            color: #234;
+        }
+        @media (max-width: 768px) {
+            .gradient-footer {
+                border-radius: 0;
+                padding: 1.5rem 0.5rem 1rem 0.5rem;
+            }
+        }
+
     </style>
     <!-- TomSelect CSS -->
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
@@ -1572,7 +1619,7 @@
         {% endif %}
     </nav>
 
-    <footer class="footer">
+    <footer class="gradient-footer mt-auto">
         <div class="container text-center">
             {% if request.get_host == 'nj.fursvp.org' %}
             <img src="{% static 'fursvp-nj.png' %}" alt="FURsvp Logo" class="footer-logo">
@@ -1581,31 +1628,31 @@
             {% endif %}
             <div class="d-flex gap-2 justify-content-center mb-2">
                 <a href="mailto:info@tabithahanegan.com"
-                    class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn">
+                    class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn-modern">
                     <i class="material-icons me-1">email</i> Contact Us
                 </a>
                 <a href="https://github.com/furconnect/fursvp" target="_blank"
-                    class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn">
+                    class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn-modern">
                     <i class="material-icons me-1">code</i> GitHub
                 </a>
-                <button id="darkModeToggle" class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn"
+                <button id="darkModeToggle" class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn-modern"
                     type="button" style="gap: 0.5rem;">
                     <span id="darkModeIcon" class="material-icons">dark_mode</span>
                     <span id="darkModeText">Dark Mode</span>
                 </button>
             </div>
             <div class="d-flex gap-2 justify-content-center mb-4">
-                <a href="{% url 'terms' %}" class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn">
+                <a href="{% url 'terms' %}" class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn-modern">
                     <i class="material-icons me-1">gavel</i> Terms of Service
                 </a>
-                <a href="{% url 'faq' %}" class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn">
+                <a href="{% url 'faq' %}" class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn-modern">
                     <i class="material-icons me-1">help</i> FAQ
                 </a>
-                <a href="{% url 'eula' %}" class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn">
+                <a href="{% url 'eula' %}" class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn-modern">
                     <i class="material-icons me-1">description</i> EULA
                 </a>
                 <a href="{% url 'privacy' %}"
-                    class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn">
+                    class="btn btn-outline-primary btn-sm d-flex align-items-center footer-btn-modern">
                     <i class="material-icons me-1">privacy_tip</i> Privacy
                 </a>
             </div>
@@ -1937,4 +1984,5 @@
     </script>
 </body>
 
+</html> 
 </html> 
