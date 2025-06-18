@@ -148,6 +148,24 @@ def event_detail(request, event_id):
             if event.waitlist_enabled:
                 can_join_waitlist = True
 
+    def promote_waitlisted_if_spot(event):
+        if event.waitlist_enabled and event.capacity is not None:
+            current_confirmed_count = event.rsvps.filter(status='confirmed').count()
+            if current_confirmed_count < event.capacity:
+                oldest_waitlisted_rsvp = event.rsvps.filter(
+                    status='waitlisted'
+                ).order_by('timestamp').first()
+                if oldest_waitlisted_rsvp:
+                    oldest_waitlisted_rsvp.status = 'confirmed'
+                    oldest_waitlisted_rsvp.timestamp = timezone.now()
+                    oldest_waitlisted_rsvp.save()
+                    if oldest_waitlisted_rsvp.user:
+                        create_notification(
+                            oldest_waitlisted_rsvp.user,
+                            f'You have been moved from the waitlist to confirmed for {event.title}!',
+                            link=event.get_absolute_url()
+                        )
+
     if request.method == 'POST' and request.user.is_authenticated and not event_has_passed:
         # Prevent banned users from RSVPing
         if is_banned_by_organizer or is_banned_from_group:
@@ -178,17 +196,8 @@ def event_detail(request, event_id):
                     create_notification(request.user, f'You have removed your RSVP for {event.title}.', link=event.get_absolute_url())
 
                     # If a confirmed spot opened up and waitlist is enabled, promote oldest waitlisted
-                    if was_confirmed and event.waitlist_enabled and event.capacity is not None:
-                        # Synchronously promote the oldest waitlisted user
-                        oldest_waitlisted_rsvp = event.rsvps.filter(
-                            status='waitlisted'
-                        ).order_by('timestamp').first()
-
-                        if oldest_waitlisted_rsvp:
-                            oldest_waitlisted_rsvp.status = 'confirmed'
-                            oldest_waitlisted_rsvp.timestamp = timezone.now()
-                            oldest_waitlisted_rsvp.save()
-                            create_notification(oldest_waitlisted_rsvp.user, f'You have been moved from the waitlist to confirmed for {event.title}!', link=event.get_absolute_url())
+                    if was_confirmed:
+                        promote_waitlisted_if_spot(event)
             else:
                 messages.error(request, 'You do not have an RSVP to remove.', extra_tags='admin_notification')
             return redirect('event_detail', event_id=event.id)
@@ -244,18 +253,7 @@ def event_detail(request, event_id):
                         user_rsvp.save()
                         create_notification(request.user, f'Your RSVP status has been updated to {user_rsvp.get_status_display()!s} for {event.title}.', link=event.get_absolute_url())
                         # If a confirmed spot opened up, synchronously promote oldest waitlisted
-                        if event.waitlist_enabled and event.capacity is not None:
-                            current_confirmed_count_after_change = event.rsvps.filter(status='confirmed').count()
-                            if current_confirmed_count_after_change < event.capacity:
-                                oldest_waitlisted_rsvp = event.rsvps.filter(
-                                    status='waitlisted'
-                                ).order_by('timestamp').first()
-
-                                if oldest_waitlisted_rsvp:
-                                    oldest_waitlisted_rsvp.status = 'confirmed'
-                                    oldest_waitlisted_rsvp.timestamp = timezone.now()
-                                    oldest_waitlisted_rsvp.save()
-                                    create_notification(oldest_waitlisted_rsvp.user, f'You have been moved from the waitlist to confirmed for {event.title}!', link=event.get_absolute_url())
+                        promote_waitlisted_if_spot(event)
                 else:
                     rsvp = form.save(commit=False)
                     rsvp.event = event
@@ -295,15 +293,7 @@ def event_detail(request, event_id):
                 if old_status == 'confirmed' and new_status != 'confirmed':
                     if event.waitlist_enabled and event.capacity is not None:
                         # Synchronously promote the oldest waitlisted user
-                        oldest_waitlisted_rsvp = event.rsvps.filter(
-                            status='waitlisted'
-                        ).order_by('timestamp').first()
-
-                        if oldest_waitlisted_rsvp:
-                            oldest_waitlisted_rsvp.status = 'confirmed'
-                            oldest_waitlisted_rsvp.timestamp = timezone.now()
-                            oldest_waitlisted_rsvp.save()
-                            create_notification(oldest_waitlisted_rsvp.user, f'You have been moved from the waitlist to confirmed for {event.title}!', link=event.get_absolute_url())
+                        promote_waitlisted_if_spot(event)
                 
                 # If changing from waitlisted to confirmed
                 elif old_status == 'waitlisted' and new_status == 'confirmed':
