@@ -202,6 +202,36 @@ def event_detail(request, event_id):
                 messages.error(request, 'You do not have an RSVP to remove.', extra_tags='admin_notification')
             return redirect('event_detail', event_id=event.id)
         
+        if 'maybe' in request.POST:
+            if user_rsvp: # Ensure there is an RSVP to remove
+                with transaction.atomic():
+                    was_confirmed = (user_rsvp.status == 'confirmed')
+                    user_rsvp.delete()
+                    create_notification(request.user, f'You have removed your RSVP for {event.title}.', link=event.get_absolute_url())
+
+                    # If a confirmed spot opened up and waitlist is enabled, promote oldest waitlisted
+                    if was_confirmed:
+                        promote_waitlisted_if_spot(event)
+            else:
+                messages.error(request, 'You do not have an RSVP to remove.', extra_tags='admin_notification')
+            return redirect('event_detail', event_id=event.id)
+
+
+        if 'not_attending' in request.POST:
+            if user_rsvp: # Ensure there is an RSVP to remove
+                with transaction.atomic():
+                    was_confirmed = (user_rsvp.status == 'confirmed')
+                    user_rsvp.delete()
+                    create_notification(request.user, f'You have removed your RSVP for {event.title}.', link=event.get_absolute_url())
+
+                    # If a confirmed spot opened up and waitlist is enabled, promote oldest waitlisted
+                    if was_confirmed:
+                        promote_waitlisted_if_spot(event)
+            else:
+                messages.error(request, 'You do not have an RSVP to remove.', extra_tags='admin_notification')
+            return redirect('event_detail', event_id=event.id)
+
+        
         if 'delete_event' in request.POST and can_ban_user:
             event_title = event.title
             event.delete()
