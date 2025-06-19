@@ -140,11 +140,21 @@ def profile(request):
             else:
                 messages.error(request, 'You are not authorized to delete assistant assignments.', extra_tags='admin_notification')
 
-    elif 'delete_account' in request.POST:
-        user = request.user
-        user.delete()
-        messages.success(request, "Fur-well! May your tail always be fluffy and your conventions drama-free! 🐾")
-        return redirect('home')
+        elif 'delete_account' in request.POST:
+            user = request.user
+            with transaction.atomic():
+                RSVP.objects.filter(user=user).delete()
+                GroupRole.objects.filter(user=user).delete()
+                GroupDelegation.objects.filter(organizer=user).delete()
+                GroupDelegation.objects.filter(delegated_user=user).delete()
+                BannedUser.objects.filter(user=user).delete()
+                BannedUser.objects.filter(banned_by=user).delete()
+                BannedUser.objects.filter(organizer=user).delete()
+                Notification.objects.filter(user=user).delete()
+                Profile.objects.filter(user=user).delete()
+                user.delete()
+            messages.success(request, "Fur-well! May your tail always be fluffy and your conventions drama-free! 🐾")
+            return redirect('home')
 
     context = {
         'user_events': user_events,

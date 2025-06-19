@@ -52,7 +52,6 @@
         border-radius: 2rem;
         box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.10);
         background: #f8fafc;
-        overflow: hidden;
         margin-bottom: 2rem;
     }
 
@@ -83,6 +82,7 @@
         background: #f8fafc;
         color: #222;
         font-size: 1.08rem;
+        margin-bottom: 0.5rem;
     }
 
     .modern-select {
@@ -460,10 +460,14 @@
     .rsvp-group-card {
         border-radius: 1.1rem;
         box-shadow: 0 2px 12px rgba(59, 130, 246, 0.08);
-        margin-bottom: 1.2rem;
+        margin-bottom: 1.9rem;
         padding: 1.1rem 1.2rem 0.7rem 1.2rem;
         background: #fff;
         transition: background 0.18s, box-shadow 0.18s;
+    }
+
+    .rsvp-group-card:last-child {
+        margin-bottom: 0;
     }
 
     .rsvp-group-confirmed {
@@ -896,6 +900,7 @@
         color: #fff;
         box-shadow: 0 4px 16px rgba(244, 63, 94, 0.18);
     }
+
 </style>
 <div class="container">
     {# Gradient Alerts at the very top #}
@@ -1043,7 +1048,7 @@
                     <i class="material-icons me-2">groups</i> <span class="fw-bold">Attendees</span>
                     <span class="attendee-counter-badge">{{ confirmed_rsvps_count }}</span>
                 </div>
-                <div class="modern-card-body">
+                <div class="modern-card-body attendees">
                     {% if not can_view_attendee_list %}
                     <div class="alert alert-info mb-3" style="background: linear-gradient(90deg, #e0e7ff 0%, #f0abfc 100%); color: #312e81; border-radius: 0.8rem; font-weight: 600;">
                         The attendee list is hidden. You can only see your own RSVP.
