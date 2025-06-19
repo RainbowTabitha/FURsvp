@@ -253,6 +253,28 @@
             padding: 0.2rem 0.4rem;
         }
     }
+
+    .btn-today-pretty {
+        background: linear-gradient(90deg, #8b5cf6 0%, #ec4899 100%);
+        color: #fff;
+        border: none;
+        border-radius: 1.2rem;
+        font-weight: 700;
+        font-size: 1.1rem;
+        box-shadow: 0 2px 12px rgba(139,92,246,0.10);
+        padding: 0.7rem 1.7rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
+    }
+    .btn-today-pretty:hover, .btn-today-pretty:focus {
+        background: linear-gradient(90deg, #ec4899 0%, #8b5cf6 100%);
+        color: #fff;
+        transform: translateY(-2px) scale(1.04);
+        box-shadow: 0 4px 18px rgba(236,72,153,0.18);
+        text-decoration: none;
+    }
 </style>
 
 <div class="container">
@@ -268,7 +290,7 @@
                 </a>
             </div>
             <div class="d-flex gap-2">
-                <a href="{% url 'event_calendar' %}" class="btn btn-light">
+                <a href="{% url 'event_calendar' %}" class="btn btn-today-pretty">
                     <i class="material-icons me-1">today</i> Today
                 </a>
             </div>
@@ -291,7 +313,7 @@
                         <div class="calendar-day other-month"></div>
                     {% else %}
                         {% make_date_key year month day as date_key %}
-                        <div class="calendar-day {% if year == today.year and month == today.month and day == today.day %}today{% endif %}{% if events_by_date|get_item:date_key|length > 0 %} has-events{% endif %}"
+                        <div class="calendar-day{% if events_by_date|get_item:date_key|length > 0 %} has-events{% endif %}"
                              {% if events_by_date|get_item:date_key|length > 0 %}data-date="{{ date_key }}"{% endif %}>
                             <div class="day-number">{{ day }}</div>
                             {% if events_by_date|get_item:date_key|length > 0 %}

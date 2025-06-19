@@ -567,6 +567,63 @@
         border-radius: 50%;
         padding: 0.25rem;
     }
+
+    .attendee-restriction-modal {
+        background: linear-gradient(90deg, #e0e7ff 0%, #f0abfc 100%);
+        color: #312e81;
+        border-radius: 1.1rem;
+        box-shadow: 0 2px 12px rgba(139,92,246,0.08);
+        border-left: 6px solid #8b5cf6;
+        padding: 1.2rem 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1.1rem;
+        font-size: 1.18rem;
+        font-weight: 600;
+        margin-bottom: 0;
+        margin-top: 0.2rem;
+    }
+    .attendee-restriction-icon {
+        font-size: 2.1rem;
+        color: #8b5cf6;
+        flex-shrink: 0;
+    }
+    .attendee-restriction-text {
+        flex: 1;
+    }
+
+    .login-required-modal {
+        background: linear-gradient(90deg, #fef9c3 0%, #fde68a 100%);
+        color: #92400e;
+        border-radius: 1.1rem;
+        box-shadow: 0 2px 12px rgba(251,191,36,0.08);
+        border-left: 6px solid #f59e42;
+        padding: 1.2rem 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1.1rem;
+        font-size: 1.18rem;
+        font-weight: 600;
+        margin-bottom: 0;
+        margin-top: 0.2rem;
+    }
+    .login-required-icon {
+        font-size: 2.1rem;
+        color: #f59e42;
+        flex-shrink: 0;
+    }
+    .login-required-text {
+        flex: 1;
+    }
+    .login-link {
+        color: #2563eb;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+    .login-link:hover, .login-link:focus {
+        color: #1d4ed8;
+        text-decoration: underline;
+    }
 </style>
 <div class="container">
     {# Gradient Alerts at the very top #}
@@ -708,12 +765,18 @@
                 </div>
             </div>
             <!-- Attendees Section moved here, in line with bottom of description -->
+            {% if can_view_attendee_list or rsvp_groups.confirmed|length > 0 or rsvp_groups.waitlisted|length > 0 or rsvp_groups.maybe|length > 0 or rsvp_groups.not_attending|length > 0 %}
             <div class="modern-card mb-4">
                 <div class="modern-card-header attendees">
                     <i class="material-icons me-2">groups</i> <span class="fw-bold">Attendees</span>
                     <span class="attendee-counter-badge">{{ confirmed_rsvps_count }}</span>
                 </div>
                 <div class="modern-card-body">
+                    {% if not can_view_attendee_list %}
+                    <div class="alert alert-info mb-3" style="background: linear-gradient(90deg, #e0e7ff 0%, #f0abfc 100%); color: #312e81; border-radius: 0.8rem; font-weight: 600;">
+                        The attendee list is hidden. You can only see your own RSVP.
+                    </div>
+                    {% endif %}
                     <!-- RSVP Status Groups in Attendees card -->
                     <div class="rsvp-group-card rsvp-group-confirmed">
                         <h4 class="h6 text-success mb-2 d-flex align-items-center">
@@ -857,6 +920,19 @@
                     {% endif %}
                 </div>
             </div>
+            {% else %}
+            <div class="modern-card mb-4">
+                <div class="modern-card-header attendees">
+                    <i class="material-icons me-2">groups</i> <span class="fw-bold">Attendees</span>
+                </div>
+                <div class="modern-card-body">
+                    <div class="attendee-restriction-modal">
+                        <i class="material-icons attendee-restriction-icon">lock</i>
+                        <span class="attendee-restriction-text">The attendee list is only visible to group leaders for this event.</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
         </div>
 
         <!-- RSVP Panel -->
@@ -951,10 +1027,9 @@
                     </form>
                     {% endif %}
                     {% else %}
-                    <div class="alert alert-warning mb-0"
-                        style="background: linear-gradient(90deg, #fffbe6 0%, #fef6c3 100%); border-radius: 1.1rem; border: 1.5px solid #fde68a; color: #7c4700; font-weight: 500;">
-                        Please <a href="{% url 'login' %}"
-                            style="color: #2563eb; text-decoration: underline; font-weight: 600;">log in</a> to RSVP.
+                    <div class="login-required-modal">
+                        <i class="material-icons login-required-icon">login</i>
+                        <span class="login-required-text">Please <a href="{% url 'login' %}" class="login-link">log in</a> to RSVP.</span>
                     </div>
                     {% endif %}
                 </div>

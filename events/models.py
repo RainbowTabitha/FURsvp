@@ -78,6 +78,10 @@ class Event(models.Model):
     )
     capacity = models.IntegerField(null=True, blank=True, help_text="Maximum number of attendees. Leave blank for no limit.")
     waitlist_enabled = models.BooleanField(default=False, help_text="Enable a waitlist if capacity is reached.")
+    attendee_list_public = models.BooleanField(
+        default=True,
+        help_text="If false, only organizers can see the attendee list."
+    )
     
     def clean(self):
         if self.waitlist_enabled and self.capacity is None:

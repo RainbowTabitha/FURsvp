@@ -452,6 +452,30 @@ def event_detail(request, event_id):
     show_rsvp_form = (not is_event_full or can_join_waitlist) or \
                      (user_rsvp is not None and user_rsvp.status != 'confirmed')
 
+    # Determine attendee list visibility
+    can_view_attendee_list = (
+        event.attendee_list_public or
+        is_organizer_of_this_event or
+        is_site_admin or
+        can_access_group_contact_info
+    )
+
+    # If attendee list is hidden, but user has an RSVP, only show their RSVP in the list
+    if not can_view_attendee_list and user_rsvp:
+        def only_user_rsvp(group, status):
+            if user_rsvp.status == status:
+                return [{'rsvp': user_rsvp, 'is_banned': False}]
+            return []
+        confirmed_rsvps = only_user_rsvp(confirmed_rsvps, 'confirmed')
+        waitlisted_rsvps = only_user_rsvp(waitlisted_rsvps, 'waitlisted')
+        maybe_rsvps = only_user_rsvp(maybe_rsvps, 'maybe')
+        not_attending_rsvps = only_user_rsvp(not_attending_rsvps, 'not_attending')
+    elif not can_view_attendee_list and not user_rsvp:
+        confirmed_rsvps = []
+        waitlisted_rsvps = []
+        maybe_rsvps = []
+        not_attending_rsvps = []
+
     context = {
         'event': event,
         'rsvps': rsvps,
@@ -475,6 +499,7 @@ def event_detail(request, event_id):
         'can_view_contact_info': can_view_contact_info,
         'show_rsvp_form': show_rsvp_form,
         'can_cancel_event': can_cancel_event,
+        'can_view_attendee_list': can_view_attendee_list,
     }
     return render(request, 'events/event_detail.html', context)
 

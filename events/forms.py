@@ -41,7 +41,7 @@ class EventForm(forms.ModelForm):
         fields = [
             'title', 'group', 'date', 'start_time', 'end_time',
             'address', 'city', 'state', 'age_restriction', 'description',
-            'capacity', 'waitlist_enabled'
+            'capacity', 'waitlist_enabled', 'attendee_list_public'
         ]
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Event Title'}),
@@ -55,6 +55,7 @@ class EventForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'class': 'form-control'}),
             'capacity': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Leave blank for no limit'}),
             'waitlist_enabled': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'attendee_list_public': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
     def __init__(self, *args, **kwargs):

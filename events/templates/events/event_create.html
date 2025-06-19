@@ -220,19 +220,24 @@
                         </div>
 
                         <!-- Waitlist Enabled Field -->
-                        <div class="mb-4 form-check form-switch">
-                            {{ form.waitlist_enabled|add_class:'form-check-input' }}
-                            <label class="event-form-label" for="{{ form.waitlist_enabled.id_for_label }}">
-                                <i class="material-icons align-middle me-1 event-form-icon">add_box</i> Enable Waitlist
-                            </label>
-                            {% if form.waitlist_enabled.help_text %}
-                            <div class="form-text">{{ form.waitlist_enabled.help_text }}</div>
-                            {% endif %}
-                            {% if form.waitlist_enabled.errors %}
-                            <div class="invalid-feedback d-block">
-                                {{ form.waitlist_enabled.errors }}
+                        <div class="mb-4 event-form-group">
+                            <div class="form-check">
+                                {{ form.waitlist_enabled }}
+                                <label class="form-check-label" for="{{ form.waitlist_enabled.id_for_label }}">
+                                    <i class="material-icons align-middle me-1 event-form-icon">queue</i>
+                                    Enable Waitlist
+                                </label>
                             </div>
-                            {% endif %}
+                        </div>
+                        <!-- Attendee List Public Field -->
+                        <div class="mb-4 event-form-group">
+                            <div class="form-check">
+                                {{ form.attendee_list_public }}
+                                <label class="form-check-label" for="{{ form.attendee_list_public.id_for_label }}">
+                                    <i class="material-icons align-middle me-1 event-form-icon">visibility</i>
+                                    Make attendee list public
+                                </label>
+                            </div>
                         </div>
 
                         <!-- Description Field -->

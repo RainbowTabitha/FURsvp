@@ -142,35 +142,35 @@
                         <!-- Event Capacity Field -->
                         <div class="mb-4 event-form-group">
                             <label for="{{ form.capacity.id_for_label }}" class="event-form-label">
+                                <i class="material-icons align-middle me-1 event-form-icon">groups</i>
                                 Event Capacity
                             </label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light">
-                                    <i class="material-icons text-primary">people_alt</i>
+                                    <i class="material-icons text-primary">groups</i>
                                 </span>
-                                {{ form.capacity|add_class:'form-control'|attr:'placeholder:Enter event capacity (optional)' }}
+                                {{ form.capacity|add_class:'form-control' }}
                             </div>
-                            {% if form.capacity.errors %}
-                            <div class="invalid-feedback d-block">
-                                {{ form.capacity.errors }}
-                            </div>
-                            {% endif %}
                         </div>
-
                         <!-- Waitlist Enabled Field -->
-                        <div class="mb-4 form-check form-switch">
-                            {{ form.waitlist_enabled|add_class:'form-check-input' }}
-                            <label class="form-check-label event-form-label" for="{{ form.waitlist_enabled.id_for_label }}">
-                                <i class="material-icons align-middle me-1 event-form-icon">add_box</i> Enable Waitlist
-                            </label>
-                            {% if form.waitlist_enabled.help_text %}
-                            <div class="form-text">{{ form.waitlist_enabled.help_text }}</div>
-                            {% endif %}
-                            {% if form.waitlist_enabled.errors %}
-                            <div class="invalid-feedback d-block">
-                                {{ form.waitlist_enabled.errors }}
+                        <div class="mb-4 event-form-group">
+                            <div class="form-check">
+                                {{ form.waitlist_enabled }}
+                                <label class="form-check-label" for="{{ form.waitlist_enabled.id_for_label }}">
+                                    <i class="material-icons align-middle me-1 event-form-icon">queue</i>
+                                    Enable Waitlist
+                                </label>
                             </div>
-                            {% endif %}
+                        </div>
+                        <!-- Attendee List Public Field -->
+                        <div class="mb-4 event-form-group">
+                            <div class="form-check">
+                                {{ form.attendee_list_public }}
+                                <label class="form-check-label" for="{{ form.attendee_list_public.id_for_label }}">
+                                    <i class="material-icons align-middle me-1 event-form-icon">visibility</i>
+                                    Make attendee list public
+                                </label>
+                            </div>
                         </div>
 
                         <!-- Description Field -->
@@ -371,8 +371,7 @@
                             // Build the full address for display
                             fullAddress = streetAddress;
                             if (address.city || address.town || address.village) {
-                                fullAddress += ', ' + (address.city || address.town ||
-                                    .village);
+                                fullAddress += ', ' + (address.city || address.town || address.village);
                             }
                             if (address.state) {
                                 fullAddress += ', ' + address.state;
