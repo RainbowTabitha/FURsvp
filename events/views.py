@@ -81,7 +81,7 @@ def home(request):
     
     # Apply sorting
     if sort_by == 'date':
-        events = events.order_by('date' if sort_order == 'asc' else '-date')
+        events = events.order_by('date', 'start_time') if sort_order == 'asc' else events.order_by('-date', '-start_time')
     elif sort_by == 'group':
         events = events.order_by(models.functions.Lower('group__name') if sort_order == 'asc' else models.functions.Lower('group__name').desc())
     elif sort_by == 'title':
