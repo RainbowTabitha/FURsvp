@@ -413,9 +413,28 @@
                 create: false, // Prevent users from creating new options
                 onInitialize: function() {
                     // Add modern styling to TomSelect elements
-                    this.wrapper.classList.add('form-select-sm', 'rounded-pill');
-                    this.control.classList.add('rounded-pill');
-                    this.dropdown.classList.add('shadow', 'rounded-3');
+                    this.wrapper.classList.add('form-select-sm', 'rounded-pill', 'shadow-sm');
+                    this.control.classList.add('rounded-pill', 'border-0');
+                    this.dropdown.classList.add('shadow', 'rounded-3', 'border-0');
+                    
+                    // Style the control input
+                    const controlInput = this.control.querySelector('input');
+                    if (controlInput) {
+                        controlInput.classList.add('form-control-sm', 'border-0', 'shadow-none');
+                        controlInput.style.fontSize = '0.875rem';
+                    }
+                    
+                    // Style the wrapper
+                    this.wrapper.style.minHeight = '38px';
+                    this.wrapper.style.border = '1px solid #dee2e6';
+                    this.wrapper.style.backgroundColor = '#fff';
+                    
+                    // Style the dropdown items
+                    const dropdownItems = this.dropdown.querySelectorAll('.option');
+                    dropdownItems.forEach(item => {
+                        item.style.padding = '0.5rem 1rem';
+                        item.style.fontSize = '0.875rem';
+                    });
                 }
             });
         });
