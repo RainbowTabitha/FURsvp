@@ -402,6 +402,9 @@ def event_detail(request, event_id):
 
     else:
         form = RSVPForm(instance=user_rsvp, event=event)
+    
+    # Add EventForm for the edit event modal
+    event_form = EventForm(instance=event, user=request.user)
 
     # Get ban status for each RSVP user (for initial rendering)
     # And filter by status for display
@@ -480,6 +483,7 @@ def event_detail(request, event_id):
         'event': event,
         'rsvps': rsvps,
         'form': form,
+        'event_form': event_form,
         'user_rsvp': user_rsvp,
         'is_organizer': is_organizer_of_this_event,
         'is_site_admin': is_site_admin,

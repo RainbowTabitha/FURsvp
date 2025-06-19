@@ -9,10 +9,10 @@
 <nav aria-label="breadcrumb" class="mb-4">
     <div class="modern-breadcrumbs">
         <a href="/" class="d-flex align-items-center">
-            <i class="material-icons me-1">home</i> Home
+            <i class="material-icons me-1">home</i> Homex
         </a>
         <span class="breadcrumb-chevron">›</span>
-        <a href="/" class="d-flex align-items-center">Groups</a>
+        <a href="/group/" class="d-flex align-items-center">Groups</a>
         <span class="breadcrumb-chevron">›</span>
         <span class="breadcrumb-current">{{ group.name }}</span>
     </div>
@@ -527,6 +527,10 @@
       border: none;
       box-shadow: 0 4px 18px rgba(59,130,246,0.18);
     }
+    #editGroupModal .modal-dialog {
+        min-width: 600px;
+        max-width: 900px;
+    }
     </style>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -773,6 +777,19 @@
                 }
             };
         }
+        // Fix: Re-init TinyMCE when Edit Group modal is shown
+        document.addEventListener('DOMContentLoaded', function() {
+            var editGroupModal = document.getElementById('editGroupModal');
+            if (editGroupModal) {
+                editGroupModal.addEventListener('shown.bs.modal', function () {
+                    var editor = tinymce.get('id_description');
+                    if (editor) {
+                        editor.destroy();
+                    }
+                    setTimeout(initTinyMCE, 100);
+                });
+            }
+        });
     });
     </script>
     {% endif %}
@@ -1470,6 +1487,19 @@ document.addEventListener('DOMContentLoaded', function() {
     // Listen for dark mode changes
     document.addEventListener('darkModeChanged', function (event) {
         setTimeout(reinitTinyMCE, 200);
+    });
+    // Fix: Re-init TinyMCE when Edit Group modal is shown
+    document.addEventListener('DOMContentLoaded', function() {
+        var editGroupModal = document.getElementById('editGroupModal');
+        if (editGroupModal) {
+            editGroupModal.addEventListener('shown.bs.modal', function () {
+                var editor = tinymce.get('id_description');
+                if (editor) {
+                    editor.destroy();
+                }
+                setTimeout(initTinyMCE, 100);
+            });
+        }
     });
     // Existing logo upload logic
 document.addEventListener('DOMContentLoaded', function() {

@@ -60,13 +60,20 @@ class EventForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
-        instance = kwargs.get('instance', None)
+        instance = kwargs.get('instance') or getattr(self, 'instance', None)
         super().__init__(*args, **kwargs)
+
+        if instance and instance.pk:
+            if instance.date:
+                self.initial['date'] = instance.date.strftime('%m/%d/%Y')
+            if instance.start_time:
+                self.initial['start_time'] = instance.start_time.strftime('%I:%M %p')
+            if instance.end_time:
+                self.initial['end_time'] = instance.end_time.strftime('%I:%M %p')
 
         if instance:
             self.fields['eula_agreement'].required = False
             self.fields['state_agreement'].required = False
-            self.initial['attendee_list_public'] = True
         else:
             self.fields['eula_agreement'].required = True
             self.fields['state_agreement'].required = True

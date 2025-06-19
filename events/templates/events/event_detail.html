@@ -1,6 +1,7 @@
 {% extends 'events/base.html' %}
 {% load users_extras %}
 {% block title %}{{ event.title }} - FURsvp{% endblock %}
+{% load widget_tweaks %}
 
 {% block content %}
 <style>
@@ -48,7 +49,7 @@
     }
 
     .modern-card {
-        border-radius: 1.25rem;
+        border-radius: 2rem;
         box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.10);
         background: #f8fafc;
         overflow: hidden;
@@ -624,6 +625,277 @@
         color: #1d4ed8;
         text-decoration: underline;
     }
+
+    #editEventModal .modal-content {
+        border-radius: 1.25rem;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
+        border: none;
+        overflow: hidden;
+    }
+    #editEventModal .modal-header {
+        background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+        color: #fff;
+        border-bottom: none;
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+        align-items: center;
+    }
+    #editEventModal .modal-title {
+        font-size: 1.7rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    #editEventModal .modal-header .material-icons {
+        font-size: 2.2rem;
+        vertical-align: middle;
+    }
+    #editEventModal .modal-header .btn-close {
+        filter: invert(1);
+        opacity: 0.8;
+    }
+    #editEventModal .modal-header .btn-close:hover {
+        opacity: 1;
+    }
+    #editEventModal .modal-body {
+        padding: 2rem 2.5rem 1.5rem 2.5rem;
+        background: #f8fafc;
+    }
+    #editEventModal .modal-footer {
+        background: #f3f4f6;
+        border-top: none;
+        padding: 1.5rem 2.5rem;
+    }
+    #editEventModal .btn-primary {
+        background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+        border: none;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.10);
+        transition: background 0.2s, box-shadow 0.2s;
+    }
+    #editEventModal .btn-primary:hover, #editEventModal .btn-primary:focus {
+        background: linear-gradient(90deg, #2563eb 0%, #7c3aed 100%);
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.18);
+    }
+    #editEventModal .btn-cancel {
+        background: #fff;
+        color: #6366f1;
+        border: 2px solid #a5b4fc;
+        border-radius: 0.8rem;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(139, 92, 246, 0.08);
+        transition: background 0.18s, color 0.18s, border 0.18s;
+    }
+    #editEventModal .btn-cancel:hover, #editEventModal .btn-cancel:focus {
+        background: linear-gradient(90deg, #e0e7ff 0%, #f3e8ff 100%);
+        color: #4f46e5;
+        border-color: #6366f1;
+    }
+    #editEventModal label.form-label {
+        font-weight: 500;
+        color: #4f46e5;
+    }
+    #editEventModal input.form-control, #editEventModal textarea.form-control {
+        border-radius: 0.75rem;
+        border: 1.5px solid #d1d5db;
+        background: #fff;
+        font-size: 1rem;
+        padding: 0.75rem 1rem;
+        margin-bottom: 0.5rem;
+    }
+    #editEventModal input.form-control:focus, #editEventModal textarea.form-control:focus {
+        border-color: #8b5cf6;
+        box-shadow: 0 0 0 2px #c7d2fe;
+    }
+    #editEventModal .form-text {
+        color: #6b7280;
+        font-size: 0.95rem;
+    }
+    #editEventModal .input-group .form-control {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+    #editEventModal .input-group .btn {
+        height: 100%;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+    #editEventModal #useLocationBtn {
+        border-top-right-radius: 0.95rem;
+        border-bottom-right-radius: 0.95rem;
+        display: flex;
+        align-items: center;
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+    }
+
+    #editEventModal .custom-select-modern {
+        width: 100%;
+        display: block;
+        border-radius: 0.75rem;
+        border: 1.5px solid #d1d5db;
+        background: #fff;
+        font-size: 1rem;
+        padding: 0.75rem 1.5rem 0.75rem 1rem;
+        margin-bottom: 0.5rem;
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg fill='none' stroke='gray' stroke-width='2' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        background-size: 1.2em;
+        transition: border-color 0.18s, box-shadow 0.18s;
+    }
+    #editEventModal .custom-select-modern:focus {
+        border-color: #8b5cf6;
+        box-shadow: 0 0 0 2px #c7d2fe;
+        outline: none;
+    }
+
+    #editEventModal .form-check {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.1rem;
+    }
+    #editEventModal .form-check-input {
+        width: 1.35em;
+        height: 1.35em;
+        border-radius: 24px;
+        margin-bottom: 4px;
+        border: 2px solid #a5b4fc;
+        background: #fff;
+        margin-right: 0.7em;
+        accent-color: #3b82f6; /* Ensures checkmark is visible and blue */
+        box-shadow: 0 2px 8px rgba(139, 92, 246, 0.08);
+        transition: border-color 0.18s, box-shadow 0.18s;
+        appearance: auto; /* Use browser default for checkmark */
+    }
+    #editEventModal .form-check-input:checked {
+        background-color: #3b82f6;
+        border-color: #3b82f6;
+    }
+    #editEventModal .form-check-label {
+        font-size: 1.08rem;
+        font-weight: 500;
+        color: #222;
+        cursor: pointer;
+    }
+
+    .btn-location-modern {
+        background: #fff;
+        color: #6366f1;
+        border: 2px solid #a5b4fc;
+        border-radius: 0.8rem;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(139, 92, 246, 0.08);
+        transition: background 0.18s, color 0.18s, border 0.18s;
+        padding: 0.45rem 1.1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        margin-left: 0.5rem;
+    }
+    .btn-location-modern:hover, .btn-location-modern:focus {
+        background: #eef2ff;
+        color: #4f46e5;
+        border-color: #6366f1;
+        text-decoration: none;
+    }
+
+    #editEventModal .input-group {
+        align-items: stretch !important;
+    }
+    #editEventModal input.form-control {
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+    }
+
+    .btn-save-outline {
+        background: #fff;
+        color: #6366f1;
+        border: 2px solid #6366f1;
+        border-radius: 0.8rem;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(99, 102, 241, 0.08);
+        transition: background 0.18s, color 0.18s, border 0.18s;
+        padding: 0.85rem 2.2rem;
+        font-size: 1.13rem;
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+    }
+    .btn-save-outline:hover, .btn-save-outline:focus {
+        background: linear-gradient(90deg, #e0e7ff 0%, #f3e8ff 100%);
+        color: #4f46e5;
+        border-color: #6366f1;
+        text-decoration: none;
+    }
+
+    .btn-cancel-outline {
+        background: #fff;
+        color: #6366f1;
+        border: 2px solid #a5b4fc;
+        border-radius: 0.8rem;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(139, 92, 246, 0.08);
+        transition: background 0.18s, color 0.18s, border 0.18s;
+        padding: 0.45rem 1.1rem;
+        font-size: 1.08rem;
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+    }
+    .btn-cancel-outline:hover, .btn-cancel-outline:focus {
+        background: linear-gradient(90deg, #e0e7ff 0%, #f3e8ff 100%);
+        color: #4f46e5;
+        border-color: #6366f1;
+        text-decoration: none;
+    }
+    .btn-save-gradient {
+        background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+        color: #fff;
+        border: none;
+        border-radius: 0.8rem;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.10);
+        transition: background 0.2s, box-shadow 0.2s;
+        padding: 0.85rem 2.2rem;
+        font-size: 1.13rem;
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+    }
+    .btn-save-gradient:hover, .btn-save-gradient:focus {
+        background: linear-gradient(90deg, #2563eb 0%, #7c3aed 100%);
+        color: #fff;
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.18);
+    }
+
+    .btn-cancel-gradient {
+        background: linear-gradient(90deg, #f59e42 0%, #f43f5e 100%);
+        color: #fff;
+        border: none;
+        border-radius: 0.8rem;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(244, 63, 94, 0.10);
+        transition: background 0.2s, box-shadow 0.2s;
+        padding: 0.85rem 2.2rem;
+        font-size: 1.13rem;
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+    }
+    .btn-cancel-gradient:hover, .btn-cancel-gradient:focus {
+        background: linear-gradient(90deg, #f43f5e 0%, #f59e42 100%);
+        color: #fff;
+        box-shadow: 0 4px 16px rgba(244, 63, 94, 0.18);
+    }
 </style>
 <div class="container">
     {# Gradient Alerts at the very top #}
@@ -694,10 +966,10 @@
     {% endif %}
 
     <!-- Main Event Info and RSVP Section -->
-    <div class="row mb-4">
-        <!-- Event Details -->
-        <div class="col-lg-8">
-            <div class="modern-card mb-4">
+    <div class="row mb-4 align-items-stretch">
+        <!-- Event Details (Left) -->
+        <div class="col-lg-8 d-flex flex-column">
+            <div class="modern-card mb-4 h-100">
                 <div class="modern-card-header event-info">
                     <i class="material-icons me-2">info</i> Event Information
                 </div>
@@ -757,7 +1029,7 @@
                         <div class="col-12 mt-4">
                             <h5 class="mb-3 d-flex align-items-center text-primary">
                                 <i class="material-icons text-primary me-2" style="font-size: 24px;">info</i>
-                                <strong class="text-primary">Event Info:</strong>
+                                <strong class="text-primary">Description:</strong>
                             </h5>
                             <p class="card-text">{{ event.description|safe }}</p>
                         </div>
@@ -935,106 +1207,321 @@
             {% endif %}
         </div>
 
-        <!-- RSVP Panel -->
-        <div class="col-lg-4">
-            {% if is_organizer or is_site_admin or is_delegated_assistant %}
-            <div class="modern-card mb-4">
-                <div class="modern-card-header event-info"
-                    style="background: linear-gradient(90deg, #f59e42 0%, #f43f5e 100%);">
-                    <i class="material-icons me-2">settings</i> Organizer Tools
-                </div>
-                <div class="modern-card-body">
-                    <a href="{% url 'edit_event' event.id %}" class="btn gradient-btn-primary mb-2">
-                        <i class="material-icons">edit</i> Edit Event
-                    </a>
-                    {% if event.status == 'cancelled' %}
-                    <form method="post" action="{% url 'uncancel_event' event.id %}" class="d-block mb-2"
-                        onsubmit="return confirm('Are you sure you want to uncancel this event? This will notify all attendees.');">
-                        {% csrf_token %}
-                        <button type="submit" class="btn gradient-btn-success mb-2">
-                            <i class="material-icons">restore</i> Uncancel Event
-                        </button>
-                    </form>
-                    {% else %}
-                    <form method="post" class="d-block mb-2"
-                        onsubmit="return confirm('Are you sure you want to cancel this event? This will notify all attendees.');">
-                        {% csrf_token %}
-                        <button type="submit" name="cancel_event" class="btn gradient-btn-danger mb-2">
-                            <i class="material-icons">cancel</i> Cancel Event
-                        </button>
-                    </form>
-                    {% endif %}
-                    <form method="post" class="d-block mb-2"
-                        onsubmit="return confirm('Are you sure you want to delete this event? This action cannot be undone.');">
-                        {% csrf_token %}
-                        <input type="hidden" name="delete_event" value="1">
-                        <button type="submit" class="btn gradient-btn-danger btn-sm">
-                            <i class="material-icons me-1">delete</i> Delete Event
-                        </button>
-                    </form>
-                </div>
-            </div>
-            {% endif %}
-            {% if not event_has_passed and event.status == 'active' %}
-            <div class="modern-card mb-4">
-                <div class="modern-card-header event-info"
-                    style="background: linear-gradient(90deg, #06b6d4 0%, #6366f1 100%);">
-                    <i class="material-icons me-2">event_available</i> RSVP
-                </div>
-                <div class="modern-card-body">
-                    {% if user.is_authenticated %}
-                    {% if is_event_full and can_join_waitlist %}
-                    <div class="alert alert-info mb-3">Event is full, but you can join the waitlist.</div>
-                    {% endif %}
-                    <form method="post">
-                        {% csrf_token %}
-                        <label for="{{ form.status.id_for_label }}" class="rsvp-label">
-                            <i class="material-icons">event_available</i> Status:
-                        </label>
-                        <select name="status" id="{{ form.status.id_for_label }}" class="modern-select">
-                            <option value="" disabled {% if not form.status.value %}selected{% endif %}>--- Select RSVP Status ---</option>
-                            {% with choices=form.status.field.choices %}
-                                {# Confirmed first #}
-                                {% for option in choices %}
-                                    {% if option.0 == 'confirmed' %}
-                                        <option value="{{ option.0 }}" {% if form.status.value == option.0 %}selected{% endif %}>{{ option.1 }}</option>
-                                    {% endif %}
-                                {% endfor %}
-                                {# Waitlisted second #}
-                                {% for option in choices %}
-                                    {% if option.0 == 'waitlisted' %}
-                                        <option value="{{ option.0 }}" {% if form.status.value == option.0 %}selected{% endif %}>{{ option.1 }}</option>
-                                    {% endif %}
-                                {% endfor %}
-                                {# All others except confirmed and waitlisted #}
-                                {% for option in choices %}
-                                    {% if option.0 != 'confirmed' and option.0 != 'waitlisted' %}
-                                        <option value="{{ option.0 }}" {% if form.status.value == option.0 %}selected{% endif %}>{{ option.1 }}</option>
-                                    {% endif %}
-                                {% endfor %}
-                            {% endwith %}
-                        </select>
-                        <button type="submit" class="rsvp-submit-btn"><i class="material-icons">event</i> Submit
-                            RSVP</button>
-                    </form>
-                    {% if user_rsvp %}
-                    <form method="post" class="mt-3"
-                        onsubmit="return confirm('Are you sure you want to remove your RSVP?');">
-                        {% csrf_token %}
-                        <button type="submit" name="remove_rsvp" class="gradient-btn-danger">
-                            <i class="material-icons">cancel</i> Remove RSVP
-                        </button>
-                    </form>
-                    {% endif %}
-                    {% else %}
-                    <div class="login-required-modal">
-                        <i class="material-icons login-required-icon">login</i>
-                        <span class="login-required-text">Please <a href="{% url 'login' %}" class="login-link">log in</a> to RSVP.</span>
+        <!-- RSVP/Organizer Tools (Right) -->
+        <div class="col-lg-4 d-flex flex-column h-100">
+            <div class="modern-card mb-4 h-100 d-flex flex-column justify-content-between">
+                {% if is_organizer or is_site_admin or is_delegated_assistant %}
+                    <!-- Organizer Tools -->
+                    <div class="modern-card mb-4">
+                        <div class="modern-card-header event-info"
+                            style="background: linear-gradient(90deg, #f59e42 0%, #f43f5e 100%);">
+                            <i class="material-icons me-2">settings</i> Organizer Tools
+                        </div>
+                        <div class="modern-card-body">
+                            <button type="button" class="btn gradient-btn-primary mb-2" data-bs-toggle="modal" data-bs-target="#editEventModal">
+                                <i class="material-icons">edit</i> Edit Event
+                            </button>
+                            {% if event.status == 'cancelled' %}
+                            <form method="post" action="{% url 'uncancel_event' event.id %}" class="d-block mb-2"
+                                onsubmit="return confirm('Are you sure you want to uncancel this event? This will notify all attendees.');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn gradient-btn-success mb-2">
+                                    <i class="material-icons">restore</i> Uncancel Event
+                                </button>
+                            </form>
+                            {% else %}
+                            <form method="post" class="d-block mb-2"
+                                onsubmit="return confirm('Are you sure you want to cancel this event? This will notify all attendees.');">
+                                {% csrf_token %}
+                                <button type="submit" name="cancel_event" class="btn gradient-btn-danger mb-2">
+                                    <i class="material-icons">cancel</i> Cancel Event
+                                </button>
+                            </form>
+                            {% endif %}
+                            <form method="post" class="d-block mb-2"
+                                onsubmit="return confirm('Are you sure you want to delete this event? This action cannot be undone.');">
+                                {% csrf_token %}
+                                <input type="hidden" name="delete_event" value="1">
+                                <button type="submit" class="btn gradient-btn-danger btn-sm">
+                                    <i class="material-icons me-1">delete</i> Delete Event
+                                </button>
+                            </form>
+                        </div>
                     </div>
-                    {% endif %}
-                </div>
+                    <!-- Edit Event Modal -->
+                    <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content" style="border-radius: 1.25rem; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25); border: none; overflow: hidden;">
+                                <div class="modal-header" style="background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%); color: #fff; border-bottom: none; padding-top: 2rem; padding-bottom: 2rem; align-items: center;">
+                                    <h5 class="modal-title d-flex align-items-center" id="editEventModalLabel" style="font-size: 1.7rem; font-weight: 600; gap: 0.5rem;">
+                                        <i class="material-icons me-2" style="font-size: 2.2rem; vertical-align: middle;">edit</i> Edit Event
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="filter: invert(1); opacity: 0.8;"></button>
+                                </div>
+                                <form method="post" action="{% url 'event_detail' event.id %}" enctype="multipart/form-data" id="editEventForm">
+                                    {% csrf_token %}
+                                    <div class="modal-body" style="padding: 2rem 2.5rem 1.5rem 2.5rem; background: #f8fafc;">
+                                        <!-- Title Field -->
+                                        <div class="mb-4 event-form-group">
+                                            <label for="{{ event_form.title.id_for_label }}" class="form-label d-flex align-items-center" style="font-weight: 500; color: #4f46e5;">
+                                                <i class="material-icons me-2" style="font-size: 1.3em;">event</i>
+                                                Event Title
+                                            </label>
+                                            {% render_field event_form.title class="form-control" %}
+                                        </div>
+                                        <!-- Group Field -->
+                                        <div class="mb-4 event-form-group">
+                                            <label for="{{ event_form.group.id_for_label }}" class="form-label d-flex align-items-center" style="font-weight: 500; color: #4f46e5;">
+                                                <i class="material-icons me-2" style="font-size: 1.3em;">groups</i>
+                                                Group
+                                            </label>
+                                            {% render_field event_form.group class="form-control" %}
+                                        </div>
+                                        <!-- Date/Time Fields -->
+                                        <div class="mb-4 event-form-group">
+                                            <label class="form-label d-flex align-items-center" style="font-weight: 500; color: #4f46e5;">
+                                                <i class="material-icons me-2" style="font-size: 1.3em;">calendar_today</i>
+                                                Date and Time
+                                            </label>
+                                            <div class="row">
+                                                <div class="col-md-4 mb-2 mb-md-0">
+                                                    {% render_field event_form.date class="form-control flatpickr" placeholder="MM/DD/YYYY" %}
+                                                </div>
+                                                <div class="col-md-4 mb-2 mb-md-0">
+                                                    <label for="{{ event_form.start_time.id_for_label }}" class="form-label visually-hidden">Start Time</label>
+                                                    {% render_field event_form.start_time class="form-control flatpickr" placeholder="Start time" %}
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label for="{{ event_form.end_time.id_for_label }}" class="form-label visually-hidden">End Time</label>
+                                                    {% render_field event_form.end_time class="form-control flatpickr" placeholder="End time" %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- Location Details Fields -->
+                                        <div class="mb-4 event-form-group">
+                                            <label for="{{ event_form.address.id_for_label }}" class="form-label d-flex align-items-center">
+                                                <i class="material-icons me-2" style="font-size: 1.3em;">location_on</i>
+                                                Street Address
+                                            </label>
+                                            <div class="input-group mb-2" style="align-items: center;">
+                                                {% render_field event_form.address class="form-control" placeholder="Enter street address" %}
+                                                <button type="button" class="btn btn-location-modern" id="useLocationBtn" title="Use My Location">
+                                                    <i class="material-icons" style="font-size: 1.2em;">my_location</i>
+                                                </button>
+                                            </div>
+                                            <div class="row mt-3">
+                                                <div class="col-md-6 mb-3 mb-md-0">
+                                                    <label for="{{ event_form.city.id_for_label }}" class="form-label d-flex align-items-center">
+                                                        <i class="material-icons me-2" style="font-size: 1.3em;">location_city</i>
+                                                        City
+                                                    </label>
+                                                    {% render_field event_form.city class="form-control" placeholder="Enter city" %}
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="{{ event_form.state.id_for_label }}" class="form-label d-flex align-items-center">
+                                                        <i class="material-icons me-2" style="font-size: 1.3em;">map</i>
+                                                        State
+                                                    </label>
+                                                    {% render_field event_form.state class="form-control" placeholder="Enter state" %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- Age Restriction Field -->
+                                        <div class="mb-4 event-form-group">
+                                            <label for="{{ event_form.age_restriction.id_for_label }}" class="form-label d-flex align-items-center" style="font-weight: 500; color: #4f46e5;">
+                                                <i class="material-icons me-2" style="font-size: 1.3em;">warning</i>
+                                                Age Restriction
+                                            </label>
+                                            {% render_field event_form.age_restriction class="custom-select-modern" %}
+                                        </div>
+                                        <!-- Event Capacity Field -->
+                                        <div class="mb-4 event-form-group">
+                                            <label for="{{ event_form.capacity.id_for_label }}" class="form-label d-flex align-items-center" style="font-weight: 500; color: #4f46e5;">
+                                                <i class="material-icons me-2" style="font-size: 1.3em;">people</i>
+                                                Event Capacity
+                                            </label>
+                                            {% render_field event_form.capacity class="form-control" %}
+                                        </div>
+                                        <!-- Waitlist Enabled Field -->
+                                        <div class="mb-4 event-form-group">
+                                            <div class="form-check">
+                                                {% render_field event_form.waitlist_enabled class="form-check-input" %}
+                                                <label class="form-check-label d-flex align-items-center" for="{{ event_form.waitlist_enabled.id_for_label }}">
+                                                    <i class="material-icons me-2" style="font-size: 1.3em;">hourglass_empty</i>
+                                                    Enable Waitlist
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <!-- Attendee List Public Field -->
+                                        <div class="mb-4 event-form-group">
+                                            <div class="form-check">
+                                                {% render_field event_form.attendee_list_public class="form-check-input" %}
+                                                <label class="form-check-label d-flex align-items-center" for="{{ event_form.attendee_list_public.id_for_label }}">
+                                                    <i class="material-icons me-2" style="font-size: 1.3em;">visibility</i>
+                                                    Make attendee list public
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <!-- Description Field -->
+                                        <div class="mb-4 event-form-group">
+                                            <label for="{{ event_form.description.id_for_label }}" class="form-label d-flex align-items-center" style="font-weight: 500; color: #4f46e5;">
+                                                <i class="material-icons me-2" style="font-size: 1.3em;">info</i>
+                                                Description
+                                            </label>
+                                            {% render_field event_form.description class="form-control" %}
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer" style="background: #f3f4f6; border-top: none; padding: 1.5rem 2.5rem;">
+                                        <button type="button" class="btn btn-cancel-gradient" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="btn btn-save-gradient">
+                                            <i class="material-icons me-1">save</i> Save Changes
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <style>
+                    #editEventModal .modal-dialog {
+                        min-width: 600px;
+                        max-width: 900px;
+                    }
+                    </style>
+                    <script src="https://cdn.jsdelivr.net/npm/tinymce@7.9.1/tinymce.min.js" referrerpolicy="origin"></script>
+                    <script>
+                    function initTinyMCEEventModal() {
+                        const isDark = document.body.classList.contains('dark-mode');
+                        tinymce.init({
+                            selector: '#{{ event_form.description.id_for_label }}',
+                            height: 450,
+                            width: '100%',
+                            menubar: false,
+                            plugins: 'advlist autolink lists image charmap anchor searchreplace visualblocks code insertdatetime table help wordcount textcolor backcolor',
+                            toolbar: 'bold italic strikethrough | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | image code | removeformat',
+                            branding: false,
+                            promotion: false,
+                            license_key: 'gpl',
+                            automatic_uploads: true,
+                            file_picker_types: 'image',
+                            images_reuse_filename: true,
+                            statusbar: false,
+                            resize: false,
+                            skin: isDark ? 'oxide-dark' : 'oxide',
+                            content_css: isDark ? '/static/tinymce-dark-content.css' : '',
+                            toolbar_mode: 'wrap',
+                            toolbar_location: 'top',
+                            toolbar_sticky: true,
+                            toolbar_sticky_offset: 0,
+                            content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; } img { max-width: 100%; height: auto; display: block; margin: 1em auto; } .tox-statusbar { display: none !important; }',
+                            document_base_url: window.location.origin + '/',
+                            setup: function (editor) {
+                                editor.on('init', function () {
+                                    editor.getContainer().style.transition = 'border-color 0.15s ease-in-out';
+                                });
+                            }
+                        });
+                    }
+                    document.addEventListener('DOMContentLoaded', function() {
+                        var editEventModal = document.getElementById('editEventModal');
+                        if (editEventModal) {
+                            editEventModal.addEventListener('shown.bs.modal', function () {
+                                var editor = tinymce.get('{{ event_form.description.id_for_label }}');
+                                if (editor) {
+                                    editor.destroy();
+                                }
+                                setTimeout(initTinyMCEEventModal, 500);
+                            });
+                        }
+                    });
+                    </script>
+                    <!-- Flatpickr CSS/JS -->
+                    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+                    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+                    <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        flatpickr('.flatpickr[name="date"]', {
+                            dateFormat: 'm/d/Y',
+                            allowInput: true,
+                        });
+                        flatpickr('.flatpickr[name="start_time"]', {
+                            enableTime: true,
+                            noCalendar: true,
+                            dateFormat: 'h:i K',
+                            time_24hr: false,
+                            allowInput: true,
+                        });
+                        flatpickr('.flatpickr[name="end_time"]', {
+                            enableTime: true,
+                            noCalendar: true,
+                            dateFormat: 'h:i K',
+                            time_24hr: false,
+                            allowInput: true,
+                        });
+                    });
+                    </script>
+                {% endif %}
+                {% if not event_has_passed and event.status == 'active' %}
+                    <!-- RSVP Panel -->
+                    <div class="modern-card mb-4">
+                        <div class="modern-card-header event-info"
+                            style="background: linear-gradient(90deg, #06b6d4 0%, #6366f1 100%);">
+                            <i class="material-icons me-2">event_available</i> RSVP
+                        </div>
+                        <div class="modern-card-body">
+                            {% if user.is_authenticated %}
+                            {% if is_event_full and can_join_waitlist %}
+                            <div class="alert alert-info mb-3">Event is full, but you can join the waitlist.</div>
+                            {% endif %}
+                            <form method="post">
+                                {% csrf_token %}
+                                <label for="{{ form.status.id_for_label }}" class="rsvp-label">
+                                    <i class="material-icons">event_available</i> Status:
+                                </label>
+                                <select name="status" id="{{ form.status.id_for_label }}" class="modern-select">
+                                    <option value="" disabled {% if not form.status.value %}selected{% endif %}>--- Select RSVP Status ---</option>
+                                    {% with choices=form.status.field.choices %}
+                                        {# Confirmed first #}
+                                        {% for option in choices %}
+                                            {% if option.0 == 'confirmed' %}
+                                                <option value="{{ option.0 }}" {% if form.status.value == option.0 %}selected{% endif %}>{{ option.1 }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                        {# Waitlisted second #}
+                                        {% for option in choices %}
+                                            {% if option.0 == 'waitlisted' %}
+                                                <option value="{{ option.0 }}" {% if form.status.value == option.0 %}selected{% endif %}>{{ option.1 }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                        {# All others except confirmed and waitlisted #}
+                                        {% for option in choices %}
+                                            {% if option.0 != 'confirmed' and option.0 != 'waitlisted' %}
+                                                <option value="{{ option.0 }}" {% if form.status.value == option.0 %}selected{% endif %}>{{ option.1 }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endwith %}
+                                </select>
+                                <button type="submit" class="rsvp-submit-btn"><i class="material-icons">event</i> Submit
+                                    RSVP</button>
+                            </form>
+                            {% if user_rsvp %}
+                            <form method="post" class="mt-3"
+                                onsubmit="return confirm('Are you sure you want to remove your RSVP?');">
+                                {% csrf_token %}
+                                <button type="submit" name="remove_rsvp" class="gradient-btn-danger">
+                                    <i class="material-icons">cancel</i> Remove RSVP
+                                </button>
+                            </form>
+                            {% endif %}
+                            {% else %}
+                            <div class="login-required-modal">
+                                <i class="material-icons login-required-icon">login</i>
+                                <span class="login-required-text">Please <a href="{% url 'login' %}" class="login-link">log in</a> to RSVP.</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
             </div>
-            {% endif %}
         </div>
     </div>
 
@@ -1056,7 +1543,7 @@
 <div class="modal fade" id="contactInfoModal" tabindex="-1" aria-labelledby="contactInfoModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header" style="background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%); color: #fff; border-bottom: none;">
+            <div class="modal-header" style="background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%); color: #fff; border-bottom: none;">
                 <h5 class="modal-title d-flex align-items-center gap-2" id="contactInfoModalLabel">
                     <i class="material-icons me-2">contact_mail</i> Attendee Contact Information
                 </h5>
@@ -1093,132 +1580,136 @@
 {% block extra_js %}
 {{ block.super }}
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const contactInfoModal = new bootstrap.Modal(document.getElementById('contactInfoModal'));
-        const modalContactDisplayName = document.getElementById('modalContactDisplayName');
-        const modalContactDiscord = document.getElementById('modalContactDiscord');
-        const modalContactTelegram = document.getElementById('modalContactTelegram');
-        const modalBanUserBtn = document.getElementById('modalBanUserBtn');
-        const eventGroupId = "{{ event.group.id }}"; // Get event's group ID
+document.addEventListener('DOMContentLoaded', function() {
+    var useLocationBtn = document.getElementById('useLocationBtn');
+    var cityField = document.getElementById('id_city');
+    var stateField = document.getElementById('id_state');
+    var addressField = document.getElementById('id_address');
 
-        // Handle opening contact info modal
-        document.querySelectorAll('.js-open-contact-modal').forEach(item => {
-            item.addEventListener('click', function (e) {
-                e.preventDefault();
-                const displayName = this.dataset.displayName;
-                const discord = this.dataset.discord || 'Not provided';
-                const telegram = this.dataset.telegram || 'Not provided';
-                const userId = this.dataset.userId;
+    // Autocomplete dropdown for street address
+    var autocompleteContainer = document.createElement('div');
+    autocompleteContainer.className = 'autocomplete-container';
+    autocompleteContainer.style.cssText = `
+        position: absolute;
+        width: 100%;
+        max-height: 200px;
+        overflow-y: auto;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        z-index: 1000;
+        display: none;
+        margin-top: 4px;
+        top: 100%;
+    `;
+    addressField.parentElement.style.position = 'relative';
+    addressField.parentElement.appendChild(autocompleteContainer);
 
-                modalContactDisplayName.textContent = displayName;
-                modalContactDiscord.textContent = discord;
-                modalContactTelegram.textContent = telegram;
-
-                // Show ban button if user can ban and attendee is a registered user
-                if (modalBanUserBtn && userId) { // Check if userId exists
-                    modalBanUserBtn.style.display = 'block';
-                    modalBanUserBtn.dataset.userId = userId;
-                    modalBanUserBtn.dataset.groupId = eventGroupId;
-                } else if (modalBanUserBtn) {
-                    modalBanUserBtn.style.display = 'none';
-                }
-
-                contactInfoModal.show();
-            });
-        });
-
-        // Event listener for the ban button inside the modal
-        if (modalBanUserBtn) {
-            modalBanUserBtn.addEventListener('click', function () {
-                const userId = this.dataset.userId;
-                const groupId = this.dataset.groupId;
-                if (confirm('Are you sure you want to ban this user from the group?')) {
-                    performBan(userId, groupId, 'group');
-                }
-            });
+    function fetchAddressSuggestions(query, city, state) {
+        if (!query || !city || !state || query.length < 3) {
+            autocompleteContainer.style.display = 'none';
+            return;
         }
-
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
+        fetch(`https://nominatim.openstreetmap.org/search?street=${encodeURIComponent(query)}&city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}&country=USA&format=json&addressdetails=1&limit=10`)
+            .then(response => response.json())
+            .then(data => {
+                autocompleteContainer.innerHTML = '';
+                if (!data || data.length === 0) {
+                    autocompleteContainer.style.display = 'none';
+                    return;
                 }
-            }
-            return cookieValue;
-        }
-
-        function performBan(userId, groupId, banType) {
-            const formData = new FormData();
-            formData.append('user_id', userId);
-            formData.append('group_id', groupId);
-            formData.append('ban_type', banType);
-            formData.append('action', 'ban');
-            formData.append('reason', 'Banned from event group');
-
-            fetch('{% url "ban_user" %}', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': getCookie('csrftoken')
-                    },
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        alert(data.message);
-                        location.reload();
+                data.forEach(result => {
+                    let addressLine = '';
+                    if (result.address.house_number && result.address.road) {
+                        addressLine = result.address.house_number + ' ' + result.address.road;
+                    } else if (result.address.road) {
+                        addressLine = result.address.road;
                     } else {
-                        alert('Error: ' + data.message);
+                        addressLine = result.display_name;
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred while trying to ban the user.');
+                    const suggestion = document.createElement('div');
+                    suggestion.className = 'autocomplete-suggestion';
+                    suggestion.style.cssText = `
+                        padding: 8px 12px;
+                        cursor: pointer;
+                        border-bottom: 1px solid #eee;
+                    `;
+                    suggestion.textContent = addressLine;
+                    suggestion.addEventListener('click', function() {
+                        addressField.value = addressLine;
+                        autocompleteContainer.style.display = 'none';
+                    });
+                    suggestion.addEventListener('mouseover', function() {
+                        suggestion.style.backgroundColor = '#f5f5f5';
+                    });
+                    suggestion.addEventListener('mouseout', function() {
+                        suggestion.style.backgroundColor = 'white';
+                    });
+                    autocompleteContainer.appendChild(suggestion);
                 });
-        }
+                autocompleteContainer.style.display = 'block';
+            });
+    }
 
-        // Initialize any TomSelect elements present (if not removed for datalist)
-        document.querySelectorAll('.tomselect-allowed-groups').forEach(function (element) {
-            new TomSelect(element, {
-                plugins: {
-                    remove_button: {
-                        title: 'Remove this item'
-                    }
-                },
-                dropdownParent: 'body',
-                create: false,
-                onInitialize: function () {
-                    this.wrapper.classList.add('form-select-sm', 'rounded-pill');
-                    this.control.classList.add('rounded-pill');
-                    this.dropdown.classList.add('shadow', 'rounded-3');
-                }
+    addressField.addEventListener('input', function() {
+        fetchAddressSuggestions(addressField.value, cityField.value, stateField.value);
+    });
+
+    // Hide suggestions when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!addressField.contains(e.target) && !autocompleteContainer.contains(e.target)) {
+            autocompleteContainer.style.display = 'none';
+        }
+    });
+
+    if (useLocationBtn) {
+        useLocationBtn.addEventListener('click', function() {
+            if (!navigator.geolocation) {
+                alert('Geolocation is not supported by your browser.');
+                return;
+            }
+            useLocationBtn.disabled = true;
+            useLocationBtn.innerHTML = '<i class="material-icons spin">my_location</i>';
+            navigator.geolocation.getCurrentPosition(function(position) {
+                var lat = position.coords.latitude;
+                var lon = position.coords.longitude;
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.address) {
+                            if (cityField) cityField.value = data.address.city || data.address.town || data.address.village || '';
+                            if (stateField) stateField.value = data.address.state || '';
+                        }
+                        useLocationBtn.disabled = false;
+                        useLocationBtn.innerHTML = '<i class="material-icons">my_location</i>';
+                    })
+                    .catch(function() {
+                        alert('Could not retrieve address from location.');
+                        useLocationBtn.disabled = false;
+                        useLocationBtn.innerHTML = '<i class="material-icons">my_location</i>';
+                    });
+            }, function(error) {
+                alert('Unable to retrieve your location. Please allow location access.');
+                useLocationBtn.disabled = false;
+                useLocationBtn.innerHTML = '<i class="material-icons">my_location</i>';
             });
         });
-
-        const rsvpSelect = document.querySelector('#{{ form.status.id_for_label }}');
-        const confirmedCount = {{ confirmed_rsvps_count|default:0 }};
-        const capacity = {% if event.capacity is not None %}{{ event.capacity }}{% else %}null{% endif %};
-        const waitlistEnabled = {% if event.waitlist_enabled %}true{% else %}false{% endif %};
-        function updateRSVPOptions() {
-            const options = rsvpSelect.options;
-            for (let i = 0; i < options.length; i++) {
-                const option = options[i];
-                if (option.value === 'confirmed') {
-                    // Disable confirmed option if event is full
-                    option.disabled = capacity !== null && confirmedCount >= capacity;
-                } else if (option.value === 'waitlisted') {
-                    // Enable waitlisted only if event is full and waitlist is enabled
-                    option.disabled = !(waitlistEnabled && capacity !== null && confirmedCount >= capacity);
-                }
-            }
-        }
-        updateRSVPOptions();
-    });
+    }
+});
 </script>
+<style>
+.material-icons.spin {
+    animation: spin 1s linear infinite;
+}
+.autocomplete-container {
+    font-size: 1rem;
+}
+.autocomplete-suggestion.active, .autocomplete-suggestion:hover {
+    background: #f5f5f5;
+}
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}
+</style>
 {% endblock %}
