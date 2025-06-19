@@ -1635,6 +1635,11 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="{% url 'event_calendar' %}">
+                            <i class="material-icons">calendar_month</i> Calendar
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{% url 'groups_list' %}">
                             <i class="material-icons">groups</i> Groups
                         </a>
@@ -1686,6 +1691,11 @@
             class="nav-link home-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
             <i class="material-icons">home</i>
             <span>Home</span>
+        </a>
+        <a href="{% url 'event_calendar' %}"
+            class="nav-link {% if request.resolver_match.url_name == 'event_calendar' %}active{% endif %}">
+            <i class="material-icons">calendar_month</i>
+            <span>Calendar</span>
         </a>
         <a href="{% url 'groups_list' %}"
             class="nav-link {% if request.resolver_match.url_name == 'groups_list' %}active{% endif %}">

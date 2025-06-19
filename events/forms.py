@@ -145,7 +145,7 @@ class RSVPForm(forms.ModelForm):
         base_choices = [choice for choice in list(self.fields['status'].choices) if choice[0] != '']
         
         # Add a custom empty choice at the beginning
-        choices = [('', '--- Select RSVP Status ---')] + base_choices
+        choices = base_choices
         
         # If event doesn't have waitlist enabled or capacity set, remove waitlisted option
         if self.event and (not self.event.waitlist_enabled or self.event.capacity is None):

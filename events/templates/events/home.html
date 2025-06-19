@@ -413,20 +413,21 @@
         }
 
         // Function to fetch and update events
-        async function fetchEvents(sort, order, adult) {
+        async function fetchEvents(sort, order, adult, page = 1) {
             loadingSpinner.style.display = 'block'; // Show spinner
             try {
                 const url = new URL(window.location.href);
                 url.searchParams.set('sort', sort);
                 url.searchParams.set('order', order);
                 url.searchParams.set('adult', adult);
+                url.searchParams.set('page', page);
 
                 // Update current sort and order for future interactions
                 currentSort = sort;
                 currentOrder = order;
 
                 // Update URL in browser history
-                history.pushState({ sort: sort, order: order, adult: adult }, '', url.toString());
+                history.pushState({ sort: sort, order: order, adult: adult, page: page }, '', url.toString());
 
                 const response = await fetch(url.toString());
                 const html = await response.text();
@@ -442,6 +443,22 @@
                 eventsGrid.innerHTML = newEventsGridHtml;
                 eventsList.innerHTML = newEventsListHtml;
                 loadingSpinner.innerHTML = newLoadingSpinnerHtml;
+
+                // Update pagination if it exists
+                const newPagination = doc.querySelector('.modern-pagination-container');
+                const existingPagination = document.querySelector('.modern-pagination-container');
+                if (newPagination && existingPagination) {
+                    existingPagination.innerHTML = newPagination.innerHTML;
+                } else if (newPagination && !existingPagination) {
+                    // Add pagination if it didn't exist before
+                    const eventsContainer = document.querySelector('.modern-card-body');
+                    if (eventsContainer) {
+                        eventsContainer.appendChild(newPagination.cloneNode(true));
+                    }
+                } else if (!newPagination && existingPagination) {
+                    // Remove pagination if it no longer exists
+                    existingPagination.remove();
+                }
 
                 // Apply current view preference after update
                 if (isListView) {
@@ -469,11 +486,34 @@
                     orderIcon.textContent = currentOrder === 'desc' ? 'arrow_downward' : 'arrow_upward';
                 }
 
+                // Re-attach pagination event listeners
+                attachPaginationListeners();
+
             } catch (error) {
                 console.error('Error fetching events:', error);
             } finally {
                 loadingSpinner.style.display = 'none'; // Hide spinner
             }
+        }
+
+        // Function to attach pagination event listeners
+        function attachPaginationListeners() {
+            const paginationLinks = document.querySelectorAll('.modern-page-link');
+            paginationLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const href = this.getAttribute('href');
+                    if (href) {
+                        const url = new URL(href, window.location.origin);
+                        const page = url.searchParams.get('page') || 1;
+                        const sort = url.searchParams.get('sort') || currentSort;
+                        const order = url.searchParams.get('order') || currentOrder;
+                        const adult = url.searchParams.get('adult') || (showAdult ? 'true' : 'false');
+                        
+                        fetchEvents(sort, order, adult === 'true', page);
+                    }
+                });
+            });
         }
 
         // Event Listeners for Sorting Buttons
@@ -483,7 +523,7 @@
                 const sortType = this.dataset.sort;
                 // If clicking the currently active sort button, reverse the order
                 const newOrder = (sortType === currentSort) ? (currentOrder === 'asc' ? 'desc' : 'asc') : currentOrder;
-                fetchEvents(sortType, newOrder, showAdult);
+                fetchEvents(sortType, newOrder, showAdult, 1); // Reset to page 1 when sorting
             });
         });
 
@@ -493,7 +533,7 @@
             const newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
             currentOrder = newOrder; // Update currentOrder immediately
             this.dataset.order = newOrder; // Update dataset.order immediately
-            fetchEvents(currentSort, newOrder, showAdult);
+            fetchEvents(currentSort, newOrder, showAdult, 1); // Reset to page 1 when changing order
         });
 
         // Toggle Adult Events
@@ -509,7 +549,7 @@
                 toggleAdult.classList.remove('gradient-danger-btn');
                 toggleAdult.classList.add('gradient-sfw-btn');
             }
-            fetchEvents(currentSort, currentOrder, showAdult);
+            fetchEvents(currentSort, currentOrder, showAdult, 1); // Reset to page 1 when filtering
         }
 
         toggleAdult.addEventListener('click', toggleAdultEvents);
@@ -564,13 +604,17 @@
                 currentSort = state.sort || 'date';
                 currentOrder = state.order || 'asc';
                 showAdult = state.adult !== false; // Default to true
-                fetchEvents(currentSort, currentOrder, showAdult); // Re-fetch with historical state
+                const page = state.page || 1;
+                fetchEvents(currentSort, currentOrder, showAdult, page); // Re-fetch with historical state
             } else {
                 // If no state, it might be the initial page load or a navigation outside our pushState calls
                 // Reload page or re-fetch with default parameters to ensure consistency
-                fetchEvents('date', 'asc', true);
+                fetchEvents('date', 'asc', true, 1);
             }
         });
+
+        // Initial pagination listener attachment
+        attachPaginationListeners();
     });
 </script>
 {% endblock %}

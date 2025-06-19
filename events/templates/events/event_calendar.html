@@ -1,0 +1,319 @@
+{% extends 'events/base.html' %}
+{% load calendar_extras %}
+{% block title %}Event Calendar - {{ month_name }} {{ year }} - FURsvp{% endblock %}
+
+{% block content %}
+<style>
+    .calendar-container {
+        background: #f8fafc;
+        border-radius: 1.5rem;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.10);
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .calendar-header {
+        background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%);
+        color: #fff;
+        border-radius: 1.25rem;
+        padding: 1.5rem 2rem;
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .calendar-nav {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .calendar-nav-btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: #fff;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+
+    .calendar-nav-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        color: #fff;
+        transform: scale(1.1);
+    }
+
+    .calendar-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 1px;
+        background: #e2e8f0;
+        border-radius: 1rem;
+        overflow: hidden;
+    }
+
+    .calendar-day-header {
+        background: linear-gradient(90deg, #64748b 0%, #94a3b8 100%);
+        color: #fff;
+        padding: 1rem;
+        text-align: center;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .calendar-day {
+        background: #fff;
+        min-height: 120px;
+        padding: 0.5rem;
+        position: relative;
+        transition: all 0.2s;
+    }
+
+    .calendar-day:hover {
+        background: #f1f5f9;
+        transform: scale(1.02);
+    }
+
+    .calendar-day.today {
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        border: 2px solid #3b82f6;
+    }
+
+    .calendar-day.other-month {
+        background: #f8fafc;
+        color: #94a3b8;
+    }
+
+    .day-number {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+        color: #1e293b;
+    }
+
+    .calendar-day.other-month .day-number {
+        color: #94a3b8;
+    }
+
+    .event-dot {
+        width: 8px;
+        height: 8px;
+        background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%);
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 0.25rem;
+    }
+
+    .event-item {
+        font-size: 0.75rem;
+        margin-bottom: 0.25rem;
+        padding: 0.25rem 0.5rem;
+        background: linear-gradient(90deg, #dbeafe 0%, #bfdbfe 100%);
+        border-radius: 0.5rem;
+        border-left: 3px solid #3b82f6;
+        transition: all 0.2s;
+        cursor: pointer;
+        text-decoration: none;
+        color: #1e40af;
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .event-item:hover {
+        background: linear-gradient(90deg, #bfdbfe 0%, #93c5fd 100%);
+        transform: translateX(2px);
+        color: #1e3a8a;
+        text-decoration: none;
+    }
+
+    .event-item.mature {
+        background: linear-gradient(90deg, #fef3c7 0%, #fde68a 100%);
+        border-left-color: #f59e0b;
+        color: #92400e;
+    }
+
+    .event-item.mature:hover {
+        background: linear-gradient(90deg, #fde68a 0%, #fbbf24 100%);
+        color: #78350f;
+    }
+
+    .event-item.adult {
+        background: linear-gradient(90deg, #fecaca 0%, #fca5a5 100%);
+        border-left-color: #ef4444;
+        color: #991b1b;
+    }
+
+    .event-item.adult:hover {
+        background: linear-gradient(90deg, #fca5a5 0%, #f87171 100%);
+        color: #7f1d1d;
+    }
+
+    .event-count {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%);
+        color: #fff;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .no-events {
+        color: #94a3b8;
+        font-style: italic;
+        font-size: 0.8rem;
+        text-align: center;
+        margin-top: 1rem;
+    }
+
+    .calendar-legend {
+        background: #fff;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .legend-color {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        margin-right: 0.5rem;
+    }
+
+    .legend-color.all-ages {
+        background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%);
+    }
+
+    .legend-color.adult {
+        background: linear-gradient(90deg, #fef3c7 0%, #fde68a 100%);
+    }
+
+    .legend-color.mature {
+        background: linear-gradient(90deg, #fecaca 0%, #fca5a5 100%);
+    }
+
+    @media (max-width: 768px) {
+        .calendar-container {
+            padding: 1rem;
+        }
+        
+        .calendar-header {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+        
+        .calendar-day {
+            min-height: 80px;
+            padding: 0.25rem;
+        }
+        
+        .event-item {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.4rem;
+        }
+    }
+</style>
+
+<div class="container">
+    <div class="calendar-container">
+        <div class="calendar-header">
+            <div class="calendar-nav">
+                <a href="?year={{ prev_year }}&month={{ prev_month }}" class="calendar-nav-btn">
+                    <i class="material-icons">chevron_left</i>
+                </a>
+                <h1 class="calendar-title">{{ month_name }} {{ year }}</h1>
+                <a href="?year={{ next_year }}&month={{ next_month }}" class="calendar-nav-btn">
+                    <i class="material-icons">chevron_right</i>
+                </a>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{% url 'home' %}" class="btn btn-outline-light">
+                    <i class="material-icons me-1">list</i> List View
+                </a>
+                <a href="{% url 'event_calendar' %}" class="btn btn-light">
+                    <i class="material-icons me-1">today</i> Today
+                </a>
+            </div>
+        </div>
+
+        <div class="calendar-grid">
+            <!-- Day headers -->
+            <div class="calendar-day-header">Sun</div>
+            <div class="calendar-day-header">Mon</div>
+            <div class="calendar-day-header">Tue</div>
+            <div class="calendar-day-header">Wed</div>
+            <div class="calendar-day-header">Thu</div>
+            <div class="calendar-day-header">Fri</div>
+            <div class="calendar-day-header">Sat</div>
+
+            <!-- Calendar days -->
+            {% for week in calendar %}
+                {% for day in week %}
+                    {% if day == 0 %}
+                        <div class="calendar-day other-month"></div>
+                    {% else %}
+                        {% with date_key=year|stringformat:"04d"|add:"-"|add:month|stringformat:"02d"|add:"-"|add:day|stringformat:"02d" %}
+                        <div class="calendar-day {% if year == today.year and month == today.month and day == today.day %}today{% endif %}">
+                            <div class="day-number">{{ day }}</div>
+                            {% if events_by_date|get_item:date_key %}
+                                <div class="event-count">{{ events_by_date|get_item:date_key|length }}</div>
+                                {% for event in events_by_date|get_item:date_key %}
+                                    <a href="{% url 'event_detail' event.id %}" 
+                                       class="event-item {% if event.age_restriction == 'adult' %}adult{% elif event.age_restriction == 'mature' %}mature{% endif %}">
+                                        {{ event.title|truncatechars:20 }}
+                                    </a>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        {% endwith %}
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+        </div>
+
+        <div class="calendar-legend">
+            <h5 class="mb-3">Legend</h5>
+            <div class="legend-item">
+                <div class="legend-color all-ages"></div>
+                <span>All Ages</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color adult"></div>
+                <span>18+ (Adult)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color mature"></div>
+                <span>21+ (Mature)</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

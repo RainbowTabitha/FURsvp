@@ -16,6 +16,7 @@ import time
 from events.forms import GroupRoleForm
 from django.db.models import Q
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+import calendar
 
 # Create your views here.
 
@@ -46,6 +47,12 @@ def home(request):
     sort_by = request.GET.get('sort', 'date')  # Default sort by date
     sort_order = request.GET.get('order', 'asc')  # Default ascending order
     filter_adult = request.GET.get('adult', 'true') # Default to show adult events
+    view_type = request.GET.get('view', 'list')  # Default to list view
+    page = request.GET.get('page', 1)  # Default to first page
+    
+    # Get year and month for calendar vieww
+    year = int(request.GET.get('year', timezone.now().year))
+    month = int(request.GET.get('month', timezone.now().month))
     
     # Base queryset - filter out events that have already passed and cancelled events
     now = timezone.now()
@@ -62,6 +69,16 @@ def home(request):
         confirmed_count=models.Count('rsvps', filter=models.Q(rsvps__status='confirmed'))
     )
     
+    # Add user's RSVP information if user is authenticated
+    if request.user.is_authenticated:
+        events = events.prefetch_related(
+            models.Prefetch(
+                'rsvps',
+                queryset=RSVP.objects.filter(user=request.user),
+                to_attr='user_rsvp_list'
+            )
+        )
+    
     # Apply sorting
     if sort_by == 'date':
         events = events.order_by('date' if sort_order == 'asc' else '-date')
@@ -74,11 +91,72 @@ def home(request):
             'rsvp_count' if sort_order == 'asc' else '-rsvp_count'
         )
     
+    # Pagination
+    paginator = Paginator(events, 12)  # Show 12 events per page
+    try:
+        events_page = paginator.page(page)
+    except PageNotAnInteger:
+        events_page = paginator.page(1)
+    except EmptyPage:
+        events_page = paginator.page(paginator.num_pages)
+    
+    # Calendar data
+    if view_type == 'calendar':
+        # Create calendar object
+        cal = calendar.monthcalendar(year, month)
+        month_name = calendar.month_name[month]
+        
+        # Get events for this month
+        start_date = datetime(year, month, 1).date()
+        if month == 12:
+            end_date = datetime(year + 1, 1, 1).date()
+        else:
+            end_date = datetime(year, month + 1, 1).date()
+        
+        month_events = events.filter(
+            date__gte=start_date,
+            date__lt=end_date
+        ).order_by('date', 'start_time')
+        
+        # Group events by date
+        events_by_date = {}
+        for event in month_events:
+            date_key = event.date.strftime('%Y-%m-%d')
+            if date_key not in events_by_date:
+                events_by_date[date_key] = []
+            events_by_date[date_key].append(event)
+        
+        # Navigation
+        prev_month = month - 1 if month > 1 else 12
+        prev_year = year if month > 1 else year - 1
+        next_month = month + 1 if month < 12 else 1
+        next_year = year if month < 12 else year + 1
+        
+        calendar_data = {
+            'calendar': cal,
+            'month_name': month_name,
+            'year': year,
+            'month': month,
+            'events_by_date': events_by_date,
+            'prev_month': prev_month,
+            'prev_year': prev_year,
+            'next_month': next_month,
+            'next_year': next_year,
+            'today': timezone.now().date(),
+        }
+    else:
+        calendar_data = None
+    
     context = {
-        'events': events,
+        'events': events_page,
         'current_sort': sort_by,
         'current_order': sort_order,
-        'filter_adult': filter_adult, # Pass the filter status to the template
+        'filter_adult': filter_adult,
+        'view_type': view_type,
+        'calendar_data': calendar_data,
+        'paginator': paginator,
+        'page_obj': events_page,
+        'today': timezone.now().date(),
     }
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -667,3 +745,56 @@ def groups_list(request):
         'groups': paginated_groups,
     }
     return render(request, 'events/groups_list.html', context)
+
+def event_calendar(request):
+    # Get year and month from request, default to current
+    year = int(request.GET.get('year', timezone.now().year))
+    month = int(request.GET.get('month', timezone.now().month))
+    
+    # Create calendar object
+    cal = calendar.monthcalendar(year, month)
+    
+    # Get month name
+    month_name = calendar.month_name[month]
+    
+    # Get events for this month
+    start_date = datetime(year, month, 1).date()
+    if month == 12:
+        end_date = datetime(year + 1, 1, 1).date()
+    else:
+        end_date = datetime(year, month + 1, 1).date()
+    
+    events = Event.objects.filter(
+        date__gte=start_date,
+        date__lt=end_date,
+        status='active'
+    ).order_by('date', 'start_time')
+    
+    # Group events by date
+    events_by_date = {}
+    for event in events:
+        date_key = event.date.strftime('%Y-%m-%d')
+        if date_key not in events_by_date:
+            events_by_date[date_key] = []
+        events_by_date[date_key].append(event)
+    
+    # Navigation
+    prev_month = month - 1 if month > 1 else 12
+    prev_year = year if month > 1 else year - 1
+    next_month = month + 1 if month < 12 else 1
+    next_year = year if month < 12 else year + 1
+    
+    context = {
+        'calendar': cal,
+        'month_name': month_name,
+        'year': year,
+        'month': month,
+        'events_by_date': events_by_date,
+        'prev_month': prev_month,
+        'prev_year': prev_year,
+        'next_month': next_month,
+        'next_year': next_year,
+        'today': timezone.now().date(),
+    }
+    
+    return render(request, 'events/event_calendar.html', context)

@@ -269,30 +269,6 @@
         padding: 0.25rem;
     }
 
-    .gradient-alert-cancelled {
-        background: linear-gradient(90deg, #ffbaba 0%, #ff5e62 100%);
-        color: #7f1d1d;
-        border-radius: 1.1rem;
-        box-shadow: 0 2px 12px rgba(239, 68, 68, 0.08);
-        border-left: 6px solid #ef4444;
-        padding: 1.1rem 1.7rem;
-        display: flex;
-        align-items: center;
-        font-size: 1.18rem;
-        font-weight: 600;
-        margin-bottom: 1.5rem;
-        margin-top: 1.2rem;
-    }
-
-    .gradient-alert-cancelled .material-icons {
-        font-size: 2rem;
-        margin-right: 1.1rem;
-        color: #ef4444;
-        background: #ffeaea;
-        border-radius: 50%;
-        padding: 0.25rem;
-    }
-
     .gradient-alert-waitlist {
         background: linear-gradient(90deg, #fdfb72 0%, #f8d800 100%);
         color: #92400e;
@@ -313,6 +289,54 @@
         margin-right: 1.1rem;
         color: #f59e42;
         background: #fffbe6;
+        border-radius: 50%;
+        padding: 0.25rem;
+    }
+
+    .gradient-alert-maybe {
+        background: linear-gradient(90deg, #fdfb72 0%, #f8d800 100%);
+        color: #92400e;
+        border-radius: 1.1rem;
+        box-shadow: 0 2px 12px rgba(251, 191, 36, 0.08);
+        border-left: 6px solid #f59e42;
+        padding: 1.1rem 1.7rem;
+        display: flex;
+        align-items: center;
+        font-size: 1.18rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        margin-top: 1.2rem;
+    }
+
+    .gradient-alert-maybe .material-icons {
+        font-size: 2rem;
+        margin-right: 1.1rem;
+        color: #f59e42;
+        background: #fffbe6;
+        border-radius: 50%;
+        padding: 0.25rem;
+    }
+
+    .gradient-alert-notgoing {
+        background: linear-gradient(90deg, #ffbaba 0%, #ff5e62 100%);
+        color: #7f1d1d;
+        border-radius: 1.1rem;
+        box-shadow: 0 2px 12px rgba(239, 68, 68, 0.08);
+        border-left: 6px solid #ef4444;
+        padding: 1.1rem 1.7rem;
+        display: flex;
+        align-items: center;
+        font-size: 1.18rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        margin-top: 1.2rem;
+    }
+
+    .gradient-alert-notgoing .material-icons {
+        font-size: 2rem;
+        margin-right: 1.1rem;
+        color: #ef4444;
+        background: #ffeaea;
         border-radius: 50%;
         padding: 0.25rem;
     }
@@ -551,16 +575,28 @@
         <i class="material-icons">event_busy</i>
         This event has been cancelled.
     </div>
-    {% elif user_rsvp and user_rsvp.status == 'waitlisted' and event.status != 'cancelled' %}
-    <div class="gradient-alert-waitlist">
-        <i class="material-icons">hourglass_empty</i>
-        You are currently Waitlisted for this event. You will be notified if a spot opens up.
-    </div>
-    {% elif user_rsvp and user_rsvp.status == 'confirmed' and event.status != 'cancelled' %}
-    <div class="gradient-alert-success">
-        <i class="material-icons">check_circle</i>
-        You are currently Confirmed for this event.
-    </div>
+    {% elif user_rsvp and event.status != 'cancelled' %}
+        {% if user_rsvp.status == 'confirmed' %}
+        <div class="gradient-alert-success">
+            <i class="material-icons">check_circle</i>
+            You are currently Confirmed for this event.
+        </div>
+        {% elif user_rsvp.status == 'maybe' %}
+        <div class="gradient-alert-maybe">
+            <i class="material-icons">help</i>
+            You are currently a Maybe for this event.
+        </div>
+        {% elif user_rsvp.status == 'not_attending' %}
+        <div class="gradient-alert-notgoing">
+            <i class="material-icons">cancel</i>
+            You are Not Going to this event.
+        </div>
+        {% elif user_rsvp.status == 'waitlisted' %}
+        <div class="gradient-alert-waitlist">
+            <i class="material-icons">hourglass_empty</i>
+            You are currently Waitlisted for this event. You will be notified if a spot opens up.
+        </div>
+        {% endif %}
     {% endif %}
     <!-- Breadcrumbs in separate section -->
     <div class="row mb-3">
@@ -880,6 +916,7 @@
                             <i class="material-icons">event_available</i> Status:
                         </label>
                         <select name="status" id="{{ form.status.id_for_label }}" class="modern-select">
+                            <option value="" disabled {% if not form.status.value %}selected{% endif %}>--- Select RSVP Status ---</option>
                             {% with choices=form.status.field.choices %}
                                 {# Confirmed first #}
                                 {% for option in choices %}
@@ -1090,8 +1127,8 @@
         });
 
         const rsvpSelect = document.querySelector('#{{ form.status.id_for_label }}');
-        const confirmedCount = {{ confirmed_rsvps_count|default:'0' }};
-        const capacity = {{ event.capacity|default:'null' }};
+        const confirmedCount = {{ confirmed_rsvps_count|default:0 }};
+        const capacity = {% if event.capacity is not None %}{{ event.capacity }}{% else %}null{% endif %};
         const waitlistEnabled = {% if event.waitlist_enabled %}true{% else %}false{% endif %};
         function updateRSVPOptions() {
             const options = rsvpSelect.options;

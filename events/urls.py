@@ -4,6 +4,7 @@ from .views import PostListView, PostDetailView, manage_group_leadership
 
 urlpatterns = [
     path('', views.home, name='home'),
+    path('calendar/', views.event_calendar, name='event_calendar'),
     path('event/<int:event_id>/', views.event_detail, name='event_detail'),
     path('event/<int:event_id>/edit/', views.edit_event, name='edit_event'),
     path('event/<int:event_id>/uncancel/', views.uncancel_event, name='uncancel_event'),
