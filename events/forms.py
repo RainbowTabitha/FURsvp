@@ -66,6 +66,7 @@ class EventForm(forms.ModelForm):
         if instance:
             self.fields['eula_agreement'].required = False
             self.fields['state_agreement'].required = False
+            self.initial['attendee_list_public'] = True
         else:
             self.fields['eula_agreement'].required = True
             self.fields['state_agreement'].required = True
