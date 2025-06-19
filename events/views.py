@@ -766,13 +766,11 @@ def event_calendar(request):
         end_date = datetime(year + 1, 1, 1).date()
     else:
         end_date = datetime(year, month + 1, 1).date()
-    print("START DATE:", start_date, "END DATE:", end_date)
     events = Event.objects.filter(
         date__gte=start_date,
         date__lt=end_date,
         status='active'
     ).order_by('date', 'start_time')
-    print("EVENTS FOR CALENDAR:", list(events))
     # Group events by date
     events_by_date = {}
     for event in events:
@@ -780,7 +778,6 @@ def event_calendar(request):
         if date_key not in events_by_date:
             events_by_date[date_key] = []
         events_by_date[date_key].append(event)
-    print("EVENTS BY DATE:", {k: [str(e) for e in v] for k, v in events_by_date.items()})
     # Navigation
     prev_month = month - 1 if month > 1 else 12
     prev_year = year if month > 1 else year - 1
