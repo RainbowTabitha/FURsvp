@@ -70,7 +70,7 @@
         padding: 1rem;
         text-align: center;
         font-weight: 600;
-        font-size: 0.9rem;
+        font-size: 1.1rem;
     }
 
     .calendar-day {
@@ -96,11 +96,28 @@
         color: #94a3b8;
     }
 
+    .calendar-day.has-events {
+        background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+        box-shadow: 0 2px 8px rgba(6,182,212,0.10);
+        border: 2px solid #06b6d4;
+        position: relative;
+    }
+    .calendar-day.has-events .event-dot-prominent {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        display: block;
+        margin: 0 auto 0.3rem auto;
+    }
+
     .day-number {
-        font-weight: 600;
-        font-size: 1.1rem;
-        margin-bottom: 0.5rem;
+        font-weight: 700;
+        font-size: 1.2rem;
         color: #1e293b;
+        position: absolute;
+        top: 0.5rem;
+        left: 0.7rem;
+        z-index: 2;
     }
 
     .calendar-day.other-month .day-number {
@@ -165,17 +182,8 @@
     .event-count {
         position: absolute;
         top: 0.5rem;
-        right: 0.5rem;
-        background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%);
-        color: #fff;
-        border-radius: 50%;
-        width: 20px;
-        height: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.7rem;
-        font-weight: 600;
+        right: 0.7rem;
+        z-index: 2;
     }
 
     .no-events {
@@ -219,6 +227,11 @@
         background: linear-gradient(90deg, #fecaca 0%, #fca5a5 100%);
     }
 
+    .calendar-day.has-events .event-dot-prominent {
+        margin-top: 2.2rem;
+        margin-bottom: 0.2rem;
+    }
+
     @media (max-width: 768px) {
         .calendar-container {
             padding: 1rem;
@@ -255,9 +268,6 @@
                 </a>
             </div>
             <div class="d-flex gap-2">
-                <a href="{% url 'home' %}" class="btn btn-outline-light">
-                    <i class="material-icons me-1">list</i> List View
-                </a>
                 <a href="{% url 'event_calendar' %}" class="btn btn-light">
                     <i class="material-icons me-1">today</i> Today
                 </a>
@@ -266,13 +276,13 @@
 
         <div class="calendar-grid">
             <!-- Day headers -->
-            <div class="calendar-day-header">Sun</div>
-            <div class="calendar-day-header">Mon</div>
-            <div class="calendar-day-header">Tue</div>
-            <div class="calendar-day-header">Wed</div>
-            <div class="calendar-day-header">Thu</div>
-            <div class="calendar-day-header">Fri</div>
-            <div class="calendar-day-header">Sat</div>
+            <div class="calendar-day-header">Sunday</div>
+            <div class="calendar-day-header">Monday</div>
+            <div class="calendar-day-header">Tuesday</div>
+            <div class="calendar-day-header">Wednesday</div>
+            <div class="calendar-day-header">Thursday</div>
+            <div class="calendar-day-header">Friday</div>
+            <div class="calendar-day-header">Saturday</div>
 
             <!-- Calendar days -->
             {% for week in calendar %}
@@ -280,11 +290,12 @@
                     {% if day == 0 %}
                         <div class="calendar-day other-month"></div>
                     {% else %}
-                        {% with date_key=year|stringformat:"04d"|add:"-"|add:month|stringformat:"02d"|add:"-"|add:day|stringformat:"02d" %}
-                        <div class="calendar-day {% if year == today.year and month == today.month and day == today.day %}today{% endif %}">
+                        {% make_date_key year month day as date_key %}
+                        <div class="calendar-day {% if year == today.year and month == today.month and day == today.day %}today{% endif %}{% if events_by_date|get_item:date_key|length > 0 %} has-events{% endif %}"
+                             {% if events_by_date|get_item:date_key|length > 0 %}data-date="{{ date_key }}"{% endif %}>
                             <div class="day-number">{{ day }}</div>
-                            {% if events_by_date|get_item:date_key %}
-                                <div class="event-count">{{ events_by_date|get_item:date_key|length }}</div>
+                            {% if events_by_date|get_item:date_key|length > 0 %}
+                                <span class="event-dot-prominent"></span>
                                 {% for event in events_by_date|get_item:date_key %}
                                     <a href="{% url 'event_detail' event.id %}" 
                                        class="event-item {% if event.age_restriction == 'adult' %}adult{% elif event.age_restriction == 'mature' %}mature{% endif %}">
@@ -293,7 +304,6 @@
                                 {% endfor %}
                             {% endif %}
                         </div>
-                        {% endwith %}
                     {% endif %}
                 {% endfor %}
             {% endfor %}
@@ -316,4 +326,34 @@
         </div>
     </div>
 </div>
+
+<!-- Modal for day events -->
+<div class="modal fade" id="eventDayModal" tabindex="-1" aria-labelledby="eventDayModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="eventDayModalLabel">Events on <span id="modalEventDate"></span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="modalEventList">
+        <!-- Events will be loaded here -->
+      </div>
+    </div>
+  </div>
+</div>
+<script id="eventsByDateData" type="application/json">
+{
+{% for date_key, events in events_by_date.items %}
+  "{{ date_key }}": [
+    {% for event in events %}
+      {
+        "title": "{{ event.title|escapejs }}",
+        "url": "{% url 'event_detail' event.id %}",
+        "age": "{{ event.age_restriction }}"
+      }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ]{% if not forloop.last %},{% endif %}
+{% endfor %}
+}
+</script>
 {% endblock %} 

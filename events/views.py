@@ -102,6 +102,8 @@ def home(request):
     
     # Calendar data
     if view_type == 'calendar':
+        # Set first weekday to Sunday
+        calendar.setfirstweekday(calendar.SUNDAY)
         # Create calendar object
         cal = calendar.monthcalendar(year, month)
         month_name = calendar.month_name[month]
@@ -132,6 +134,8 @@ def home(request):
         next_month = month + 1 if month < 12 else 1
         next_year = year if month < 12 else year + 1
         
+        eastern = pytz.timezone('America/New_York')
+        today = timezone.now().astimezone(eastern).date()
         calendar_data = {
             'calendar': cal,
             'month_name': month_name,
@@ -142,7 +146,7 @@ def home(request):
             'prev_year': prev_year,
             'next_month': next_month,
             'next_year': next_year,
-            'today': timezone.now().date(),
+            'today': today,
         }
     else:
         calendar_data = None
@@ -750,26 +754,25 @@ def event_calendar(request):
     # Get year and month from request, default to current
     year = int(request.GET.get('year', timezone.now().year))
     month = int(request.GET.get('month', timezone.now().month))
-    
+    # Set first weekday to Sunday
+    calendar.setfirstweekday(calendar.SUNDAY)
     # Create calendar object
     cal = calendar.monthcalendar(year, month)
-    
     # Get month name
     month_name = calendar.month_name[month]
-    
     # Get events for this month
     start_date = datetime(year, month, 1).date()
     if month == 12:
         end_date = datetime(year + 1, 1, 1).date()
     else:
         end_date = datetime(year, month + 1, 1).date()
-    
+    print("START DATE:", start_date, "END DATE:", end_date)
     events = Event.objects.filter(
         date__gte=start_date,
         date__lt=end_date,
         status='active'
     ).order_by('date', 'start_time')
-    
+    print("EVENTS FOR CALENDAR:", list(events))
     # Group events by date
     events_by_date = {}
     for event in events:
@@ -777,13 +780,15 @@ def event_calendar(request):
         if date_key not in events_by_date:
             events_by_date[date_key] = []
         events_by_date[date_key].append(event)
-    
+    print("EVENTS BY DATE:", {k: [str(e) for e in v] for k, v in events_by_date.items()})
     # Navigation
     prev_month = month - 1 if month > 1 else 12
     prev_year = year if month > 1 else year - 1
     next_month = month + 1 if month < 12 else 1
     next_year = year if month < 12 else year + 1
     
+    eastern = pytz.timezone('America/New_York')
+    today = timezone.now().astimezone(eastern).date()
     context = {
         'calendar': cal,
         'month_name': month_name,
@@ -794,7 +799,7 @@ def event_calendar(request):
         'prev_year': prev_year,
         'next_month': next_month,
         'next_year': next_year,
-        'today': timezone.now().date(),
+        'today': today,
     }
     
     return render(request, 'events/event_calendar.html', context)
