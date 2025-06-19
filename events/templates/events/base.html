@@ -1692,16 +1692,6 @@
             <i class="material-icons">home</i>
             <span>Home</span>
         </a>
-        <a href="{% url 'event_calendar' %}"
-            class="nav-link {% if request.resolver_match.url_name == 'event_calendar' %}active{% endif %}">
-            <i class="material-icons">calendar_month</i>
-            <span>Calendar</span>
-        </a>
-        <a href="{% url 'groups_list' %}"
-            class="nav-link {% if request.resolver_match.url_name == 'groups_list' %}active{% endif %}">
-            <i class="material-icons">groups</i>
-            <span>Groups</span>
-        </a>
         {% if user.is_authenticated %}
         <a href="{% url 'notifications_page' %}" class="nav-link" id="mobileNotificationsLink">
             <i class="material-icons" id="mobileNotificationsIcon">notifications</i>
