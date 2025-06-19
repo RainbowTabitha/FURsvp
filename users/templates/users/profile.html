@@ -47,6 +47,11 @@
                                 <i class="material-icons align-middle me-1">lock</i> Change Password
                             </button>
                         </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="delete-tab" data-bs-toggle="tab" data-bs-target="#delete" type="button" role="tab" aria-controls="delete" aria-selected="false">
+                                <i class="material-icons align-middle me-1 text-danger">delete_forever</i> Delete Account
+                            </button>
+                        </li>
                     </ul>
 
                     <div class="tab-content" id="profileTabsContent">
@@ -141,6 +146,24 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="tab-pane fade" id="delete" role="tabpanel" aria-labelledby="delete-tab">
+                            <div class="card shadow-sm mb-4">
+                                <div class="card-body">
+                                    <h2 class="h4 mb-4 text-danger">
+                                        <i class="material-icons align-middle me-2">delete_forever</i>
+                                        Delete Account
+                                    </h2>
+                                    <p>
+                                        <strong>Warning:</strong> Deleting your account is permanent and cannot be undone. All your data will be lost.
+                                    </p>
+                                    <div class="mt-4">
+                                        <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                                            <i class="material-icons me-2">delete_forever</i> Delete My Account
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -187,6 +210,63 @@
             </div>
         </div>
     </div>
+</div>
+
+<!-- Math Equation Modal (Step 1) -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="delete-account-form" onsubmit="return false;">
+        {% csrf_token %}
+        <input type="hidden" name="delete_account" value="1">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteAccountModalLabel">
+            <i class="material-icons text-danger me-2">warning</i>
+            You’re logging out fur-ever? 
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Don’t forget to boop snoots on your way out! 🥲</p>
+          <p>This action cannot be undone. To confirm, please solve the following equation:</p>
+          <div class="mb-3">
+            <span id="math-equation" class="fw-bold"></span>
+            <input type="number" class="form-control mt-2" id="math-answer" placeholder="Your answer" required>
+            <div class="invalid-feedback" id="math-feedback">Incorrect answer. Please try again.</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" id="open-final-delete-btn" disabled>Delete My Account</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Final Confirmation Modal (Step 2) -->
+<div class="modal fade" id="finalDeleteModal" tabindex="-1" aria-labelledby="finalDeleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" id="final-delete-form">
+        {% csrf_token %}
+        <input type="hidden" name="delete_account" value="1">
+        <div class="modal-header">
+          <h5 class="modal-title" id="finalDeleteModalLabel">
+            <i class="material-icons text-danger me-2">delete_forever</i>
+            Last chance! Really delete your account?
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-4">This is your last chance to back out. If you proceed, your account will be deleted forever.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">I want my mommy...</button>
+          <button type="submit" class="btn btn-danger" id="final-delete-btn">Delete for real</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 
 <style>
@@ -355,6 +435,53 @@ document.addEventListener('DOMContentLoaded', function() {
             tabBtn.addEventListener('shown.bs.tab', function(e) {
                 localStorage.setItem('lastProfileTab', e.target.getAttribute('data-bs-target'));
             });
+        });
+    }
+});
+
+// Math equation logic for delete modal
+function generateEquation() {
+    const a = Math.floor(Math.random() * 10) + 1;
+    const b = Math.floor(Math.random() * 10) + 1;
+    const op = Math.random() > 0.5 ? '+' : '-';
+    const answer = op === '+' ? a + b : a - b;
+    return { text: `${a} ${op} ${b} = ?`, answer };
+}
+let equation = null;
+document.addEventListener('DOMContentLoaded', function() {
+    var deleteModal = document.getElementById('deleteAccountModal');
+    var equationSpan = document.getElementById('math-equation');
+    var answerInput = document.getElementById('math-answer');
+    var openFinalBtn = document.getElementById('open-final-delete-btn');
+    var feedback = document.getElementById('math-feedback');
+    var finalDeleteModal = document.getElementById('finalDeleteModal');
+    var finalDeleteForm = document.getElementById('final-delete-form');
+    if (deleteModal) {
+        deleteModal.addEventListener('show.bs.modal', function() {
+            equation = generateEquation();
+            equationSpan.textContent = equation.text;
+            answerInput.value = '';
+            openFinalBtn.disabled = true;
+            feedback.style.display = 'none';
+        });
+        answerInput.addEventListener('input', function() {
+            if (parseInt(answerInput.value, 10) === equation.answer) {
+                openFinalBtn.disabled = false;
+                feedback.style.display = 'none';
+            } else {
+                openFinalBtn.disabled = true;
+                if (answerInput.value !== '') {
+                    feedback.style.display = 'block';
+                } else {
+                    feedback.style.display = 'none';
+                }
+            }
+        });
+        openFinalBtn.addEventListener('click', function() {
+            var bsModal = bootstrap.Modal.getInstance(deleteModal);
+            bsModal.hide();
+            var finalModal = new bootstrap.Modal(finalDeleteModal);
+            finalModal.show();
         });
     }
 });

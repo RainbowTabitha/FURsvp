@@ -140,6 +140,12 @@ def profile(request):
             else:
                 messages.error(request, 'You are not authorized to delete assistant assignments.', extra_tags='admin_notification')
 
+    elif 'delete_account' in request.POST:
+        user = request.user
+        user.delete()
+        messages.success(request, "Fur-well! May your tail always be fluffy and your conventions drama-free! 🐾")
+        return redirect('home')
+
     context = {
         'user_events': user_events,
         'profile': request.user.profile,
