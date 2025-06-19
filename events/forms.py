@@ -23,6 +23,12 @@ class EventForm(forms.ModelForm):
         widget=forms.Select(attrs={'class': 'form-select'})
     )
     description = forms.CharField(widget=TinyMCE(attrs={'cols': 80, 'rows': 30}))
+    capacity = forms.IntegerField(
+        required=False,
+        label='Capacity',
+        min_value=0,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Leave blank for no limit'})
+    )
     
     # Add new checkbox fields
     eula_agreement = forms.BooleanField(
@@ -41,7 +47,7 @@ class EventForm(forms.ModelForm):
         fields = [
             'title', 'group', 'date', 'start_time', 'end_time',
             'address', 'city', 'state', 'age_restriction', 'description',
-            'capacity', 'waitlist_enabled', 'attendee_list_public'
+            'waitlist_enabled', 'attendee_list_public'
         ]
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Event Title'}),
@@ -53,7 +59,6 @@ class EventForm(forms.ModelForm):
             'city': forms.TextInput(attrs={'class': 'form-control'}),
             'state': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control'}),
-            'capacity': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Leave blank for no limit'}),
             'waitlist_enabled': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'attendee_list_public': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }

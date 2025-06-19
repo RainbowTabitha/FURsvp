@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from datetime import time
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator
 from django.urls import reverse
 from django.utils.html import strip_tags
 import re
@@ -76,7 +77,12 @@ class Event(models.Model):
         default='none',
         help_text="Age restriction for the event"
     )
-    capacity = models.IntegerField(null=True, blank=True, help_text="Maximum number of attendees. Leave blank for no limit.")
+    capacity = models.IntegerField(
+        null=True, 
+        blank=True, 
+        help_text="Maximum number of attendees. Leave blank for no limit.",
+        validators=[MinValueValidator(0)]
+    )
     waitlist_enabled = models.BooleanField(default=False, help_text="Enable a waitlist if capacity is reached.")
     attendee_list_public = models.BooleanField(
         default=True,
