@@ -71,11 +71,12 @@ def home(request):
     
     # Add user's RSVP information if user is authenticated
     if request.user.is_authenticated:
-        events = events.prefetch_related(
-            models.Prefetch(
-                'rsvps',
-                queryset=RSVP.objects.filter(user=request.user),
-                to_attr='user_rsvp_list'
+        events = events.annotate(
+            user_rsvp_status=models.Subquery(
+                RSVP.objects.filter(
+                    event=models.OuterRef('pk'),
+                    user=request.user
+                ).values('status')[:1]
             )
         )
     
