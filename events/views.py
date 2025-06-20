@@ -404,7 +404,9 @@ def event_detail(request, event_id):
         form = RSVPForm(instance=user_rsvp, event=event)
     
     # Add EventForm for the edit event modal
-    event_form = EventForm(instance=event, user=request.user)
+    event_form = None
+    if request.user.is_authenticated:
+        event_form = EventForm(instance=event, user=request.user)
 
     # Get ban status for each RSVP user (for initial rendering)
     # And filter by status for display
