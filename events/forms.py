@@ -78,9 +78,13 @@ class EventForm(forms.ModelForm):
         instance = kwargs.get('instance') or getattr(self, 'instance', None)
         super().__init__(*args, **kwargs)
 
-        if instance and instance.pk:
+        date_widget = self.fields['date'].widget
+        time_widget = self.fields['start_time'].widget
+
+        if not self.is_bound and instance and instance.pk:
             if instance.date:
-                self.initial['date'] = instance.date.strftime('%m/%d/%Y')
+                # Format for Flatpickr: m/d/Y (no leading zeros)
+                self.initial['date'] = f"{instance.date.month}/{instance.date.day}/{instance.date.year}"
             if instance.start_time:
                 self.initial['start_time'] = instance.start_time.strftime('%I:%M %p')
             if instance.end_time:
