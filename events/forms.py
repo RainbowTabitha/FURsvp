@@ -41,13 +41,23 @@ class EventForm(forms.ModelForm):
         label='I confirm that this event is located in the same state as this FURsvp instance',
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
     )
+    start_time = forms.TimeField(
+        required=False,
+        widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
+        input_formats=['%H:%M', '%I:%M %p', '%I:%M%p']
+    )
+    end_time = forms.TimeField(
+        required=False,
+        widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
+        input_formats=['%H:%M', '%I:%M %p', '%I:%M%p']
+    )
     
     class Meta:
         model = Event
         fields = [
             'title', 'group', 'date', 'start_time', 'end_time',
             'address', 'city', 'state', 'age_restriction', 'description',
-            'waitlist_enabled', 'attendee_list_public'
+            'capacity', 'waitlist_enabled', 'attendee_list_public'
         ]
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Event Title'}),

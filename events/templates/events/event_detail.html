@@ -1269,7 +1269,7 @@
                                     </h5>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="filter: invert(1); opacity: 0.8;"></button>
                                 </div>
-                                <form method="post" action="{% url 'event_detail' event.id %}" enctype="multipart/form-data" id="editEventForm">
+                                <form method="post" action="{% url 'edit_event' event.id %}" enctype="multipart/form-data" id="editEventForm">
                                     {% csrf_token %}
                                     <div class="modal-body" style="padding: 2rem 2.5rem 1.5rem 2.5rem; background: #f8fafc;">
                                         <!-- Title Field -->
@@ -1279,6 +1279,9 @@
                                                 Event Title
                                             </label>
                                             {% render_field event_form.title class="form-control" %}
+                                            {% if event_form.title.errors %}
+                                                <div class="invalid-feedback d-block">{{ event_form.title.errors }}</div>
+                                            {% endif %}
                                         </div>
                                         <!-- Group Field -->
                                         <div class="mb-4 event-form-group">
@@ -1287,6 +1290,9 @@
                                                 Group
                                             </label>
                                             {% render_field event_form.group class="form-control" %}
+                                            {% if event_form.group.errors %}
+                                                <div class="invalid-feedback d-block">{{ event_form.group.errors }}</div>
+                                            {% endif %}
                                         </div>
                                         <!-- Date/Time Fields -->
                                         <div class="mb-4 event-form-group">
@@ -1297,14 +1303,23 @@
                                             <div class="row">
                                                 <div class="col-md-4 mb-2 mb-md-0">
                                                     {% render_field event_form.date class="form-control flatpickr" placeholder="MM/DD/YYYY" %}
+                                                    {% if event_form.date.errors %}
+                                                        <div class="invalid-feedback d-block">{{ event_form.date.errors }}</div>
+                                                    {% endif %}
                                                 </div>
                                                 <div class="col-md-4 mb-2 mb-md-0">
                                                     <label for="{{ event_form.start_time.id_for_label }}" class="form-label visually-hidden">Start Time</label>
                                                     {% render_field event_form.start_time class="form-control flatpickr" placeholder="Start time" %}
+                                                    {% if event_form.start_time.errors %}
+                                                        <div class="invalid-feedback d-block">{{ event_form.start_time.errors }}</div>
+                                                    {% endif %}
                                                 </div>
                                                 <div class="col-md-4">
                                                     <label for="{{ event_form.end_time.id_for_label }}" class="form-label visually-hidden">End Time</label>
                                                     {% render_field event_form.end_time class="form-control flatpickr" placeholder="End time" %}
+                                                    {% if event_form.end_time.errors %}
+                                                        <div class="invalid-feedback d-block">{{ event_form.end_time.errors }}</div>
+                                                    {% endif %}
                                                 </div>
                                             </div>
                                         </div>
@@ -1320,6 +1335,9 @@
                                                     <i class="material-icons" style="font-size: 1.2em;">my_location</i>
                                                 </button>
                                             </div>
+                                            {% if event_form.address.errors %}
+                                                <div class="invalid-feedback d-block">{{ event_form.address.errors }}</div>
+                                            {% endif %}
                                             <div class="row mt-3">
                                                 <div class="col-md-6 mb-3 mb-md-0">
                                                     <label for="{{ event_form.city.id_for_label }}" class="form-label d-flex align-items-center">
@@ -1327,6 +1345,9 @@
                                                         City
                                                     </label>
                                                     {% render_field event_form.city class="form-control" placeholder="Enter city" %}
+                                                    {% if event_form.city.errors %}
+                                                        <div class="invalid-feedback d-block">{{ event_form.city.errors }}</div>
+                                                    {% endif %}
                                                 </div>
                                                 <div class="col-md-6">
                                                     <label for="{{ event_form.state.id_for_label }}" class="form-label d-flex align-items-center">
@@ -1334,6 +1355,9 @@
                                                         State
                                                     </label>
                                                     {% render_field event_form.state class="form-control" placeholder="Enter state" %}
+                                                    {% if event_form.state.errors %}
+                                                        <div class="invalid-feedback d-block">{{ event_form.state.errors }}</div>
+                                                    {% endif %}
                                                 </div>
                                             </div>
                                         </div>
@@ -1344,6 +1368,9 @@
                                                 Age Restriction
                                             </label>
                                             {% render_field event_form.age_restriction class="custom-select-modern" %}
+                                            {% if event_form.age_restriction.errors %}
+                                                <div class="invalid-feedback d-block">{{ event_form.age_restriction.errors }}</div>
+                                            {% endif %}
                                         </div>
                                         <!-- Event Capacity Field -->
                                         <div class="mb-4 event-form-group">
@@ -1352,6 +1379,9 @@
                                                 Event Capacity
                                             </label>
                                             {% render_field event_form.capacity class="form-control" %}
+                                            {% if event_form.capacity.errors %}
+                                                <div class="invalid-feedback d-block">{{ event_form.capacity.errors }}</div>
+                                            {% endif %}
                                         </div>
                                         <!-- Waitlist Enabled Field -->
                                         <div class="mb-4 event-form-group">
@@ -1362,6 +1392,9 @@
                                                     Enable Waitlist
                                                 </label>
                                             </div>
+                                            {% if event_form.waitlist_enabled.errors %}
+                                                <div class="invalid-feedback d-block">{{ event_form.waitlist_enabled.errors }}</div>
+                                            {% endif %}
                                         </div>
                                         <!-- Attendee List Public Field -->
                                         <div class="mb-4 event-form-group">
@@ -1372,6 +1405,9 @@
                                                     Make attendee list public
                                                 </label>
                                             </div>
+                                            {% if event_form.attendee_list_public.errors %}
+                                                <div class="invalid-feedback d-block">{{ event_form.attendee_list_public.errors }}</div>
+                                            {% endif %}
                                         </div>
                                         <!-- Description Field -->
                                         <div class="mb-4 event-form-group">
@@ -1380,6 +1416,9 @@
                                                 Description
                                             </label>
                                             {% render_field event_form.description class="form-control" %}
+                                            {% if event_form.description.errors %}
+                                                <div class="invalid-feedback d-block">{{ event_form.description.errors }}</div>
+                                            {% endif %}
                                         </div>
                                     </div>
                                     <div class="modal-footer" style="background: #f3f4f6; border-top: none; padding: 1.5rem 2.5rem;">
@@ -1440,7 +1479,7 @@
                                 if (editor) {
                                     editor.destroy();
                                 }
-                                setTimeout(initTinyMCEEventModal, 500);
+                                setTimeout(initTinyMCEEventModal, 750);
                             });
                         }
                     });
@@ -1535,19 +1574,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Two-column layout for Attendees and Contact Info -->
-    <div class="row">
-        <!-- Attendee List -->
-        <div class="col-lg-8">
-            <!-- This column is now empty as Contact Info is in a modal -->
-        </div>
-
-        <!-- REMOVED: Contact Info Card - now in modal -->
-        <div class="col-lg-4">
-            <!-- This column is now empty as Contact Info is in a modal -->
-        </div>
-    </div>
 </div>
 
 <!-- Contact Info Modal -->
@@ -1590,6 +1616,28 @@
 
 {% block extra_js %}
 {{ block.super }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-open the edit modal if ?edit=1 is in the URL or if there are edit errors
+    function getUrlParam(name) {
+        const url = new URL(window.location.href);
+        return url.searchParams.get(name);
+    }
+    var shouldOpenEditModal = false;
+    {% if edit_event_errors %}
+        shouldOpenEditModal = true;
+    {% endif %}
+    if (getUrlParam('edit') === '1') {
+        shouldOpenEditModal = true;
+    }
+    if (shouldOpenEditModal) {
+        var editEventModal = new bootstrap.Modal(document.getElementById('editEventModal'));
+        setTimeout(function() {
+            editEventModal.show();
+        }, 400);
+    }
+});
+</script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     var useLocationBtn = document.getElementById('useLocationBtn');

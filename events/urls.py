@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import PostListView, PostDetailView, manage_group_leadership
+from .views import manage_group_leadership
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -14,8 +14,6 @@ urlpatterns = [
     path('faq/', views.faq, name='faq'),
     path('eula/', views.eula, name='eula'),
     path('privacy/', views.privacy, name='privacy'),
-    path('posts/', PostListView.as_view(), name='post_list'),
-    path('posts/<int:pk>/', PostDetailView.as_view(), name='post_detail'),
     path('group/<int:group_id>/leadership/', manage_group_leadership, name='manage_group_leadership'),
     path('group/', views.groups_list, name='groups_list'),
 ] 

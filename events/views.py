@@ -17,6 +17,7 @@ from events.forms import GroupRoleForm
 from django.db.models import Q
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 import calendar
+from django.forms.utils import ErrorList
 
 # Create your views here.
 
@@ -406,8 +407,21 @@ def event_detail(request, event_id):
     
     # Add EventForm for the edit event modal
     event_form = None
+    edit_event_errors = None
+    edit_event_post = None
     if request.user.is_authenticated:
-        event_form = EventForm(instance=event, user=request.user)
+        # Check for edit errors in session (from failed edit_event POST)
+        edit_event_errors = request.session.pop('edit_event_errors', None)
+        edit_event_post = request.session.pop('edit_event_post', None)
+        if edit_event_post:
+            event_form = EventForm(edit_event_post, instance=event, user=request.user)
+            # Manually assign errors to the form, converting lists back to ErrorList
+            if edit_event_errors:
+                event_form._errors = {}
+                for k, v in edit_event_errors.items():
+                    event_form._errors[k] = ErrorList(v)
+        else:
+            event_form = EventForm(instance=event, user=request.user)
 
     # Get ban status for each RSVP user (for initial rendering)
     # And filter by status for display
@@ -507,6 +521,8 @@ def event_detail(request, event_id):
         'show_rsvp_form': show_rsvp_form,
         'can_cancel_event': can_cancel_event,
         'can_view_attendee_list': can_view_attendee_list,
+        'edit_event_errors': edit_event_errors,
+        'edit_event_post': edit_event_post,
     }
     return render(request, 'events/event_detail.html', context)
 
@@ -552,13 +568,10 @@ def edit_event(request, event_id):
         form = EventForm(request.POST, instance=event, user=request.user)
         if form.is_valid():
             event = form.save(commit=False)
-            # Organizer is set only if it's a new event or being set for the first time.
-            # For existing events, it should not change unless specifically handled.
             if not event.organizer:
                 event.organizer = request.user
             event.save()
             create_notification(request.user, f'Event for {event.title} updated successfully!', link=event.get_absolute_url())
-            # Notify all RSVP'd users (except the editor)
             for rsvp in event.rsvps.select_related('user').all():
                 if rsvp.user and rsvp.user != request.user:
                     create_notification(
@@ -567,9 +580,15 @@ def edit_event(request, event_id):
                         link=event.get_absolute_url()
                     )
             return redirect('event_detail', event_id=event.id)
+        else:
+            # Store form errors and POST data in session, converting ErrorList to plain lists
+            plain_errors = {k: list(map(str, v)) for k, v in form.errors.items()}
+            request.session['edit_event_errors'] = plain_errors
+            request.session['edit_event_post'] = request.POST
+            return redirect(f'{event.get_absolute_url()}?edit=1')
     else:
-        form = EventForm(instance=event, user=request.user)
-    return render(request, 'events/event_edit.html', {'form': form, 'event': event})
+        # Redirect GET requests to event detail with ?edit=1 to trigger modal
+        return redirect(f'{event.get_absolute_url()}?edit=1')
 
 @login_required
 def uncancel_event(request, event_id):
@@ -713,17 +732,6 @@ def group_detail(request, group_id):
     }
     
     return render(request, 'events/group_detail.html', context)
-
-class PostListView(ListView):
-    model = Post
-    template_name = 'events/post_list.html'
-    context_object_name = 'posts'
-    ordering = ['-published']
-
-class PostDetailView(DetailView):
-    model = Post
-    template_name = 'events/post_detail.html'
-    context_object_name = 'post'
 
 @login_required
 def manage_group_leadership(request, group_id):
