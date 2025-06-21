@@ -285,7 +285,7 @@
                             <h3 class="h5 mb-3 text-secondary">
                                 <i class="material-icons me-2">gavel</i> Apply Site-wide Ban
                             </h3>
-                            <form method="post" id="sitewideBanForm" action="{% url 'ban_user' %}">
+                            <form method="post" id="sitewideBanForm">
                                 {% csrf_token %}
                                 <input type="hidden" name="action" value="ban">
                                 <input type="hidden" name="ban_type" value="sitewide">
@@ -503,7 +503,8 @@
                 formData.append('ban_type', banType);
 
                 try {
-                    const response = await fetch('{% url "ban_user" %}', {
+                    const url = `/users/${userId}/ban/`;
+                    const response = await fetch(url, {
                         method: 'POST',
                         headers: {
                             'X-CSRFToken': getCookie('csrftoken')
@@ -629,7 +630,8 @@
                 }
 
                 try {
-                    const response = await fetch(this.action, {
+                    const url = `/users/${selectedUserId}/ban/`;
+                    const response = await fetch(url, {
                         method: 'POST',
                         headers: {
                             'X-CSRFToken': getCookie('csrftoken')

@@ -381,7 +381,8 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.append('ban_type', 'group'); // Specify ban type as 'group'
 
             try {
-                const response = await fetch('{% url "ban_user" %}', {
+                const url = `/users/${userId}/ban/`;
+                const response = await fetch(url, {
                     method: 'POST',
                     headers: {
                         'X-CSRFToken': getCookie('csrftoken')
