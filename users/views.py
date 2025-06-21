@@ -17,6 +17,10 @@ from django.core.serializers.json import DjangoJSONEncoder
 from .utils import create_notification
 from django.contrib.auth import get_user_model
 from urllib.parse import urlparse
+import base64
+from django.core.files.base import ContentFile
+from PIL import Image
+import io
 
 # Create your views here.
 
@@ -60,13 +64,45 @@ def profile(request):
 
     if request.method == 'POST':
         if 'submit_pfp_changes' in request.POST: # Handle profile picture upload
-            base64_image = request.POST.get('profile_picture_base64')
-            if base64_image:  # Update with new image
-                request.user.profile.profile_picture_base64 = base64_image
-                create_notification(request.user, 'Your profile picture has been updated.', link='/accounts/profile/')
+            base64_image_string = request.POST.get('profile_picture_base64')
+
+            # --- Security Validation ---
+            if base64_image_string:
+                try:
+                    # 1. Check file size
+                    if len(base64_image_string) > 8 * 1024 * 1024: # Approx 1.5MB limit
+                        messages.error(request, "Image file size is too large. Please upload an image under 1MB.")
+                        return redirect('profile')
+
+                    # 2. Decode and check file type
+                    format, imgstr = base64_image_string.split(';base64,') 
+                    ext = format.split('/')[-1]
+                    if ext.lower() not in ['jpeg', 'jpg', 'png', 'gif']:
+                        messages.error(request, "Invalid file type. Please upload a JPG, PNG, or GIF image.")
+                        return redirect('profile')
+                    
+                    # 3. Verify it's a valid image and resanitize it
+                    image_data = base64.b64decode(imgstr)
+                    image_stream = io.BytesIO(image_data)
+                    pil_image = Image.open(image_stream)
+                    pil_image.verify() # Verify that it is, in fact, an image
+
+                    # Re-save to a clean buffer to strip any malicious metadata
+                    sanitized_buffer = io.BytesIO()
+                    pil_image.save(sanitized_buffer, format=pil_image.format)
+                    sanitized_base64_string = base64.b64encode(sanitized_buffer.getvalue()).decode('utf-8')
+                    request.user.profile.profile_picture_base64 = f"data:image/{ext};base64,{sanitized_base64_string}"
+                    
+                    create_notification(request.user, 'Your profile picture has been updated.', link='/users/profile/')
+                
+                except Exception as e:
+                    messages.error(request, "There was an error processing your image. It may be corrupt or an unsupported format.")
+                    return redirect('profile')
+
             else:  # Clear existing image
                 request.user.profile.profile_picture_base64 = None
-                create_notification(request.user, 'Your profile picture has been removed.', link='/accounts/profile/')
+                create_notification(request.user, 'Your profile picture has been removed.', link='/users/profile/')
+            
             request.user.profile.save()
             return redirect('profile')
         
@@ -169,46 +205,30 @@ def profile(request):
     return render(request, 'users/profile.html', context)
 
 @login_required
+@require_POST
 def ban_user(request, user_id):
     target_user = get_object_or_404(get_user_model(), id=user_id)
     
-    # Try to get the event and group from the referer URL
-    referer = request.META.get('HTTP_REFERER')
-    if not referer:
-        messages.error(request, "Could not determine the event page.")
+    group_id = request.POST.get('group_id')
+    event_id = request.POST.get('event_id')
+
+    if not group_id or not event_id:
+        messages.error(request, "Missing group or event information.")
         return redirect('home')
 
-    try:
-        # Extract path from referer and resolve it to get the view and its args
-        path = urlparse(referer).path
-        from django.urls import resolve
-        match = resolve(path)
-        
-        if match.view_name == 'event_detail':
-            event_id = match.kwargs.get('event_id')
-            event = get_object_or_404(Event, id=event_id)
-            group = event.group
-        else:
-            group = None
-
-    except Exception:
-        group = None
-
-    if not group:
-        messages.error(request, "Could not determine the group to ban the user from.")
-        return redirect(referer)
-
+    group = get_object_or_404(Group, id=group_id)
+    
     # Permission check: User must be a leader or delegated assistant of the group
     is_group_leader = GroupRole.objects.filter(user=request.user, group=group).exists()
     is_delegated_assistant = GroupDelegation.objects.filter(delegated_user=request.user, group=group).exists()
 
     if not (request.user.is_superuser or is_group_leader or is_delegated_assistant):
         messages.error(request, "You do not have permission to ban users from this group.")
-        return redirect(referer)
+        return redirect('event_detail', event_id=event_id)
 
     if request.user == target_user:
         messages.error(request, "You cannot ban yourself.")
-        return redirect(referer)
+        return redirect('event_detail', event_id=event_id)
 
     # Create the ban
     BannedUser.objects.get_or_create(
@@ -218,7 +238,7 @@ def ban_user(request, user_id):
     )
 
     messages.success(request, f"{target_user.profile.get_display_name()} has been banned from {group.name}.")
-    return redirect(referer)
+    return redirect('event_detail', event_id=event_id)
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)

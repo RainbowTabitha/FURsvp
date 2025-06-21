@@ -145,24 +145,27 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 TINYMCE_DEFAULT_CONFIG = {
-    'height': 300,
+    'height': 360,
     'width': '100%',
     'menubar': False,
-    'plugins': 'advlist autolink lists image charmap anchor searchreplace visualblocks code insertdatetime table help wordcount textcolor backcolor',
-    'toolbar': 'bold italic strikethrough | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | image code | removeformat',
-    'content_style': 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; } img { max-width: 100%; height: auto; display: block; margin: 1em auto; } .tox-statusbar { display: none !important; }',
+    'plugins': 'autolink lists link image charmap print preview anchor',
+    'toolbar': 'undo redo | bold italic underline strikethrough | fontselect fontsizeselect formatselect | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist | forecolor backcolor removeformat | pagebreak | charmap emoticons | preview save print | insertfile image media template link anchor codesample | ltr rtl',
+    'content_style': 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; }',
     'branding': False,
     'promotion': False,
     'license_key': 'gpl',
-    'automatic_uploads': True,
-    'file_picker_types': 'image',
-    'images_reuse_filename': True,
-    'statusbar': False,
-    'resize': False,
-    'toolbar_mode': 'wrap',
+    'statusbar': True,
+    'resize': 'both',
+    'toolbar_mode': 'sliding',
     'toolbar_sticky': True,
-    'toolbar_sticky_offset': 0,
-    'document_base_url': '{{ request.scheme }}://{{ request.get_host }}/',
+    # Secure configuration
+    'valid_elements': 'p[style],strong,em,span[style],a[href|target=_blank],ul,ol,li,br,img[src|alt|width|height|style]',
+    'extended_valid_elements': 'img[class|src|border=0|alt|title|hspace|vspace|width|height|align|onmouseover|onmouseout|name]',
+    'forced_root_block': 'p',
+    'force_br_newlines': False,
+    'force_p_newlines': True,
+    'remove_script_host': True,
+    'convert_urls': False,
 }
 
 # Django-Q Cluster Configuration
