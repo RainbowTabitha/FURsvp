@@ -208,37 +208,61 @@ def profile(request):
 @require_POST
 def ban_user(request, user_id):
     target_user = get_object_or_404(get_user_model(), id=user_id)
-    
+    action = request.POST.get('action', 'ban')
+    ban_type = request.POST.get('ban_type')
     group_id = request.POST.get('group_id')
-    event_id = request.POST.get('event_id')
+    reason = request.POST.get('reason', '')
 
-    if not group_id or not event_id:
-        messages.error(request, "Missing group or event information.")
-        return redirect('home')
+    # --- Permission Checks ---
+    is_admin = request.user.is_superuser
+    is_group_leader = False
+    group = None
 
-    group = get_object_or_404(Group, id=group_id)
-    
-    # Permission check: User must be a leader or delegated assistant of the group
-    is_group_leader = GroupRole.objects.filter(user=request.user, group=group).exists()
-    is_delegated_assistant = GroupDelegation.objects.filter(delegated_user=request.user, group=group).exists()
+    if group_id:
+        try:
+            group = Group.objects.get(id=group_id)
+            is_group_leader = GroupRole.objects.filter(user=request.user, group=group).exists()
+        except Group.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Group not found.'}, status=404)
 
-    if not (request.user.is_superuser or is_group_leader or is_delegated_assistant):
-        messages.error(request, "You do not have permission to ban users from this group.")
-        return redirect('event_detail', event_id=event_id)
+    can_ban_sitewide = is_admin
+    can_ban_group = is_admin or is_group_leader
 
     if request.user == target_user:
-        messages.error(request, "You cannot ban yourself.")
-        return redirect('event_detail', event_id=event_id)
+        return JsonResponse({'status': 'error', 'message': 'You cannot ban yourself.'}, status=400)
 
-    # Create the ban
-    BannedUser.objects.get_or_create(
-        user=target_user,
-        group=group,
-        defaults={'banned_by': request.user, 'reason': 'Banned from the event page.'}
-    )
+    # --- Ban/Unban Logic ---
+    try:
+        if action == 'unban':
+            if ban_type == 'sitewide':
+                if not can_ban_sitewide:
+                    return JsonResponse({'status': 'error', 'message': 'Permission denied.'}, status=403)
+                BannedUser.objects.filter(user=target_user, group__isnull=True).delete()
+                return JsonResponse({'status': 'success', 'message': f'{target_user.profile.get_display_name()} has been unbanned from the site.'})
+            
+            elif ban_type == 'group' and group:
+                if not can_ban_group:
+                    return JsonResponse({'status': 'error', 'message': 'Permission denied.'}, status=403)
+                BannedUser.objects.filter(user=target_user, group=group).delete()
+                return JsonResponse({'status': 'success', 'message': f'{target_user.profile.get_display_name()} has been unbanned from {group.name}.'})
 
-    messages.success(request, f"{target_user.profile.get_display_name()} has been banned from {group.name}.")
-    return redirect('event_detail', event_id=event_id)
+        elif action == 'ban':
+            if ban_type == 'sitewide':
+                if not can_ban_sitewide:
+                    return JsonResponse({'status': 'error', 'message': 'Permission denied.'}, status=403)
+                BannedUser.objects.get_or_create(user=target_user, group=None, defaults={'banned_by': request.user, 'reason': reason or 'Banned from admin panel.'})
+                return JsonResponse({'status': 'success', 'message': f'{target_user.profile.get_display_name()} has been banned from the site.'})
+
+            elif ban_type == 'group' and group:
+                if not can_ban_group:
+                    return JsonResponse({'status': 'error', 'message': 'Permission denied.'}, status=403)
+                BannedUser.objects.get_or_create(user=target_user, group=group, defaults={'banned_by': request.user, 'reason': reason or 'Banned from group.'})
+                return JsonResponse({'status': 'success', 'message': f'{target_user.profile.get_display_name()} has been banned from {group.name}.'})
+
+        return JsonResponse({'status': 'error', 'message': 'Invalid request.'}, status=400)
+
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': f'An unexpected error occurred: {str(e)}'}, status=500)
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
