@@ -224,33 +224,34 @@
 </div>
 
 <!-- Math Equation Modal (Step 1) -->
-<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel"
-    aria-hidden="true">
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <div class="modal-content">
+        <div class="modal-content profile-glass-card p-3" style="box-shadow: 0 8px 32px rgba(239,68,68,0.18); border: 2px solid #fca5a5;">
             <form id="delete-account-form" onsubmit="return false;">
                 {% csrf_token %}
                 <input type="hidden" name="delete_account" value="1">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="deleteAccountModalLabel">
-                        <i class="material-icons text-danger me-2">warning</i>
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold text-danger d-flex align-items-center gap-2" id="deleteAccountModalLabel">
+                        <i class="material-icons text-danger" style="font-size: 2rem;">warning</i>
                         You're logging out fur-ever?
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <p>Don't forget to boop snoots on your way out! 🥲</p>
-                    <p>This action cannot be undone. To confirm, please solve the following equation:</p>
+                <div class="modal-body pt-2 pb-0">
+                    <p class="mb-2">Don't forget to boop snoots on your way out! 🥲</p>
+                    <div class="alert alert-danger mb-3" style="background: #fef2f2; color: #b91c1c; border: none;">
+                        <strong>This action cannot be undone.</strong> To confirm, please solve the following equation:
+                    </div>
                     <div class="mb-3">
-                        <span id="math-equation" class="fw-bold"></span>
-                        <input type="number" class="form-control mt-2" id="math-answer" placeholder="Your answer"
-                            required>
+                        <span id="math-equation" class="fw-bold fs-5"></span>
+                        <input type="number" class="form-control mt-2" id="math-answer" placeholder="Your answer" required style="background: #f8fafc; border-radius: 1em; border: 1.5px solid #fca5a5; font-size: 1.15rem;">
                         <div class="invalid-feedback" id="math-feedback">Incorrect answer. Please try again.</div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" id="open-final-delete-btn" disabled>Delete My
-                        Account</button>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="profile-save-btn" style="background: linear-gradient(90deg, #ef4444 0%, #fca5a5 100%); color: #fff; font-weight: 800; font-size: 1.15rem;" id="open-final-delete-btn" disabled>
+                        <i class="material-icons me-2">delete_forever</i> Delete My Account
+                    </button>
                 </div>
             </form>
         </div>
@@ -260,24 +261,27 @@
 <!-- Final Confirmation Modal (Step 2) -->
 <div class="modal fade" id="finalDeleteModal" tabindex="-1" aria-labelledby="finalDeleteModalLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <div class="modal-content">
+        <div class="modal-content profile-glass-card p-3" style="box-shadow: 0 8px 32px rgba(239,68,68,0.18); border: 2px solid #fca5a5;">
             <form method="post" id="final-delete-form">
                 {% csrf_token %}
                 <input type="hidden" name="delete_account" value="1">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="finalDeleteModalLabel">
-                        <i class="material-icons text-danger me-2">delete_forever</i>
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold text-danger d-flex align-items-center gap-2" id="finalDeleteModalLabel">
+                        <i class="material-icons text-danger" style="font-size: 2rem;">delete_forever</i>
                         Last chance! Really delete your account?
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <p class="mb-4">This is your last chance to back out. If you proceed, your account will be deleted
-                        forever.</p>
+                <div class="modal-body pt-2 pb-0">
+                    <div class="alert alert-danger mb-3" style="background: #fef2f2; color: #b91c1c; border: none;">
+                        <strong>This is your last chance to back out.</strong> If you proceed, your account will be deleted forever.
+                    </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">I want my mommy...</button>
-                    <button type="submit" class="btn btn-danger" id="final-delete-btn">Delete for real</button>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">I want my mommy...</button>
+                    <button type="submit" class="profile-save-btn" style="background: linear-gradient(90deg, #ef4444 0%, #fca5a5 100%); color: #fff; font-weight: 800; font-size: 1.15rem;" id="final-delete-btn">
+                        <i class="material-icons me-2">delete_forever</i> Delete for real
+                    </button>
                 </div>
             </form>
         </div>
@@ -380,7 +384,7 @@
     .profile-tabs .nav-link:focus,
     .profile-tabs .nav-link:hover {
         background: linear-gradient(90deg, #2563eb 0%, #06b6d4 100%);
-        color: #2563eb !important;
+        color: #fff !important;
         box-shadow: 0 6px 24px rgba(59, 130, 246, 0.18);
         transform: translateY(-3px) scale(1.06);
         font-weight: 800;
