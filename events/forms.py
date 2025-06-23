@@ -73,9 +73,9 @@ class EventForm(forms.ModelForm):
             'waitlist_enabled': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'attendee_list_public': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'enable_rsvp_questions': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'question1_text': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'RSVP Question 1'}),
-            'question2_text': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'RSVP Question 2'}),
-            'question3_text': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'RSVP Question 3'}),
+            'question1_text': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'RSVP Question 1'}),
+            'question2_text': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'RSVP Question 2'}),
+            'question3_text': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'RSVP Question 3'}),
         }
 
     def __init__(self, *args, **kwargs):
