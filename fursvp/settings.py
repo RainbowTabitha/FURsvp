@@ -168,6 +168,8 @@ TINYMCE_DEFAULT_CONFIG = {
     'convert_urls': False,
 }
 
+LOGIN_REDIRECT_URL = '/'
+
 # Django-Q Cluster Configuration
 Q_CLUSTER = {
     'name': 'DjangORM',
