@@ -308,6 +308,37 @@
         font-size: 1.2rem;
         margin-right: 0.3rem;
     }
+}
+
+/* Dark mode improvements for event list partial */
+.dark-mode .event-card-modern {
+    background: #23272f !important;
+    color: #f3f4f6 !important;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+    border: 1.5px solid #374151 !important;
+}
+
+.dark-mode .event-title {
+    color: #60a5fa !important;
+}
+.dark-mode .event-meta, .dark-mode .event-details {
+    color: #a1a1aa !important;
+}
+.dark-mode .rsvp-badge-modern {
+    background: linear-gradient(90deg, #2563eb 0%, #06b6d4 100%) !important;
+    color: #fff !important;
+}
+.dark-mode .gradient-badge-18 {
+    background: linear-gradient(90deg, #fbbf24 0%, #f59e42 100%) !important;
+    color: #92400e !important;
+}
+.dark-mode .gradient-badge-21 {
+    background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%) !important;
+    color: #fff !important;
+}
+.dark-mode .event-list-chevron {
+    color: #60a5fa !important;
+}
 </style>
 <div class="row" id="eventsGrid" style="display: flex;">
     {% for event in events %}
