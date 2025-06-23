@@ -250,7 +250,7 @@ def event_detail(request, event_id):
                             link=event.get_absolute_url()
                         )
 
-    if request.method == 'POST' and request.user.is_authenticated and not event_has_passed:
+    if request.method == 'POST' and request.user.is_authenticated:
         # Prevent banned users from RSVPing
         if is_banned_by_organizer or is_banned_from_group:
             messages.error(request, 'You are banned from RSVPing to events by this organizer or group.', extra_tags='admin_notification')
