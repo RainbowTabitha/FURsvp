@@ -285,13 +285,19 @@
 
         .unread-notifications-badge {
             position: absolute;
-            top: -5px;
-            right: -5px;
-            background-color: #dc3545;
-            color: white;
-            border: 2px solid white;
-            font-size: 0.75rem;
-            padding: .35em .65em;
+            top: -7px;
+            right: -7px;
+            background: linear-gradient(135deg, #dc3545 0%, #ff6f6f 100%);
+            color: #fff;
+            border: 2px solid #fff;
+            font-size: 1rem;
+            font-weight: 700;
+            padding: .32em .7em;
+            border-radius: 2em;
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.13);
+            z-index: 2;
+            min-width: 1.7em;
+            text-align: center;
         }
 
         .notification-item {
@@ -1102,153 +1108,94 @@
         .user-actions {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 1.2rem;
         }
 
         .notification-container {
             position: relative;
         }
 
-        .notification-bell-icon {
-            background-color: #f8f9fa;
-            color: #198754 !important;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-            width: 48px;
-            height: 48px;
+        .notification-bell-icon, .user-profile-icon, .logout-btn {
+            background: linear-gradient(135deg, #e0e7ff 0%, #f0f9ff 100%);
+            color: #223b7b !important;
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.10);
+            width: 54px;
+            height: 54px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
-            transition: all 0.3s ease;
-            font-size: 24px;
-            position: relative;
-            border: 2px solid transparent;
-            text-decoration: none;
-        }
-
-        .modern-topnav {
-            background: linear-gradient(90deg, #b4d8fa 0%, #a7c7f9 100%);
-            box-shadow: 0 2px 12px rgba(59, 130, 246, 0.07);
-            padding: 1.1rem 0 1.1rem 0;
-            display: flex;
-            justify-content: center;
-            gap: 2.5rem;
-            border-bottom-left-radius: 1.5rem;
-            border-bottom-right-radius: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .modern-topnav-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5em;
-            font-size: 1.13rem;
-            font-weight: 600;
-            color: #223b7b;
-            background: none;
-            border: none;
-            border-radius: 2em;
-            padding: 0.6em 1.4em;
-            transition: background 0.18s, color 0.18s, box-shadow 0.18s, transform 0.12s;
-            text-decoration: none;
-            outline: none;
-        }
-
-        .modern-topnav-link:hover,
-        .modern-topnav-link.active {
-            background: linear-gradient(90deg, #2563eb 0%, #6366f1 100%);
-            color: #fff;
-            box-shadow: 0 4px 18px rgba(59, 130, 246, 0.13);
-            transform: translateY(-2px) scale(1.04);
-            text-decoration: none;
-        }
-
-        .modern-topnav-link .material-icons {
-            font-size: 1.25em;
-            vertical-align: middle;
-        }
-
-        @media (max-width: 768px) {
-            .modern-topnav {
-                flex-direction: column;
-                gap: 0.5rem;
-                padding: 0.7rem 0;
-                border-radius: 0;
-            }
-
-            .modern-topnav-link {
-                width: 100%;
-                justify-content: center;
-                padding: 0.7em 0;
-            }
-        }
-
-        .notification-bell-icon.has-unread {
-            background-color: var(--primary-color);
-            color: white !important;
-        }
-
-        .notification-bell-icon:hover {
-            background-color: #1a2f9a;
-            color: white !important;
-        }
-
-        .user-profile-container {
-            position: relative;
-        }
-
-        .user-profile-icon {
-            background-color: white;
-            color: var(--primary-color) !important;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            width: 48px;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: all 0.3s ease;
+            transition: box-shadow 0.18s, transform 0.18s, background 0.18s, color 0.18s;
             font-size: 28px;
+            position: relative;
+            border: 2px solid #e0e7ef;
             text-decoration: none;
-            border: 2px solid transparent;
         }
-
+        .notification-bell-icon.has-unread {
+            background: linear-gradient(135deg, #2563eb 0%, #6366f1 100%);
+            color: #fff !important;
+        }
+        .notification-bell-icon:hover, .user-profile-icon:hover, .logout-btn:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #6366f1 100%);
+            color: #fff !important;
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.18);
+            transform: scale(1.07);
+            border-color: #2563eb;
+        }
+        .notification-bell-icon:active, .user-profile-icon:active, .logout-btn:active {
+            transform: scale(0.97);
+        }
+        .notification-bell-icon .material-icons,
+        .user-profile-icon .material-icons,
+        .logout-btn .material-icons {
+            font-size: 2.1rem;
+        }
+        .unread-notifications-badge {
+            position: absolute;
+            top: -7px;
+            right: -7px;
+            background: linear-gradient(135deg, #dc3545 0%, #ff6f6f 100%);
+            color: #fff;
+            border: 2px solid #fff;
+            font-size: 1rem;
+            font-weight: 700;
+            padding: .32em .7em;
+            border-radius: 2em;
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.13);
+            z-index: 2;
+            min-width: 1.7em;
+            text-align: center;
+        }
+        .user-profile-icon {
+            background: linear-gradient(135deg, #fff 0%, #e0e7ff 100%);
+            color: #2563eb !important;
+        }
         .user-profile-icon:hover {
-            background-color: var(--primary-color);
-            color: white !important;
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            border-color: var(--primary-color);
+            background: linear-gradient(135deg, #2563eb 0%, #6366f1 100%);
+            color: #fff !important;
+            border-color: #2563eb;
         }
-
-        .logout-form {
-            margin: 0;
-        }
-
         .logout-btn {
-            background-color: white;
+            background: linear-gradient(135deg, #fff 0%, #ffe0e0 100%);
             color: #dc3545 !important;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            width: 48px;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: all 0.3s ease;
-            font-size: 24px;
-            border: 2px solid transparent;
-            cursor: pointer;
         }
-
         .logout-btn:hover {
-            background-color: #dc3545;
-            color: white !important;
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+            background: linear-gradient(135deg, #dc3545 0%, #ff6f6f 100%);
+            color: #fff !important;
             border-color: #dc3545;
         }
-
+        @media (max-width: 600px) {
+            .notification-bell-icon, .user-profile-icon, .logout-btn {
+                width: 44px;
+                height: 44px;
+                font-size: 22px;
+            }
+            .notification-bell-icon .material-icons,
+            .user-profile-icon .material-icons,
+            .logout-btn .material-icons {
+                font-size: 1.5rem;
+            }
+        }
         .auth-actions {
             display: flex;
             gap: 0.75rem;
