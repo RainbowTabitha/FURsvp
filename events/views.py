@@ -23,6 +23,8 @@ from django.forms.utils import ErrorList
 
 def get_telegram_feed(channel='', limit=5):
     url = f"https://rss.tabithahanegan.com/telegram/channel/{channel}"
+    if url == "https://rss.tabithahanegan.com/telegram/channel/None":
+        url = "" # hack to fix bug
     feed = feedparser.parse(url)
     entries = feed.entries[:limit]
     eastern = pytz.timezone('America/New_York')
