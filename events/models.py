@@ -88,6 +88,28 @@ class Event(models.Model):
         default=True,
         help_text="If false, only organizers can see the attendee list."
     )
+    enable_rsvp_questions = models.BooleanField(
+        default=False,
+        help_text="Enable optional RSVP questions for this event."
+    )
+    question1_text = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="Custom text for RSVP Question 1. Leave blank for default."
+    )
+    question2_text = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="Custom text for RSVP Question 2. Leave blank for default."
+    )
+    question3_text = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="Custom text for RSVP Question 3. Leave blank for default."
+    )
     
     def clean(self):
         if self.waitlist_enabled and self.capacity is None:
@@ -113,6 +135,11 @@ class RSVP(models.Model):
         ('maybe', 'Maybe'),
         ('not_attending', 'Not Attending')
     ], default='confirmed', null=True, blank=True)
+
+    # Organizer-only RSVP questions
+    question1 = models.CharField(max_length=255, null=True, blank=True, help_text="Organizer-only question 1 (visible only to event organizers)")
+    question2 = models.CharField(max_length=255, null=True, blank=True, help_text="Organizer-only question 2 (visible only to event organizers)")
+    question3 = models.CharField(max_length=255, null=True, blank=True, help_text="Organizer-only question 3 (visible only to event organizers)")
 
     class Meta:
         unique_together = ['event', 'user']

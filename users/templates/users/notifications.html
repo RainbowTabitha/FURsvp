@@ -91,7 +91,7 @@
 
                 document.getElementById('confirmClearNotificationsPage').addEventListener('click', async () => {
                     try {
-                        const response = await fetch('/accounts/notifications/purge_read/', {
+                        const response = await fetch('/users/notifications/purge_read/', {
                             method: 'POST',
                             headers: {
                                 'X-CSRFToken': getCookie('csrftoken'),
@@ -120,7 +120,7 @@
                 const notificationId = this.getAttribute('data-notification-id');
                 if (!this.classList.contains('fw-bold')) { // Only mark as read if it's unread
                     try {
-                        const response = await fetch('/accounts/notifications/mark_as_read/', {
+                        const response = await fetch('/users/notifications/mark_as_read/', {
                             method: 'POST',
                             headers: {
                                 'X-CSRFToken': getCookie('csrftoken'),

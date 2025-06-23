@@ -403,6 +403,7 @@ def event_detail(request, event_id):
         return JsonResponse(response_data, status=status_code)
 
     else:
+        # Always use instance=user_rsvp for the RSVP form if user_rsvp exists
         form = RSVPForm(instance=user_rsvp, event=event)
     
     # Add EventForm for the edit event modal
@@ -840,3 +841,24 @@ def event_calendar(request):
     }
     
     return render(request, 'events/event_calendar.html', context)
+
+@login_required
+def rsvp_answers(request, event_id, user_id):
+    from .models import RSVP, Event
+    event = Event.objects.get(pk=event_id)
+    is_organizer = (request.user == event.organizer) or request.user.is_superuser
+    if not is_organizer:
+        return JsonResponse({'error': 'Forbidden'}, status=403)
+    try:
+        rsvp = RSVP.objects.get(event=event, user_id=user_id)
+        data = {
+            'question1_text': event.question1_text,
+            'question1': rsvp.question1,
+            'question2_text': event.question2_text,
+            'question2': rsvp.question2,
+            'question3_text': event.question3_text,
+            'question3': rsvp.question3,
+        }
+        return JsonResponse(data)
+    except RSVP.DoesNotExist:
+        return JsonResponse({'error': 'RSVP not found'}, status=404)

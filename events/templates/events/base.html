@@ -1806,7 +1806,7 @@
             // Function to fetch and display notifications
             async function fetchNotifications() {
                 try {
-                    const response = await fetch('/accounts/notifications/all/');
+                    const response = await fetch('/users/notifications/all/');
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
@@ -1896,7 +1896,7 @@
             // Function to mark notification as read
             async function markNotificationAsRead(notificationId) {
                 try {
-                    const response = await fetch('/accounts/notifications/mark_as_read/', {
+                    const response = await fetch('/users/notifications/mark_as_read/', {
                         method: 'POST',
                         headers: {
                             'X-CSRFToken': getCookie('csrftoken'),
@@ -1954,7 +1954,7 @@
                 // Handle confirmation
                 document.getElementById('confirmClearNotifications').addEventListener('click', async () => {
                     try {
-                        const response = await fetch('/accounts/notifications/purge_read/', {
+                        const response = await fetch('/users/notifications/purge_read/', {
                             method: 'POST',
                             headers: {
                                 'X-CSRFToken': getCookie('csrftoken'),
@@ -2020,7 +2020,7 @@
                     searchField: 'text',
                     load: function (query, callback) {
                         if (!query.length) return callback();
-                        fetch('/accounts/user_search_autocomplete/?exclude_current=true&q=' +
+                        fetch('/users/user_search_autocomplete/?exclude_current=true&q=' +
                                 encodeURIComponent(query))
                             .then(response => response.json())
                             .then(data => callback(data.results))
@@ -2106,7 +2106,7 @@
             if (bell) {
                 bell.addEventListener('dblclick', function(e) {
                     e.preventDefault();
-                    window.location.href = '/accounts/notifications/all/';
+                    window.location.href = '/users/notifications/all/';
                 });
             }
         });

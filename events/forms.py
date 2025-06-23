@@ -57,7 +57,8 @@ class EventForm(forms.ModelForm):
         fields = [
             'title', 'group', 'date', 'start_time', 'end_time',
             'address', 'city', 'state', 'age_restriction', 'description',
-            'capacity', 'waitlist_enabled', 'attendee_list_public'
+            'capacity', 'waitlist_enabled', 'attendee_list_public', 'enable_rsvp_questions',
+            'question1_text', 'question2_text', 'question3_text',
         ]
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Event Title'}),
@@ -71,6 +72,10 @@ class EventForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'class': 'form-control'}),
             'waitlist_enabled': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'attendee_list_public': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'enable_rsvp_questions': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'question1_text': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'RSVP Question 1'}),
+            'question2_text': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'RSVP Question 2'}),
+            'question3_text': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'RSVP Question 3'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -165,6 +170,24 @@ class RenameGroupForm(forms.ModelForm):
         fields = ['name']
 
 class RSVPForm(forms.ModelForm):
+    question1 = forms.CharField(
+        required=False,
+        label='Question 1',
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'maxlength': 1000, 'style': 'resize:vertical; max-height: 7.5em; min-height: 2.5em; overflow-y:auto; resize:vertical;'}),
+        help_text='Your answer will only be visible to event organizers.'
+    )
+    question2 = forms.CharField(
+        required=False,
+        label='Question 2',
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'maxlength': 1000, 'style': 'resize:vertical; max-height: 7.5em; min-height: 2.5em; overflow-y:auto; resize:vertical;'}),
+        help_text='Your answer will only be visible to event organizers.'
+    )
+    question3 = forms.CharField(
+        required=False,
+        label='Question 3',
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'maxlength': 1000, 'style': 'resize:vertical; max-height: 7.5em; min-height: 2.5em; overflow-y:auto; resize:vertical;'}),
+        help_text='Your answer will only be visible to event organizers.'
+    )
     def __init__(self, *args, **kwargs):
         self.event = kwargs.pop('event', None)
         super().__init__(*args, **kwargs)
@@ -185,11 +208,21 @@ class RSVPForm(forms.ModelForm):
         self.fields['status'].empty_label = None
         
         # Set initial value to empty string if no existing RSVP instance or status
-        self.initial['status'] = ''
+        if not self.instance or not getattr(self.instance, 'status', None):
+            self.initial['status'] = ''
+
+        # Only show question fields if the event has text for them
+        if self.event:
+            if not getattr(self.event, 'question1_text', '').strip():
+                self.fields.pop('question1', None)
+            if not getattr(self.event, 'question2_text', '').strip():
+                self.fields.pop('question2', None)
+            if not getattr(self.event, 'question3_text', '').strip():
+                self.fields.pop('question3', None)
 
     class Meta:
         model = RSVP
-        fields = ['status']
+        fields = ['status', 'question1', 'question2', 'question3']
         widgets = {
             'status': forms.Select(attrs={
                 'class': 'form-select',
