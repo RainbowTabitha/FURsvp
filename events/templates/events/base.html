@@ -1669,6 +1669,91 @@
                 padding-right: 1rem;
             }
         }
+
+        /* --- Enhanced Modern Topnav --- */
+        .modern-topnav {
+            background: linear-gradient(90deg, #b4d8fa 0%, #a7c7f9 100%);
+            box-shadow: 0 2px 12px rgba(59, 130, 246, 0.07);
+            padding: 1.1rem 0 1.1rem 0;
+            display: flex;
+            justify-content: center;
+            gap: 2.5rem;
+            border-bottom-left-radius: 1.5rem;
+            border-bottom-right-radius: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: none;
+        }
+        .modern-topnav .nav-content {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+        .modern-topnav .nav-menu {
+            display: flex;
+            gap: 2.2rem;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        .modern-topnav .nav-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5em;
+            font-size: 1.13rem;
+            font-weight: 700;
+            color: #223b7b;
+            background: linear-gradient(90deg, #e0e7ff 0%, #f0f9ff 100%);
+            border: none;
+            border-radius: 2em;
+            padding: 0.7em 1.7em;
+            transition: background 0.18s, color 0.18s, box-shadow 0.18s, transform 0.12s;
+            text-decoration: none;
+            outline: none;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.07);
+            position: relative;
+        }
+        .modern-topnav .nav-link:hover,
+        .modern-topnav .nav-link.active {
+            background: linear-gradient(90deg, #2563eb 0%, #06b6d4 100%);
+            color: #fff;
+            box-shadow: 0 4px 18px rgba(59, 130, 246, 0.13);
+            transform: translateY(-2px) scale(1.04);
+            text-decoration: none;
+        }
+        .modern-topnav .nav-link .material-icons {
+            font-size: 1.25em;
+            vertical-align: middle;
+            margin-right: 0.4em;
+        }
+        @media (max-width: 900px) {
+            .modern-topnav .nav-menu {
+                gap: 1.1rem;
+            }
+            .modern-topnav .nav-link {
+                padding: 0.6em 1.1em;
+                font-size: 1rem;
+            }
+        }
+        @media (max-width: 600px) {
+            .modern-topnav {
+                flex-direction: column;
+                gap: 0.5rem;
+                padding: 0.7rem 0;
+                border-radius: 0;
+            }
+            .modern-topnav .nav-link {
+                width: 100%;
+                justify-content: center;
+                padding: 0.7em 0;
+                font-size: 0.98rem;
+            }
+            .modern-topnav .nav-menu {
+                width: 100%;
+                gap: 0.5rem;
+            }
+        }
     </style>
     <!-- TomSelect CSS -->
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
