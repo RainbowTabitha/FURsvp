@@ -1806,7 +1806,7 @@
             // Function to fetch and display notifications
             async function fetchNotifications() {
                 try {
-                    const response = await fetch('/users/notifications/all/');
+                    const response = await fetch('/users/notifications/');
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }

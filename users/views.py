@@ -70,7 +70,7 @@ def profile(request):
             if base64_image_string:
                 try:
                     # 1. Check file size
-                    if len(base64_image_string) > 8 * 1024 * 1024: # Approx 1.5MB limit
+                    if len(base64_image_string) > 8 * 1024 * 1024: # Approx 8MB limit
                         messages.error(request, "Image file size is too large. Please upload an image under 1MB.")
                         return redirect('profile')
 
@@ -85,7 +85,11 @@ def profile(request):
                     image_data = base64.b64decode(imgstr)
                     image_stream = io.BytesIO(image_data)
                     pil_image = Image.open(image_stream)
-                    pil_image.verify() # Verify that it is, in fact, an image
+                    pil_image.verify()  # Verify that it is, in fact, an image
+
+                    # Re-open the image after verify(), since verify() leaves the image unusable
+                    image_stream.seek(0)
+                    pil_image = Image.open(image_stream)
 
                     # Re-save to a clean buffer to strip any malicious metadata
                     sanitized_buffer = io.BytesIO()

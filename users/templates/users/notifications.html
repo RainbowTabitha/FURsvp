@@ -12,49 +12,167 @@
         <span class="breadcrumb-current">Notifications</span>
     </div>
 </nav>
+<style>
+    .notifications-header {
+        background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%);
+        color: #fff;
+        border-radius: 1.5rem 1.5rem 0 0;
+        padding: 1.7rem 2.2rem 1.2rem 2.2rem;
+        font-size: 2rem;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        box-shadow: 0 4px 24px 0 rgba(31, 38, 135, 0.10);
+    }
 
-<div class="row">
-    <div class="col-12">
-        <div class="card shadow-sm rounded-4 border-0" style="overflow: hidden; width: 100%;">
-            <div class="card-header" style="background: linear-gradient(90deg, #2563eb 0%, #06b6d4 100%); color: #fff; border-bottom: none; border-radius: 1.2rem 1.2rem 0 0; padding: 2.2rem 2.5rem;">
-                <h4 class="mb-0 fw-bold" style="font-size: 2rem; letter-spacing: 0.5px;">Your Notifications</h4>
-            </div>
-            <div class="list-group list-group-flush" style="background: #f8fafc;">
-                {% if notifications %}
-                    {% for notification in notifications %}
-                        <div class="list-group-item notification-item d-flex justify-content-between align-items-center py-4 px-4" data-notification-id="{{ notification.id }}" style="font-size: 1.18rem; border: none; border-bottom: 1px solid #e5e7eb; background: transparent; cursor: pointer; transition: background 0.15s;">
-                            <span class="fw-semibold">{{ notification.message }}</span>
-                            <span class="notification-item-date ms-3 small text-secondary" style="font-size: 1.08rem;">{{ notification.created_at|date:"M d, Y H:i" }}</span>
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="list-group-item text-center text-muted py-5" style="font-size: 1.2rem;">No notifications yet.</div>
-                {% endif %}
-            </div>
-            <div class="card-footer bg-white border-0 d-flex justify-content-center align-items-center py-4" style="border-radius: 0 0 1.2rem 1.2rem;">
-                <button id="clear-all-notifications-page-btn" type="button" class="btn btn-lg rounded-pill pretty-action-btn d-flex align-items-center gap-2 px-4 py-2">
-                    <i class="material-icons align-middle">delete</i> Clear All Notifications
-                </button>
-            </div>
+    .notifications-header .material-icons {
+        font-size: 2.2rem;
+        margin-right: 0.7rem;
+    }
+
+    .notifications-list {
+        padding: 2.2rem 2.2rem 2.2rem 2.2rem;
+        background: #f8fafc;
+        border-radius: 0 0 1.5rem 1.5rem;
+    }
+
+    .notification-card {
+        background: #fff;
+        border-radius: 1.1rem;
+        box-shadow: 0 2px 12px rgba(59, 130, 246, 0.07);
+        padding: 1.2rem 1.7rem;
+        margin-bottom: 1.2rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 1.1rem;
+        transition: box-shadow 0.18s, transform 0.18s;
+        position: relative;
+        cursor: pointer;
+    }
+    .notification-card:hover {
+        box-shadow: 0 6px 24px rgba(59, 130, 246, 0.13);
+        transform: translateY(-2px) scale(1.01);
+    }
+
+    .notification-card:last-child {
+        margin-bottom: 0;
+    }
+
+    .notification-card .material-icons {
+        color: #3b82f6;
+        font-size: 1.6rem;
+        margin-right: 0.7rem;
+        flex-shrink: 0;
+    }
+
+    .notification-message {
+        font-size: 1.13rem;
+        color: #222;
+        font-weight: 500;
+        line-height: 1.5;
+    }
+
+    .notification-timestamp {
+        font-size: 0.98rem;
+        color: #6b7280;
+        margin-top: 0.2rem;
+        font-weight: 400;
+    }
+
+    .notification-unread-dot {
+        width: 0.8rem;
+        height: 0.8rem;
+        background: #3b82f6;
+        border: 2px solid #fff;
+        border-radius: 50%;
+        position: absolute;
+        left: -1.5rem;
+        top: 1.5rem;
+        box-shadow: 0 0 0 2px #e0e7ef;
+        z-index: 2;
+        animation: pulse 1.2s infinite;
+    }
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 #3b82f644; }
+        70% { box-shadow: 0 0 0 6px #3b82f600; }
+        100% { box-shadow: 0 0 0 0 #3b82f600; }
+    }
+
+    .notification-card.empty {
+        background: #f1f5f9;
+        color: #64748b;
+        justify-content: center;
+        padding: 2rem 1.7rem;
+        font-size: 1.15rem;
+        border: 1px dashed #cbd5e1;
+    }
+
+    .card-footer .pretty-action-btn {
+        background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%);
+        color: #fff;
+        font-weight: 600;
+        border: none;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.10);
+        transition: background 0.18s, box-shadow 0.18s;
+    }
+    .card-footer .pretty-action-btn:hover {
+        background: linear-gradient(90deg, #2563eb 0%, #0e7490 100%);
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.18);
+        color: #fff;
+    }
+
+    @media (max-width: 600px) {
+        .notifications-header,
+        .notifications-list {
+            padding: 1.1rem 0.7rem;
+        }
+        .notification-card {
+            padding: 1rem 0.7rem;
+        }
+    }
+</style>
+
+<div class="notifications-header">
+    <i class="material-icons">notifications</i>
+    Your Notifications
+</div>
+<div class="notifications-list">
+    {% for notification in notifications %}
+    <div class="notification-card">
+        {% if not notification.read %}
+        <span class="notification-unread-dot"></span>
+        {% endif %}
+        <i class="material-icons">notifications_active</i>
+        <div>
+            <div class="notification-message">{{ notification.message }}</div>
+            {% if notification.timestamp %}
+            <div class="notification-timestamp">{{ notification.timestamp|date:'M d, Y H:i' }}</div>
+            {% endif %}
         </div>
     </div>
+
+    {% empty %}
+    <div class="notification-card empty">
+        <i class="material-icons">info</i>
+        <div class="notification-message">You have no notifications yet.</div>
+    </div>
+    {% endfor %}
 </div>
-<style>
-.notification-modern-row:hover {
-    background: linear-gradient(90deg, #e0edff 0%, #f8fafc 100%) !important;
-    box-shadow: 0 2px 12px rgba(59,130,246,0.08) !important;
-    text-decoration: none;
-}
-.notification-modern-row .notification-modern-message {
-    word-break: break-word;
-}
-</style>
+
+<div class="card-footer bg-white border-0 d-flex justify-content-center align-items-center py-4"
+    style="border-radius: 0 0 1.2rem 1.2rem;">
+    <button id="clear-all-notifications-page-btn" type="button"
+        class="btn btn-lg rounded-pill pretty-action-btn d-flex align-items-center gap-2 px-4 py-2">
+        <i class="material-icons align-middle">delete</i> Clear All Notifications
+    </button>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 {{ block.super }}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const clearAllBtn = document.getElementById('clear-all-notifications-page-btn');
 
         if (clearAllBtn) {
@@ -86,39 +204,46 @@
                 `;
 
                 document.body.insertAdjacentHTML('beforeend', modalHtml);
-                const modal = new bootstrap.Modal(document.getElementById('clearNotificationsModalPage'));
+                const modal = new bootstrap.Modal(document.getElementById(
+                    'clearNotificationsModalPage'));
                 modal.show();
 
-                document.getElementById('confirmClearNotificationsPage').addEventListener('click', async () => {
-                    try {
-                        const response = await fetch('/users/notifications/purge_read/', {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRFToken': getCookie('csrftoken'),
-                                'Content-Type': 'application/json'
+                document.getElementById('confirmClearNotificationsPage').addEventListener('click',
+                    async () => {
+                        try {
+                            const response = await fetch(
+                            '/users/notifications/purge_read/', {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRFToken': getCookie('csrftoken'),
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
                             }
-                        });
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
+                            window.location
+                        .reload(); // Reload the page to show updated notifications
+                        } catch (error) {
+                            console.error('Error clearing notifications:', error);
+                            alert('Failed to clear notifications. Please try again.');
                         }
-                        window.location.reload(); // Reload the page to show updated notifications
-                    } catch (error) {
-                        console.error('Error clearing notifications:', error);
-                        alert('Failed to clear notifications. Please try again.');
-                    }
-                });
+                    });
 
-                document.getElementById('clearNotificationsModalPage').addEventListener('hidden.bs.modal', function () {
-                    this.remove();
-                });
+                document.getElementById('clearNotificationsModalPage').addEventListener(
+                    'hidden.bs.modal',
+                    function () {
+                        this.remove();
+                    });
             });
         }
 
         // Mark notification as read when clicked on the full page
         document.querySelectorAll('.list-group-item[data-notification-id]').forEach(item => {
-            item.addEventListener('click', async function(event) {
+            item.addEventListener('click', async function (event) {
                 const notificationId = this.getAttribute('data-notification-id');
-                if (!this.classList.contains('fw-bold')) { // Only mark as read if it's unread
+                if (!this.classList.contains(
+                    'fw-bold')) { // Only mark as read if it's unread
                     try {
                         const response = await fetch('/users/notifications/mark_as_read/', {
                             method: 'POST',
@@ -126,7 +251,9 @@
                                 'X-CSRFToken': getCookie('csrftoken'),
                                 'Content-Type': 'application/json'
                             },
-                            body: JSON.stringify({ notification_ids: [notificationId] })
+                            body: JSON.stringify({
+                                notification_ids: [notificationId]
+                            })
                         });
                         if (!response.ok) {
                             throw new Error(`HTTP error! status: ${response.status}`);
