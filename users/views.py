@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.views import LoginView
 from .forms import UserRegisterForm, UserProfileForm, AssistantAssignmentForm, UserPublicProfileForm, UserPasswordChangeForm
 from events.models import Group, RSVP, Event
 from events.forms import GroupForm, RenameGroupForm
@@ -21,6 +23,10 @@ import base64
 from django.core.files.base import ContentFile
 from PIL import Image
 import io
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.views import View
+from django.conf import settings
 
 # Create your views here.
 
@@ -204,7 +210,8 @@ def profile(request):
         'existing_assignments': existing_assignments,
         'profile_form': profile_form,
         'password_change_form': password_change_form,
-        'banned_users_in_groups': banned_users_in_groups
+        'banned_users_in_groups': banned_users_in_groups,
+        'telegram_bot_username': settings.TELEGRAM_BOT_USERNAME,
     }
     return render(request, 'users/profile.html', context)
 
@@ -509,3 +516,129 @@ def send_bulk_notification(request):
     else:
         messages.error(request, 'Invalid request method.')
         return redirect('administration')
+
+@csrf_exempt
+def telegram_login(request):
+    """
+    Handle Telegram login via AJAX
+    """
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            telegram_data = data.get('telegram_data', {})
+            
+            if not telegram_data:
+                return JsonResponse({'success': False, 'error': 'No Telegram data provided'})
+            
+            # Authenticate user with Telegram data
+            user = authenticate(request, telegram_data=telegram_data)
+            
+            if user:
+                login(request, user)
+                return JsonResponse({
+                    'success': True, 
+                    'redirect_url': '/',
+                    'message': 'Successfully logged in with Telegram!'
+                })
+            else:
+                return JsonResponse({
+                    'success': False, 
+                    'error': 'Invalid Telegram authentication data'
+                })
+                
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'error': 'Invalid JSON data'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+@login_required
+def link_telegram_account(request):
+    """
+    Link existing account to Telegram
+    """
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            telegram_data = data.get('telegram_data', {})
+            
+            if not telegram_data:
+                return JsonResponse({'success': False, 'error': 'No Telegram data provided'})
+            
+            # Check if this Telegram account is already linked to another user
+            telegram_id = telegram_data.get('id')
+            if telegram_id:
+                existing_profile = Profile.objects.filter(telegram_id=telegram_id).exclude(user=request.user).first()
+                if existing_profile:
+                    return JsonResponse({
+                        'success': False, 
+                        'error': 'This Telegram account is already linked to another user'
+                    })
+            
+            # Update user's profile with Telegram data
+            profile = request.user.profile
+            profile.telegram_id = telegram_id
+            profile.telegram_username = telegram_data.get('username')
+            
+            # Update display name if not already set
+            if not profile.display_name:
+                first_name = telegram_data.get('first_name', '')
+                last_name = telegram_data.get('last_name', '')
+                profile.display_name = f"{first_name} {last_name}".strip()
+            
+            profile.save()
+            
+            create_notification(
+                request.user, 
+                'Your account has been successfully linked to Telegram!', 
+                link='/users/profile/'
+            )
+            
+            return JsonResponse({
+                'success': True, 
+                'message': 'Account successfully linked to Telegram!'
+            })
+                
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'error': 'Invalid JSON data'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+@login_required
+def unlink_telegram_account(request):
+    """
+    Unlink Telegram account from user profile
+    """
+    if request.method == 'POST':
+        try:
+            profile = request.user.profile
+            profile.telegram_id = None
+            profile.telegram_username = None
+            profile.save()
+            
+            create_notification(
+                request.user, 
+                'Your Telegram account has been unlinked.', 
+                link='/users/profile/'
+            )
+            
+            return JsonResponse({
+                'success': True, 
+                'message': 'Telegram account unlinked successfully!'
+            })
+                
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+class CustomLoginView(LoginView):
+    template_name = 'users/login.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['telegram_bot_username'] = settings.TELEGRAM_BOT_USERNAME
+        return context

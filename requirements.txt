@@ -7,3 +7,6 @@ django-cors-headers
 django-q2
 feedparser
 pytz
+python-telegram-bot
+requests
+python-dotenv

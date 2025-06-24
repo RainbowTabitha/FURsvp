@@ -158,38 +158,99 @@
 }
 .register-link-modern:hover, .register-link-modern:focus {
     background: linear-gradient(90deg, #2563eb 0%, #06b6d4 100%);
-    color: #fff;
+    color: #fff !important;
     box-shadow: 0 4px 18px rgba(59, 130, 246, 0.13);
     transform: scale(1.03);
     text-decoration: none;
 }
-@media (max-width: 600px) {
-    .login-glass-card {
-        padding: 1.2rem 0.5rem 1.2rem 0.5rem;
-    }
-    .login-title {
-        font-size: 1.5rem;
-        gap: 0.3rem;
-    }
-    .login-btn-modern, .register-link-modern {
-        font-size: 1rem;
-        padding: 0.7em 0;
-    }
+.login-error-box {
+    background: linear-gradient(90deg, #fee2e2 0%, #fecaca 100%);
+    border: 1.5px solid #f87171;
+    border-radius: 1rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    color: #dc2626;
+    font-weight: 600;
+}
+
+/* Telegram Login Styles */
+.telegram-login-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid #e0e7ef;
+}
+
+.telegram-login-title {
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #223b7b;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.telegram-login-title .material-icons {
+    color: #229ED9;
+    font-size: 1.4rem;
+}
+
+.telegram-login-btn {
+    width: 100%;
+    background: linear-gradient(90deg, #229ED9 0%, #0088cc 100%);
+    color: #fff !important;
+    font-weight: 800;
+    border: none;
+    border-radius: 2em;
+    box-shadow: 0 2px 12px rgba(34, 158, 217, 0.15);
+    padding: 0.9em 0;
+    font-size: 1.18rem;
+    transition: background 0.18s, box-shadow 0.18s, transform 0.13s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7em;
+    text-decoration: none;
+}
+
+.telegram-login-btn:hover, .telegram-login-btn:focus {
+    background: linear-gradient(90deg, #0088cc 0%, #229ED9 100%);
+    color: #fff !important;
+    box-shadow: 0 4px 18px rgba(34, 158, 217, 0.25);
+    transform: scale(1.03);
+    text-decoration: none;
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    margin: 2rem 0;
+    color: #6b7280;
+    font-weight: 600;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #e0e7ef;
+}
+
+.divider::before {
+    margin-right: 1rem;
+}
+
+.divider::after {
+    margin-left: 1rem;
 }
 </style>
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <nav aria-label="breadcrumb" class="mb-4">
-                <div class="modern-breadcrumbs">
-                    <a href="/" class="d-flex align-items-center">
-                        <i class="material-icons me-1">home</i> Home
-                    </a>
-                    <span class="breadcrumb-chevron">›</span>
-                    <span class="breadcrumb-current">Login</span>
-                </div>
-            </nav>
 
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
             <div class="login-glass-card">
                 <h1 class="login-title mb-4">
                     <i class="material-icons">login</i> Login
@@ -222,8 +283,8 @@
                                 <i class="material-icons">lock</i>
                             </span>
                             {{ form.password|add_class:'form-control' }}
-                            <span class="input-group-text" style="cursor:pointer;" onclick="togglePassword()">
-                                <i class="material-icons" id="togglePasswordIcon">visibility</i>
+                            <span class="input-group-text" id="togglePasswordIcon" style="cursor: pointer;">
+                                <i class="material-icons">visibility</i>
                             </span>
                         </div>
                         {% if form.password.errors %}
@@ -236,39 +297,92 @@
                         <i class="material-icons">login</i> Login
                     </button>
                 </form>
-                <a href="{% url 'register' %}" class="register-link-modern mt-2">
-                    <i class="material-icons">person_add</i> Register here
+                
+                <div class="divider">or</div>
+                
+                <div class="telegram-login-section">
+                    <div class="telegram-login-title">
+                        <i class="material-icons">send</i>
+                        Login with Telegram
+                    </div>
+                    <div id="telegram-login-widget"></div>
+                </div>
+                
+                <a href="{% url 'register' %}" class="register-link-modern">
+                    <i class="material-icons">person_add</i> Create Account
                 </a>
             </div>
         </div>
     </div>
 </div>
-<script>
-function togglePassword() {
-    const input = document.getElementById('id_password');
-    const icon = document.getElementById('togglePasswordIcon');
-    if (input.type === 'password') {
-        input.type = 'text';
-        icon.textContent = 'visibility_off';
-    } else {
-        input.type = 'password';
-        icon.textContent = 'visibility';
-    }
-}
-</script>
 
-<style>
-.login-error-box {
-    background: #ffe6e6;
-    color: #a94442;
-    border: 1.5px solid #f5c6cb;
-    border-radius: 12px;
-    padding: 1.25rem 1.5rem;
-    font-size: 1.1rem;
-    font-weight: 500;
-    margin-bottom: 1.5rem;
-    text-align: center;
-    box-shadow: 0 2px 8px rgba(169, 68, 66, 0.05);
-}
-</style>
+<script src="https://telegram.org/js/telegram-widget.js?22"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Password visibility toggle
+    const togglePassword = document.getElementById('togglePasswordIcon');
+    const passwordField = document.getElementById('id_password');
+    
+    if (togglePassword && passwordField) {
+        togglePassword.addEventListener('click', function() {
+            const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordField.setAttribute('type', type);
+            
+            const icon = this.querySelector('i');
+            icon.textContent = type === 'password' ? 'visibility' : 'visibility_off';
+        });
+    }
+    
+    // Telegram Login Widget
+    const telegramWidget = document.getElementById('telegram-login-widget');
+    if (telegramWidget) {
+        Telegram.Login.Widget({
+            dataOnauth: function(user) {
+                // Send Telegram data to our backend
+                fetch('{% url "telegram_login" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify({
+                        telegram_data: user
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show success message
+                        const successDiv = document.createElement('div');
+                        successDiv.className = 'alert alert-success';
+                        successDiv.textContent = data.message;
+                        telegramWidget.appendChild(successDiv);
+                        
+                        // Redirect after a short delay
+                        setTimeout(() => {
+                            window.location.href = data.redirect_url;
+                        }, 1500);
+                    } else {
+                        // Show error message
+                        const errorDiv = document.createElement('div');
+                        errorDiv.className = 'alert alert-danger';
+                        errorDiv.textContent = data.error;
+                        telegramWidget.appendChild(errorDiv);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'alert alert-danger';
+                    errorDiv.textContent = 'An error occurred during login. Please try again.';
+                    telegramWidget.appendChild(errorDiv);
+                });
+            },
+            bot_id: '{{ telegram_bot_username }}',
+            request_access: true,
+            lang: 'en'
+        }, telegramWidget);
+    }
+});
+</script>
 {% endblock %} 

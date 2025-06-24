@@ -258,87 +258,87 @@
 
             <div class="login-glass-card">
                 <h1 class="login-title mb-4">
-                    <i class="material-icons">person_add</i> Account Creation
-                </h1>
-                {% if form.non_field_errors or form.errors %}
-                    <div class="alert alert-danger login-error-box text-center">
-                        <ul class="mb-0" style="list-style: none; padding-left: 0;">
-                            {% for error in form.non_field_errors %}
-                                <li>{{ error }}</li>
-                            {% endfor %}
-                            {% with required_field_error_found=False %}
-                            {% for field in form %}
-                                {% for error in field.errors %}
-                                    {% if error == 'This field is required.' %}
-                                        {% if not required_field_error_found %}
-                                            <li>Missing field(s)</li>
-                                            {% with True as required_field_error_found %}
-                                            {% endwith %}
-                                        {% endif %}
-                                    {% else %}
-                                        <li>{{ error }}</li>
-                                    {% endif %}
+                        <i class="material-icons">person_add</i> Account Creation
+                    </h1>
+                    {% if form.non_field_errors or form.errors %}
+                        <div class="alert alert-danger login-error-box text-center">
+                            <ul class="mb-0" style="list-style: none; padding-left: 0;">
+                                {% for error in form.non_field_errors %}
+                                    <li>{{ error }}</li>
                                 {% endfor %}
-                            {% endfor %}
-                            {% endwith %}
-                        </ul>
-                    </div>
-                {% endif %}
-                <form method="post" novalidate>
-                    {% csrf_token %}
-                    <div class="mb-3">
+                                {% with required_field_error_found=False %}
+                                {% for field in form %}
+                                    {% for error in field.errors %}
+                                        {% if error == 'This field is required.' %}
+                                            {% if not required_field_error_found %}
+                                                <li>Missing field(s)</li>
+                                                {% with True as required_field_error_found %}
+                                                {% endwith %}
+                                            {% endif %}
+                                        {% else %}
+                                            <li>{{ error }}</li>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endfor %}
+                                {% endwith %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        <div class="mb-3">
                         <label for="id_username" class="form-label login-form-label">Username</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0">
-                                <i class="material-icons">person</i>
-                            </span>
-                            <input type="text" class="form-control border-start-0" id="id_username" name="username"
-                                required maxlength="150" autocomplete="username"
-                                value="{{ form.username.value|default_if_none:'' }}">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0">
+                                    <i class="material-icons">person</i>
+                                </span>
+                                <input type="text" class="form-control border-start-0" id="id_username" name="username"
+                                    required maxlength="150" autocomplete="username"
+                                    value="{{ form.username.value|default_if_none:'' }}">
+                            </div>
                         </div>
-                    </div>
-                    <div class="mb-3">
+                        <div class="mb-3">
                         <label for="id_email" class="form-label login-form-label">Email address</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0">
-                                <i class="material-icons">email</i>
-                            </span>
-                            <input type="email" class="form-control border-start-0" id="id_email" name="email"
-                                required autocomplete="email" value="{{ form.email.value|default_if_none:'' }}">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0">
+                                    <i class="material-icons">email</i>
+                                </span>
+                                <input type="email" class="form-control border-start-0" id="id_email" name="email"
+                                    required autocomplete="email" value="{{ form.email.value|default_if_none:'' }}">
+                            </div>
                         </div>
-                    </div>
-                    <div class="mb-3">
+                        <div class="mb-3">
                         <label for="id_password1" class="form-label login-form-label">Password</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0">
-                                <i class="material-icons">lock</i>
-                            </span>
-                            <input type="password" class="form-control border-start-0" id="id_password1"
-                                name="password1" required autocomplete="new-password">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0">
+                                    <i class="material-icons">lock</i>
+                                </span>
+                                <input type="password" class="form-control border-start-0" id="id_password1"
+                                    name="password1" required autocomplete="new-password">
+                            </div>
                         </div>
-                    </div>
-                    <div class="mb-3">
+                        <div class="mb-3">
                         <label for="id_password2" class="form-label login-form-label">Password confirmation</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0">
-                                <i class="material-icons">lock</i>
-                            </span>
-                            <input type="password" class="form-control border-start-0" id="id_password2"
-                                name="password2" required autocomplete="new-password">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0">
+                                    <i class="material-icons">lock</i>
+                                </span>
+                                <input type="password" class="form-control border-start-0" id="id_password2"
+                                    name="password2" required autocomplete="new-password">
+                            </div>
                         </div>
-                    </div>
                     <div class="eula-check mb-3">
                         <input type="checkbox" class="form-check-input" id="id_eula" name="eula" required>
                         <label class="form-check-label" for="id_eula">
                             I agree to the <a href="/eula/" target="_blank">End User License Agreement (EULA)</a>
-                        </label>
-                    </div>
-                    <div class="d-grid gap-2">
+                                </label>
+                        </div>
+                        <div class="d-grid gap-2">
                         <button type="submit" class="register-btn-modern">
                             <i class="material-icons align-middle me-1">person_add</i> Register
-                        </button>
-                    </div>
-                </form>
+                            </button>
+                        </div>
+                    </form>
                 <a href="/login/" class="login-link-modern">Already have an account? Login here</a>
             </div>
         </div>

@@ -34,6 +34,7 @@ class Profile(models.Model):
     display_name = models.CharField(max_length=50, blank=True, null=True)
     discord_username = models.CharField(max_length=50, blank=True, null=True)
     telegram_username = models.CharField(max_length=50, blank=True, null=True)
+    telegram_id = models.BigIntegerField(blank=True, null=True, unique=True, help_text="Telegram user ID for authentication")
 
     def __str__(self):
         return f"{self.user.username}'s profile"

@@ -27,8 +27,8 @@
                             {% else %}
                             <div class="rounded-circle d-flex align-items-center justify-content-center avatar-initials-placeholder"
                                 style="background-color: {{ profile.get_avatar_color }};">
-                                {{ profile.get_initials }}
-                            </div>
+                                    {{ profile.get_initials }}
+                                </div>
                             {% endif %}
                             <button type="button" class="profile-edit-btn" data-bs-toggle="modal"
                                 data-bs-target="#profilePictureModal">
@@ -69,7 +69,7 @@
                                 action="{% url 'profile' %}">
                                 {% csrf_token %}
                                 <input type="hidden" name="submit_profile_changes" value="1">
-
+                                
                                 <div class="mb-3">
                                     <label for="{{ profile_form.display_name.id_for_label }}"
                                         class="form-label profile-form-label">
@@ -78,7 +78,7 @@
                                     </label>
                                     {{ profile_form.display_name }}
                                     {% if profile_form.display_name.help_text %}
-                                    <div class="form-text">{{ profile_form.display_name.help_text }}</div>
+                                        <div class="form-text">{{ profile_form.display_name.help_text }}</div>
                                     {% endif %}
                                 </div>
 
@@ -90,7 +90,7 @@
                                     </label>
                                     {{ profile_form.email }}
                                     {% if profile_form.email.help_text %}
-                                    <div class="form-text">{{ profile_form.email.help_text }}</div>
+                                        <div class="form-text">{{ profile_form.email.help_text }}</div>
                                     {% endif %}
                                 </div>
 
@@ -102,7 +102,7 @@
                                     </label>
                                     {{ profile_form.discord_username }}
                                     {% if profile_form.discord_username.help_text %}
-                                    <div class="form-text">{{ profile_form.discord_username.help_text }}</div>
+                                        <div class="form-text">{{ profile_form.discord_username.help_text }}</div>
                                     {% endif %}
                                 </div>
 
@@ -114,8 +114,51 @@
                                     </label>
                                     {{ profile_form.telegram_username }}
                                     {% if profile_form.telegram_username.help_text %}
-                                    <div class="form-text">{{ profile_form.telegram_username.help_text }}</div>
+                                        <div class="form-text">{{ profile_form.telegram_username.help_text }}</div>
                                     {% endif %}
+                                </div>
+
+                                <!-- Telegram Account Linking Section -->
+                                <div class="mb-4">
+                                    <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);">
+                                        <div class="card-body p-4">
+                                            <h6 class="card-title d-flex align-items-center mb-3" style="color: #229ED9; font-weight: 700;">
+                                                <i class="material-icons me-2">send</i>
+                                                Telegram Account
+                                            </h6>
+                                            
+                                            {% if user.profile.telegram_id %}
+                                                <!-- Account is linked -->
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <div>
+                                                        <p class="mb-1 fw-semibold" style="color: #1e40af;">
+                                                            <i class="material-icons align-middle me-1" style="font-size: 1.1rem; color: #229ED9;">check_circle</i>
+                                                            Account Linked
+                                                        </p>
+                                                        <p class="mb-0 text-muted small">
+                                                            Telegram ID: {{ user.profile.telegram_id }}
+                                                            {% if user.profile.telegram_username %}
+                                                                <br>Username: @{{ user.profile.telegram_username }}
+                                                            {% endif %}
+                                                        </p>
+                                                    </div>
+                                                    <button type="button" class="btn btn-outline-danger btn-sm" id="unlink-telegram-btn">
+                                                        <i class="material-icons me-1">link_off</i>
+                                                        Unlink
+                                                    </button>
+                                                </div>
+                                            {% else %}
+                                                <!-- Account is not linked -->
+                                                <div class="text-center">
+                                                    <p class="mb-3 text-muted">
+                                                        <i class="material-icons align-middle me-1" style="color: #6b7280;">link_off</i>
+                                                        No Telegram account linked
+                                                    </p>
+                                                    <div id="telegram-link-widget"></div>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
                                 </div>
 
                                 {{ profile_form.profile_picture_base64 }}
@@ -128,31 +171,31 @@
                             </form>
                         </div>
                         <div class="tab-pane fade" id="password" role="tabpanel" aria-labelledby="password-tab">
-                            <div class="card-body">
-                                <form method="post" action="{% url 'profile' %}">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="submit_password_changes" value="1">
-                                    {% for field in password_change_form %}
-                                    <div class="mb-3">
+                                <div class="card-body">
+                                    <form method="post" action="{% url 'profile' %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="submit_password_changes" value="1">
+                                        {% for field in password_change_form %}
+                                            <div class="mb-3">
                                         <label for="{{ field.id_for_label }}" class="profile-password-label">
-                                            <i class="material-icons align-middle me-1">lock</i>
-                                            {{ field.label }}
-                                        </label>
+                                                    <i class="material-icons align-middle me-1">lock</i>
+                                                    {{ field.label }}
+                                                </label>
                                         {{ field|add_class:'profile-password-input' }}
-                                        {% if field.help_text %}
-                                        <div class="form-text">{{ field.help_text }}</div>
-                                        {% endif %}
-                                        {% if field.errors %}
-                                        <div class="invalid-feedback d-block">{{ field.errors }}</div>
-                                        {% endif %}
-                                    </div>
-                                    {% endfor %}
-                                    <div class="d-grid">
+                                                {% if field.help_text %}
+                                                    <div class="form-text">{{ field.help_text }}</div>
+                                                {% endif %}
+                                                {% if field.errors %}
+                                                    <div class="invalid-feedback d-block">{{ field.errors }}</div>
+                                                {% endif %}
+                                            </div>
+                                        {% endfor %}
+                                        <div class="d-grid">
                                         <button type="submit" class="profile-password-btn">
-                                            <i class="material-icons">save</i> Change Password
-                                        </button>
-                                    </div>
-                                </form>
+                                                <i class="material-icons">save</i> Change Password
+                                            </button>
+                                        </div>
+                                    </form>
                             </div>
                         </div>
                         <div class="tab-pane fade" id="delete" role="tabpanel" aria-labelledby="delete-tab">
@@ -225,67 +268,67 @@
 
 <!-- Math Equation Modal (Step 1) -->
 <div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+  <div class="modal-dialog">
         <div class="modal-content profile-glass-card p-3" style="box-shadow: 0 8px 32px rgba(239,68,68,0.18); border: 2px solid #fca5a5;">
-            <form id="delete-account-form" onsubmit="return false;">
-                {% csrf_token %}
-                <input type="hidden" name="delete_account" value="1">
+      <form id="delete-account-form" onsubmit="return false;">
+        {% csrf_token %}
+        <input type="hidden" name="delete_account" value="1">
                 <div class="modal-header border-0 pb-0">
                     <h5 class="modal-title fw-bold text-danger d-flex align-items-center gap-2" id="deleteAccountModalLabel">
                         <i class="material-icons text-danger" style="font-size: 2rem;">warning</i>
-                        You're logging out fur-ever?
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
+            You're logging out fur-ever? 
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
                 <div class="modal-body pt-2 pb-0">
                     <p class="mb-2">Don't forget to boop snoots on your way out! 🥲</p>
                     <div class="alert alert-danger mb-3" style="background: #fef2f2; color: #b91c1c; border: none;">
                         <strong>This action cannot be undone.</strong> To confirm, please solve the following equation:
                     </div>
-                    <div class="mb-3">
+          <div class="mb-3">
                         <span id="math-equation" class="fw-bold fs-5"></span>
                         <input type="number" class="form-control mt-2" id="math-answer" placeholder="Your answer" required style="background: #f8fafc; border-radius: 1em; border: 1.5px solid #fca5a5; font-size: 1.15rem;">
-                        <div class="invalid-feedback" id="math-feedback">Incorrect answer. Please try again.</div>
-                    </div>
-                </div>
+            <div class="invalid-feedback" id="math-feedback">Incorrect answer. Please try again.</div>
+          </div>
+        </div>
                 <div class="modal-footer border-0 pt-0">
                     <button type="button" class="profile-save-btn" style="background: linear-gradient(90deg, #ef4444 0%, #fca5a5 100%); color: #fff; font-weight: 800; font-size: 1.15rem;" id="open-final-delete-btn" disabled>
                         <i class="material-icons me-2">delete_forever</i> Delete My Account
                     </button>
-                </div>
-            </form>
         </div>
+      </form>
     </div>
+  </div>
 </div>
 
 <!-- Final Confirmation Modal (Step 2) -->
 <div class="modal fade" id="finalDeleteModal" tabindex="-1" aria-labelledby="finalDeleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+  <div class="modal-dialog">
         <div class="modal-content profile-glass-card p-3" style="box-shadow: 0 8px 32px rgba(239,68,68,0.18); border: 2px solid #fca5a5;">
-            <form method="post" id="final-delete-form">
-                {% csrf_token %}
-                <input type="hidden" name="delete_account" value="1">
+      <form method="post" id="final-delete-form">
+        {% csrf_token %}
+        <input type="hidden" name="delete_account" value="1">
                 <div class="modal-header border-0 pb-0">
                     <h5 class="modal-title fw-bold text-danger d-flex align-items-center gap-2" id="finalDeleteModalLabel">
                         <i class="material-icons text-danger" style="font-size: 2rem;">delete_forever</i>
-                        Last chance! Really delete your account?
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
+            Last chance! Really delete your account?
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
                 <div class="modal-body pt-2 pb-0">
                     <div class="alert alert-danger mb-3" style="background: #fef2f2; color: #b91c1c; border: none;">
                         <strong>This is your last chance to back out.</strong> If you proceed, your account will be deleted forever.
                     </div>
-                </div>
+        </div>
                 <div class="modal-footer border-0 pt-0">
                     <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">I want my mommy...</button>
                     <button type="submit" class="profile-save-btn" style="background: linear-gradient(90deg, #ef4444 0%, #fca5a5 100%); color: #fff; font-weight: 800; font-size: 1.15rem;" id="final-delete-btn">
                         <i class="material-icons me-2">delete_forever</i> Delete for real
                     </button>
-                </div>
-            </form>
         </div>
+      </form>
     </div>
+  </div>
 </div>
 
 <style>
@@ -309,47 +352,47 @@
 
     .profile-glass-card {
         background: rgba(255, 255, 255, 0.88);
-        border-radius: 1.5rem;
+    border-radius: 1.5rem;
         box-shadow: 0 8px 32px rgba(59, 130, 246, 0.13);
-        backdrop-filter: blur(6px);
-        padding: 2.5rem 2.2rem 2.2rem 2.2rem;
-        margin-bottom: 2.5rem;
-        border: 1.5px solid #e0e7ef;
-    }
+    backdrop-filter: blur(6px);
+    padding: 2.5rem 2.2rem 2.2rem 2.2rem;
+    margin-bottom: 2.5rem;
+    border: 1.5px solid #e0e7ef;
+  }
 
-    .profile-avatar {
-        width: 150px;
-        height: 150px;
-        object-fit: cover;
-        border-radius: 50%;
+  .profile-avatar {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
         box-shadow: 0 4px 24px rgba(59, 130, 246, 0.13);
-        border: 4px solid #fff;
-        background: #f8fafc;
-    }
+    border: 4px solid #fff;
+    background: #f8fafc;
+  }
 
-    .profile-edit-btn {
-        background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
-        color: #fff;
-        border: none;
+  .profile-edit-btn {
+    background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+    color: #fff;
+    border: none;
         box-shadow: 0 2px 8px rgba(59, 130, 246, 0.10);
-        width: 44px;
-        height: 44px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        position: absolute;
-        bottom: -10px;
-        right: -10px;
-        transition: background 0.18s, box-shadow 0.18s, transform 0.13s;
-    }
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    position: absolute;
+    bottom: -10px;
+    right: -10px;
+    transition: background 0.18s, box-shadow 0.18s, transform 0.13s;
+  }
 
-    .profile-edit-btn:hover {
-        background: linear-gradient(135deg, #1a2f9a 0%, #0e7490 100%);
-        color: #fff;
+  .profile-edit-btn:hover {
+    background: linear-gradient(135deg, #1a2f9a 0%, #0e7490 100%);
+    color: #fff;
         box-shadow: 0 4px 18px rgba(59, 130, 246, 0.18);
-        transform: scale(1.07);
-    }
+    transform: scale(1.07);
+  }
 
     .profile-tabs {
         border-bottom: none !important;
@@ -360,13 +403,13 @@
         background: transparent;
     }
 
-    .profile-tabs .nav-link {
+  .profile-tabs .nav-link {
         border: none !important;
         border-radius: 2em !important;
         background: #f4f8ff;
-        color: #223b7b;
-        font-weight: 700;
-        font-size: 1.13rem;
+    color: #223b7b;
+    font-weight: 700;
+    font-size: 1.13rem;
         padding: 0.8em 2.2em;
         margin: 0 0.1em;
         box-shadow: 0 2px 8px rgba(59, 130, 246, 0.07);
@@ -396,109 +439,109 @@
         box-shadow: 0 2px 12px rgba(59, 130, 246, 0.13);
         transform: translateY(-1px) scale(1.03);
         font-weight: 700;
-        transition: background 0.18s, color 0.18s, box-shadow 0.18s, transform 0.13s;
-    }
+    transition: background 0.18s, color 0.18s, box-shadow 0.18s, transform 0.13s;
+  }
 
     .profile-tabs .nav-link .material-icons {
         vertical-align: middle;
         margin-right: 0.3em;
         font-size: 1.2em;
-    }
+  }
 
-    .profile-form-label {
-        font-weight: 700;
-        color: #223b7b;
-        margin-bottom: 0.4rem;
-    }
+  .profile-form-label {
+    font-weight: 700;
+    color: #223b7b;
+    margin-bottom: 0.4rem;
+  }
 
-    .profile-form .form-control {
-        background: #f8fafc;
-        border-radius: 0.7rem;
-        border: 1.5px solid #e0e7ef;
-        font-size: 1.13rem;
-        font-weight: 500;
-        color: #223b7b;
-        transition: box-shadow 0.18s, border-color 0.18s;
-    }
+  .profile-form .form-control {
+    background: #f8fafc;
+    border-radius: 0.7rem;
+    border: 1.5px solid #e0e7ef;
+    font-size: 1.13rem;
+    font-weight: 500;
+    color: #223b7b;
+    transition: box-shadow 0.18s, border-color 0.18s;
+  }
 
-    .profile-form .form-control:focus {
-        box-shadow: 0 0 0 2px #b3d1f7;
-        border-color: #2563eb;
-        background: #fff;
-    }
+  .profile-form .form-control:focus {
+    box-shadow: 0 0 0 2px #b3d1f7;
+    border-color: #2563eb;
+    background: #fff;
+  }
 
-    .profile-save-btn {
-        width: 100%;
-        background: linear-gradient(90deg, #2563eb 0%, #06b6d4 100%);
-        color: #fff !important;
-        font-weight: 800;
-        border: none;
-        border-radius: 2em;
-        box-shadow: 0 2px 12px rgba(59, 130, 246, 0.10);
-        padding: 0.9em 0;
-        font-size: 1.18rem;
-        transition: background 0.18s, box-shadow 0.18s, transform 0.13s;
-        margin-top: 0.2rem;
-        margin-bottom: 0.7rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.7em;
-    }
+  .profile-save-btn {
+    width: 100%;
+    background: linear-gradient(90deg, #2563eb 0%, #06b6d4 100%);
+    color: #fff !important;
+    font-weight: 800;
+    border: none;
+    border-radius: 2em;
+    box-shadow: 0 2px 12px rgba(59, 130, 246, 0.10);
+    padding: 0.9em 0;
+    font-size: 1.18rem;
+    transition: background 0.18s, box-shadow 0.18s, transform 0.13s;
+    margin-top: 0.2rem;
+    margin-bottom: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7em;
+  }
 
     .profile-save-btn:hover,
     .profile-save-btn:focus {
-        background: linear-gradient(90deg, #1a2f9a 0%, #0e7490 100%);
-        color: #fff !important;
-        box-shadow: 0 4px 18px rgba(59, 130, 246, 0.18);
-        transform: scale(1.03);
-    }
+    background: linear-gradient(90deg, #1a2f9a 0%, #0e7490 100%);
+    color: #fff !important;
+    box-shadow: 0 4px 18px rgba(59, 130, 246, 0.18);
+    transform: scale(1.03);
+  }
 
-    .profile-delete-section .card {
-        border: 2px solid #ffe0e0;
-        background: linear-gradient(90deg, #fff0f0 0%, #ffe0e0 100%);
-        border-radius: 1.1rem;
-        box-shadow: 0 2px 12px rgba(220, 53, 69, 0.07);
-    }
+  .profile-delete-section .card {
+    border: 2px solid #ffe0e0;
+    background: linear-gradient(90deg, #fff0f0 0%, #ffe0e0 100%);
+    border-radius: 1.1rem;
+    box-shadow: 0 2px 12px rgba(220, 53, 69, 0.07);
+  }
 
-    .profile-delete-section .btn-danger {
-        background: linear-gradient(90deg, #dc3545 0%, #ff6f6f 100%);
-        border: none;
-        border-radius: 2em;
-        font-weight: 700;
-        font-size: 1.08rem;
-        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.10);
-        transition: background 0.18s, box-shadow 0.18s, transform 0.13s;
-    }
+  .profile-delete-section .btn-danger {
+    background: linear-gradient(90deg, #dc3545 0%, #ff6f6f 100%);
+    border: none;
+    border-radius: 2em;
+    font-weight: 700;
+    font-size: 1.08rem;
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.10);
+    transition: background 0.18s, box-shadow 0.18s, transform 0.13s;
+  }
 
     .profile-delete-section .btn-danger:hover,
     .profile-delete-section .btn-danger:focus {
-        background: linear-gradient(90deg, #b91c1c 0%, #dc2626 100%);
-        color: #fff;
-        box-shadow: 0 4px 18px rgba(220, 53, 69, 0.18);
-        transform: scale(1.03);
-    }
+    background: linear-gradient(90deg, #b91c1c 0%, #dc2626 100%);
+    color: #fff;
+    box-shadow: 0 4px 18px rgba(220, 53, 69, 0.18);
+    transform: scale(1.03);
+  }
 
-    @media (max-width: 600px) {
-        .profile-glass-card {
-            padding: 1.2rem 0.5rem 1.2rem 0.5rem;
-        }
+  @media (max-width: 600px) {
+    .profile-glass-card {
+      padding: 1.2rem 0.5rem 1.2rem 0.5rem;
+    }
 
         .profile-tabs {
             flex-direction: column;
             gap: 0.3rem;
         }
 
-        .profile-tabs .nav-link {
-            font-size: 1rem;
-            padding: 0.7em 0.7em;
-        }
-
-        .profile-avatar {
-            width: 90px;
-            height: 90px;
-        }
+    .profile-tabs .nav-link {
+      font-size: 1rem;
+      padding: 0.7em 0.7em;
     }
+
+    .profile-avatar {
+      width: 90px;
+      height: 90px;
+    }
+  }
 
     .profile-password-card {
         background: #f8fafc;
@@ -568,219 +611,313 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const profilePictureInput = document.getElementById('profile-picture-input');
-        const imageToCrop = document.getElementById('image-to-crop');
-        const imageCropperContainer = document.getElementById('image-cropper-container');
-        const profilePictureBase64Input = document.getElementById('profile-picture-base64');
-        const cropAndSaveButton = document.getElementById('crop-and-save-button');
-        const removePfpButtonContainer = document.getElementById('remove-pfp-button-container');
-        const removePfpButton = document.getElementById('remove-pfp-button');
-        let cropper;
+    const profilePictureInput = document.getElementById('profile-picture-input');
+    const imageToCrop = document.getElementById('image-to-crop');
+    const imageCropperContainer = document.getElementById('image-cropper-container');
+    const profilePictureBase64Input = document.getElementById('profile-picture-base64');
+    const cropAndSaveButton = document.getElementById('crop-and-save-button');
+    const removePfpButtonContainer = document.getElementById('remove-pfp-button-container');
+    const removePfpButton = document.getElementById('remove-pfp-button');
+    let cropper;
 
-        // Show/hide remove button based on if a profile picture exists
-        if (removePfpButtonContainer && profilePictureBase64Input.value) {
-            removePfpButtonContainer.style.display = 'block';
-        }
+    // Show/hide remove button based on if a profile picture exists
+    if (removePfpButtonContainer && profilePictureBase64Input.value) {
+        removePfpButtonContainer.style.display = 'block';
+    }
 
         profilePictureInput.addEventListener('change', function (e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
                 reader.onload = function (event) {
-                    imageToCrop.src = event.target.result;
-                    if (cropper) {
-                        cropper.destroy();
-                    }
-                    imageCropperContainer.classList.remove('d-none');
-                    cropper = new Cropper(imageToCrop, {
-                        aspectRatio: 1 / 1,
-                        viewMode: 1,
-                        autoCropArea: 0.8,
-                        responsive: true,
-                        dragMode: 'move',
-                        cropBoxMovable: true,
-                        cropBoxResizable: true,
-                        toggleDragModeOnDblclick: false
-                    });
-                    // Hide remove button when a new image is selected for upload
-                    if (removePfpButtonContainer) {
-                        removePfpButtonContainer.style.display = 'none';
-                    }
-                };
-                reader.readAsDataURL(file);
-            } else {
-                // If no file selected (e.g., cleared input), hide cropper and show remove button if pfp exists
+                imageToCrop.src = event.target.result;
                 if (cropper) {
                     cropper.destroy();
                 }
-                imageCropperContainer.classList.add('d-none');
-                if (removePfpButtonContainer && profilePictureBase64Input.value) {
-                    removePfpButtonContainer.style.display = 'block';
+                imageCropperContainer.classList.remove('d-none');
+                cropper = new Cropper(imageToCrop, {
+                    aspectRatio: 1 / 1,
+                    viewMode: 1,
+                    autoCropArea: 0.8,
+                    responsive: true,
+                    dragMode: 'move',
+                    cropBoxMovable: true,
+                    cropBoxResizable: true,
+                    toggleDragModeOnDblclick: false
+                });
+                // Hide remove button when a new image is selected for upload
+                if (removePfpButtonContainer) {
+                    removePfpButtonContainer.style.display = 'none';
                 }
+            };
+            reader.readAsDataURL(file);
+        } else {
+            // If no file selected (e.g., cleared input), hide cropper and show remove button if pfp exists
+            if (cropper) {
+                cropper.destroy();
             }
-        });
+            imageCropperContainer.classList.add('d-none');
+            if (removePfpButtonContainer && profilePictureBase64Input.value) {
+                removePfpButtonContainer.style.display = 'block';
+            }
+        }
+    });
 
         cropAndSaveButton.addEventListener('click', function () {
-            if (cropper) {
-                const croppedCanvas = cropper.getCroppedCanvas({
-                    width: 150, // Target width for the profile picture
-                    height: 150 // Target height for the profile picture
-                });
-                profilePictureBase64Input.value = croppedCanvas.toDataURL('image/jpeg');
+        if (cropper) {
+            const croppedCanvas = cropper.getCroppedCanvas({
+                width: 150, // Target width for the profile picture
+                height: 150 // Target height for the profile picture
+            });
+            profilePictureBase64Input.value = croppedCanvas.toDataURL('image/jpeg');
+            document.getElementById('profile-picture-form').submit();
+        }
+    });
+
+    if (removePfpButton) {
+            removePfpButton.addEventListener('click', function () {
+            if (confirm('Are you sure you want to remove your profile picture?')) {
+                profilePictureBase64Input.value = ''; // Clear the base64 value
                 document.getElementById('profile-picture-form').submit();
             }
         });
+    }
 
-        if (removePfpButton) {
-            removePfpButton.addEventListener('click', function () {
-                if (confirm('Are you sure you want to remove your profile picture?')) {
-                    profilePictureBase64Input.value = ''; // Clear the base64 value
-                    document.getElementById('profile-picture-form').submit();
-                }
-            });
-        }
+    // Handle main profile form submission
+    const mainProfileSaveButton = document.getElementById('main-profile-save-button');
+    const mainProfileForm = document.getElementById('main-profile-form');
 
-        // Handle main profile form submission
-        const mainProfileSaveButton = document.getElementById('main-profile-save-button');
-        const mainProfileForm = document.getElementById('main-profile-form');
-
-        if (mainProfileSaveButton && mainProfileForm) {
+    if (mainProfileSaveButton && mainProfileForm) {
             mainProfileSaveButton.addEventListener('click', function () {
-                console.log("Attempting to submit main profile form..."); // New debug log
-                mainProfileForm.submit();
-            });
-        }
-
-        // Handle unban from group buttons
-        document.querySelectorAll('.unban-from-group-btn').forEach(button => {
-            button.addEventListener('click', async function () {
-                const userId = this.dataset.userId;
-                const groupId = this.dataset.groupId;
-
-                if (!confirm('Are you sure you want to unban this user from this group?')) {
-                    return;
-                }
-
-                const formData = new FormData();
-                formData.append('user_id', userId);
-                formData.append('group_id', groupId);
-                formData.append('action', 'unban');
-                formData.append('ban_type', 'group'); // Specify ban type as 'group'
-
-                try {
-                    const url = `/users/${userId}/ban/`;
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRFToken': getCookie('csrftoken')
-                        },
-                        body: formData
-                    });
-
-                    const data = await response.json();
-
-                    if (response.ok) {
-                        alert(data.message);
-                        location.reload(); // Reload the page to reflect changes
-                    } else {
-                        alert('Error: ' + data.message);
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('An error occurred while processing your request.');
-                }
-            });
+            console.log("Attempting to submit main profile form..."); // New debug log
+            mainProfileForm.submit();
         });
+    }
 
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
+    // Handle unban from group buttons
+    document.querySelectorAll('.unban-from-group-btn').forEach(button => {
+            button.addEventListener('click', async function () {
+            const userId = this.dataset.userId;
+            const groupId = this.dataset.groupId;
+            
+            if (!confirm('Are you sure you want to unban this user from this group?')) {
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('user_id', userId);
+            formData.append('group_id', groupId);
+            formData.append('action', 'unban');
+            formData.append('ban_type', 'group'); // Specify ban type as 'group'
+
+            try {
+                const url = `/users/${userId}/ban/`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(data.message);
+                    location.reload(); // Reload the page to reflect changes
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while processing your request.');
+            }
+        });
+    });
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
                 }
             }
-            return cookieValue;
         }
+        return cookieValue;
+    }
 
-        // Restore last active profile tab
-        const profileTabs = document.getElementById('profileTabs');
-        if (profileTabs) {
-            const lastProfileTab = localStorage.getItem('lastProfileTab');
-            if (lastProfileTab) {
+    // Restore last active profile tab
+    const profileTabs = document.getElementById('profileTabs');
+    if (profileTabs) {
+        const lastProfileTab = localStorage.getItem('lastProfileTab');
+        if (lastProfileTab) {
                 const lastTabButton = document.querySelector(
                     `#profileTabs button[data-bs-target="${lastProfileTab}"]`);
-                if (lastTabButton) {
-                    new bootstrap.Tab(lastTabButton).show();
-                }
+            if (lastTabButton) {
+                new bootstrap.Tab(lastTabButton).show();
             }
+        }
 
-            // Save tab on click
+        // Save tab on click
             profileTabs.querySelectorAll('button[data-bs-toggle="tab"]').forEach(function (tabBtn) {
                 tabBtn.addEventListener('shown.bs.tab', function (e) {
                     localStorage.setItem('lastProfileTab', e.target.getAttribute(
                         'data-bs-target'));
-                });
             });
-        }
-    });
+        });
+    }
+});
 
-    // Math equation logic for delete modal
-    function generateEquation() {
-        const a = Math.floor(Math.random() * 10) + 1;
-        const b = Math.floor(Math.random() * 10) + 1;
-        const op = Math.random() > 0.5 ? '+' : '-';
-        const answer = op === '+' ? a + b : a - b;
+// Math equation logic for delete modal
+function generateEquation() {
+    const a = Math.floor(Math.random() * 10) + 1;
+    const b = Math.floor(Math.random() * 10) + 1;
+    const op = Math.random() > 0.5 ? '+' : '-';
+    const answer = op === '+' ? a + b : a - b;
         return {
             text: `${a} ${op} ${b} = ?`,
             answer
         };
-    }
-    let equation = null;
+}
+let equation = null;
     document.addEventListener('DOMContentLoaded', function () {
-        var deleteModal = document.getElementById('deleteAccountModal');
-        var equationSpan = document.getElementById('math-equation');
-        var answerInput = document.getElementById('math-answer');
-        var openFinalBtn = document.getElementById('open-final-delete-btn');
-        var feedback = document.getElementById('math-feedback');
-        var finalDeleteModal = document.getElementById('finalDeleteModal');
-        var finalDeleteForm = document.getElementById('final-delete-form');
-        if (deleteModal) {
+    var deleteModal = document.getElementById('deleteAccountModal');
+    var equationSpan = document.getElementById('math-equation');
+    var answerInput = document.getElementById('math-answer');
+    var openFinalBtn = document.getElementById('open-final-delete-btn');
+    var feedback = document.getElementById('math-feedback');
+    var finalDeleteModal = document.getElementById('finalDeleteModal');
+    var finalDeleteForm = document.getElementById('final-delete-form');
+    if (deleteModal) {
             deleteModal.addEventListener('show.bs.modal', function () {
-                equation = generateEquation();
-                equationSpan.textContent = equation.text;
-                answerInput.value = '';
-                openFinalBtn.disabled = true;
-                feedback.style.display = 'none';
-            });
+            equation = generateEquation();
+            equationSpan.textContent = equation.text;
+            answerInput.value = '';
+            openFinalBtn.disabled = true;
+            feedback.style.display = 'none';
+        });
             answerInput.addEventListener('input', function () {
-                if (parseInt(answerInput.value, 10) === equation.answer) {
-                    openFinalBtn.disabled = false;
-                    feedback.style.display = 'none';
+            if (parseInt(answerInput.value, 10) === equation.answer) {
+                openFinalBtn.disabled = false;
+                feedback.style.display = 'none';
+            } else {
+                openFinalBtn.disabled = true;
+                if (answerInput.value !== '') {
+                    feedback.style.display = 'block';
                 } else {
-                    openFinalBtn.disabled = true;
-                    if (answerInput.value !== '') {
-                        feedback.style.display = 'block';
-                    } else {
-                        feedback.style.display = 'none';
-                    }
+                    feedback.style.display = 'none';
                 }
-            });
+            }
+        });
             openFinalBtn.addEventListener('click', function () {
-                var bsModal = bootstrap.Modal.getInstance(deleteModal);
-                bsModal.hide();
-                var finalModal = new bootstrap.Modal(finalDeleteModal);
-                finalModal.show();
-            });
-        }
-    });
+            var bsModal = bootstrap.Modal.getInstance(deleteModal);
+            bsModal.hide();
+            var finalModal = new bootstrap.Modal(finalDeleteModal);
+            finalModal.show();
+        });
+    }
+});
+</script>
+
+<!-- Telegram Widget Script -->
+<script src="https://telegram.org/js/telegram-widget.js?22"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Telegram Account Linking
+    const telegramLinkWidget = document.getElementById('telegram-link-widget');
+    const unlinkTelegramBtn = document.getElementById('unlink-telegram-btn');
+    
+    // Initialize Telegram Link Widget
+    if (telegramLinkWidget) {
+        Telegram.Login.Widget({
+            dataOnauth: function(user) {
+                // Send Telegram data to link account
+                fetch('{% url "link_telegram_account" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify({
+                        telegram_data: user
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show success message and reload page
+                        const successDiv = document.createElement('div');
+                        successDiv.className = 'alert alert-success';
+                        successDiv.textContent = data.message;
+                        telegramLinkWidget.appendChild(successDiv);
+                        
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        // Show error message
+                        const errorDiv = document.createElement('div');
+                        errorDiv.className = 'alert alert-danger';
+                        errorDiv.textContent = data.error;
+                        telegramLinkWidget.appendChild(errorDiv);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'alert alert-danger';
+                    errorDiv.textContent = 'An error occurred while linking your account. Please try again.';
+                    telegramLinkWidget.appendChild(errorDiv);
+                });
+            },
+            bot_id: '{{ telegram_bot_username }}',
+            request_access: true,
+            lang: 'en'
+        }, telegramLinkWidget);
+    }
+    
+    // Handle unlink Telegram account
+    if (unlinkTelegramBtn) {
+        unlinkTelegramBtn.addEventListener('click', function() {
+            if (confirm('Are you sure you want to unlink your Telegram account? You will need to link it again to use Telegram login.')) {
+                fetch('{% url "unlink_telegram_account" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show success message and reload page
+                        const successDiv = document.createElement('div');
+                        successDiv.className = 'alert alert-success';
+                        successDiv.textContent = data.message;
+                        unlinkTelegramBtn.parentNode.appendChild(successDiv);
+                        
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while unlinking your account. Please try again.');
+                });
+            }
+        });
+    }
+});
 </script>
 {% endblock %}
 
 {% block extra_js %}
 {{ block.super }}
-{% endblock %}
+{% endblock %} 
