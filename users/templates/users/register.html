@@ -328,8 +328,8 @@
                             </div>
                         </div>
                     <div class="eula-check mb-3">
-                        <input type="checkbox" class="form-check-input" id="id_eula" name="eula" required>
-                        <label class="form-check-label" for="id_eula">
+                        <input type="checkbox" class="form-check-input" id="id_eula_agreement" name="eula_agreement" required>
+                        <label class="form-check-label" for="id_eula_agreement">
                             I agree to the <a href="/eula/" target="_blank">End User License Agreement (EULA)</a>
                                 </label>
                         </div>
@@ -355,7 +355,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to update button state
     function updateSubmitButton() {
-        if (eulaCheckbox.checked) {
+        if (eulaCheckbox && eulaCheckbox.checked) {
             submitButton.disabled = false;
             submitButton.classList.remove('btn-secondary');
             submitButton.classList.add('btn-primary');
@@ -370,14 +370,18 @@ document.addEventListener('DOMContentLoaded', function() {
     updateSubmitButton();
 
     // Update button state when checkbox changes
-    eulaCheckbox.addEventListener('change', updateSubmitButton);
+    if (eulaCheckbox) {
+        eulaCheckbox.addEventListener('change', updateSubmitButton);
+    }
 
     // Form submission validation
     form.addEventListener('submit', function(e) {
-        if (!eulaCheckbox.checked) {
+        if (!eulaCheckbox || !eulaCheckbox.checked) {
             e.preventDefault();
             alert('You must agree to the End User License Agreement to create an account.');
-            eulaCheckbox.focus();
+            if (eulaCheckbox) {
+                eulaCheckbox.focus();
+            }
             return false;
         }
     });
