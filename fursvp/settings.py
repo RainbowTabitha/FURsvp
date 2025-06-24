@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'tinymce',
     'corsheaders',
-    'django_q',
+    'django_q'
 ]
 
 MIDDLEWARE = [
@@ -207,10 +207,12 @@ Q_CLUSTER = {
 
 # Telegram Authentication Settings
 TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', '')
-TELEGRAM_BOT_USERNAME = os.environ.get('TELEGRAM_BOT_USERNAME', 'FURsvp_bot')
+TELEGRAM_BOT_USERNAME = os.environ.get('TELEGRAM_BOT_USERNAME', '')
 
 # Authentication backends
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'users.backends.TelegramBackend',
 ]
+
+TELEGRAM_LOGIN_ENABLED = os.environ.get('TELEGRAM_LOGIN_ENABLED', 'false').lower() == 'true'

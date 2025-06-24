@@ -27,6 +27,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.conf import settings
+from django.urls import reverse
 
 # Create your views here.
 
@@ -56,6 +57,7 @@ def pending_approval(request):
 
 @login_required
 def profile(request):
+    
     user_events = request.user.event_set.all().order_by('date')
     
     # Initialize forms for GET requests or if no specific POST action is taken
@@ -123,8 +125,6 @@ def profile(request):
             # If profile picture is not being updated via the modal, ensure its value is preserved
             if 'profile_picture_base64' not in post_data and request.user.profile.profile_picture_base64:
                 post_data['profile_picture_base64'] = request.user.profile.profile_picture_base64
-
-            print("POST data:", post_data)  # Debug print
             profile_form = UserPublicProfileForm(post_data, instance=request.user.profile)
             if profile_form.is_valid():
                 print("Form is valid")  # Debug print
@@ -212,6 +212,7 @@ def profile(request):
         'password_change_form': password_change_form,
         'banned_users_in_groups': banned_users_in_groups,
         'telegram_bot_username': settings.TELEGRAM_BOT_USERNAME,
+        'telegram_login_enabled': settings.TELEGRAM_LOGIN_ENABLED,
     }
     return render(request, 'users/profile.html', context)
 
@@ -555,57 +556,49 @@ def telegram_login(request):
 
 @login_required
 def link_telegram_account(request):
-    """
-    Link existing account to Telegram
-    """
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            telegram_data = data.get('telegram_data', {})
-            
-            if not telegram_data:
-                return JsonResponse({'success': False, 'error': 'No Telegram data provided'})
-            
-            # Check if this Telegram account is already linked to another user
-            telegram_id = telegram_data.get('id')
-            if telegram_id:
-                existing_profile = Profile.objects.filter(telegram_id=telegram_id).exclude(user=request.user).first()
-                if existing_profile:
-                    return JsonResponse({
-                        'success': False, 
-                        'error': 'This Telegram account is already linked to another user'
-                    })
-            
-            # Update user's profile with Telegram data
-            profile = request.user.profile
-            profile.telegram_id = telegram_id
-            profile.telegram_username = telegram_data.get('username')
-            
-            # Update display name if not already set
-            if not profile.display_name:
-                first_name = telegram_data.get('first_name', '')
-                last_name = telegram_data.get('last_name', '')
-                profile.display_name = f"{first_name} {last_name}".strip()
-            
-            profile.save()
-            
-            create_notification(
-                request.user, 
-                'Your account has been successfully linked to Telegram!', 
-                link='/users/profile/'
-            )
-            
-            return JsonResponse({
-                'success': True, 
-                'message': 'Account successfully linked to Telegram!'
-            })
-                
-        except json.JSONDecodeError:
-            return JsonResponse({'success': False, 'error': 'Invalid JSON data'})
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
-    
-    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+    if request.method == 'GET':
+        # Extract Telegram data from GET parameters
+        telegram_data = {
+            'id': request.GET.get('id'),
+            'first_name': request.GET.get('first_name', ''),
+            'last_name': request.GET.get('last_name', ''),
+            'username': request.GET.get('username', ''),
+            'photo_url': request.GET.get('photo_url', ''),
+            'auth_date': request.GET.get('auth_date'),
+            'hash': request.GET.get('hash'),
+        }
+        # Validate all required fields
+        if not all([telegram_data['id'], telegram_data['auth_date'], telegram_data['hash']]):
+            messages.error(request, 'Missing required Telegram data.')
+            return redirect('profile')
+        # Hash verification (reuse backend logic)
+        from users.backends import TelegramBackend
+        backend = TelegramBackend()
+        if not backend._validate_telegram_data(telegram_data):
+            messages.error(request, 'Telegram authentication failed. Please try again.')
+            return redirect('profile')
+        # Check if this Telegram account is already linked to another user
+        from .models import Profile
+        telegram_id = telegram_data['id']
+        existing_profile = Profile.objects.filter(telegram_id=telegram_id).exclude(user=request.user).first()
+        if existing_profile:
+            messages.error(request, 'This Telegram account is already linked to another user.')
+            return redirect('profile')
+        # Link Telegram to current user
+        profile = request.user.profile
+        profile.telegram_id = telegram_id
+        profile.telegram_username = telegram_data.get('username')
+        if not profile.display_name:
+            profile.display_name = f"{telegram_data.get('first_name', '')} {telegram_data.get('last_name', '')}".strip()
+        profile.save()
+        from .views import create_notification
+        create_notification(
+            request.user,
+            'Your account has been successfully linked to Telegram!',
+            link='/users/profile/'
+        )
+        messages.success(request, 'Account successfully linked to Telegram!')
+        return redirect(f"{reverse('profile')}?telegram_linked=1")
 
 @login_required
 def unlink_telegram_account(request):

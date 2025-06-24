@@ -10,3 +10,4 @@ pytz
 python-telegram-bot
 requests
 python-dotenv
+django-csp

@@ -1,4 +1,5 @@
 *.pyc
+.env
 *.sqlite3
 staticfiles/
 event/migrations/
