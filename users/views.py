@@ -127,8 +127,6 @@ def profile(request):
                 post_data['profile_picture_base64'] = request.user.profile.profile_picture_base64
             profile_form = UserPublicProfileForm(post_data, instance=request.user.profile)
             if profile_form.is_valid():
-                print("Form is valid")  # Debug print
-                print("Form cleaned data:", profile_form.cleaned_data)  # Debug print
                 # Handle clear profile picture
                 if profile_form.cleaned_data.get('clear_profile_picture'):
                     request.user.profile.profile_picture_base64 = None
@@ -139,7 +137,6 @@ def profile(request):
                 profile = profile_form.save()
                 return redirect('profile')
             else:
-                print("Form errors:", profile_form.errors)  # Debug print
                 messages.error(request, f'Error updating profile settings: {profile_form.errors}', extra_tags='admin_notification')
         
         elif 'submit_password_changes' in request.POST: # Handle password change
@@ -398,6 +395,38 @@ def administration(request):
             messages.success(request, f'Notification sent to {users.count()} users.')
             return redirect('administration')
 
+        elif request.POST.get('action') == 'update_banner':
+            try:                
+                # Store banner settings in session for now (simple approach)
+                banner_enabled = 'banner_enabled' in request.POST
+                banner_text = request.POST.get('banner_text', '').strip()
+                banner_type = request.POST.get('banner_type', 'info')
+                
+                # Validate banner type
+                valid_types = ['info', 'warning', 'success', 'danger']
+                if banner_type not in valid_types:
+                    banner_type = 'info'
+                
+                # Store in session
+                request.session['banner_enabled'] = banner_enabled
+                request.session['banner_text'] = banner_text
+                request.session['banner_type'] = banner_type
+                
+                # Force session save
+                request.session.modified = True
+                
+                if banner_enabled and banner_text:
+                    messages.success(request, f'Site banner has been updated and is now visible with {banner_type} style.')
+                elif not banner_enabled:
+                    messages.success(request, 'Site banner has been disabled.')
+                else:
+                    messages.warning(request, 'Banner is enabled but no text was provided.')
+                
+            except Exception as e:
+                messages.error(request, f'Error updating banner: {str(e)}')
+            
+            return redirect('administration')
+
         return redirect('administration')
 
     context = {
@@ -409,7 +438,11 @@ def administration(request):
         'all_banned_users': all_banned_users,
         'user_search': user_search,
         'group_search': group_search,
+        'banner_enabled': request.session.get('banner_enabled', False),
+        'banner_text': request.session.get('banner_text', ''),
+        'banner_type': request.session.get('banner_type', 'info'),
     }
+    
     return render(request, 'users/administration.html', context)
 
 # New view for username suggestions

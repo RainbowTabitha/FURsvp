@@ -26,6 +26,11 @@
             flex-direction: column;
         }
 
+        /* Add margin when banner is present */
+        body.has-banner {
+            margin-top: 4rem;
+        }
+
         .top-bar {
             background: var(--secondary-color);
             padding: 0.5rem 0;
@@ -1507,7 +1512,7 @@
 
             .auth-btn {
                 padding: 0.6rem 1rem;
-                font-size: 0.9rem;
+                font-size: 1.4rem;
             }
 
             .nav-menu {
@@ -1915,6 +1920,158 @@
             border: 2px solid #fff !important;
             font-weight: 700;
         }
+
+        /* Site Banner Styles */
+        .site-banner {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            font-weight: 600;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 0;
+            padding: 1rem 0;
+        }
+
+        .site-banner .btn-close {
+            width: 1.5rem;
+            height: 1.5rem;
+            min-width: 1.5rem;
+            min-height: 1.5rem;
+            padding: 0;
+            background: none;
+            border: none;
+            border-radius: 0;
+            opacity: 0.7;
+            box-shadow: none;
+            filter: none;
+        }
+        .site-banner .btn-close:hover {
+            opacity: 1;
+            background: none;
+        }
+
+        .site-banner.alert-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border-bottom: 3px solid #5a67d8;
+        }
+
+        .site-banner.alert-warning {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            color: #fff;
+            border-bottom: 3px solid #d69e2e;
+        }
+
+        .site-banner.alert-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: #fff;
+            border-bottom: 3px solid #38a169;
+        }
+
+        .site-banner.alert-danger {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: #fff;
+            border-bottom: 3px solid #e53e3e;
+        }
+
+        .site-banner .material-icons {
+            font-size: 1.4rem;
+            margin-right: 0.75rem;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+
+        .site-banner span {
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.02em;
+        }
+
+        /* Dark mode banner styles */
+        .dark-mode .site-banner.alert-info {
+            background: linear-gradient(135deg, #4c51bf 0%, #667eea 100%) !important;
+            color: #fff !important;
+            border-bottom: 3px solid #5a67d8 !important;
+        }
+
+        .dark-mode .site-banner.alert-warning {
+            background: linear-gradient(135deg, #d69e2e 0%, #ffecd2 100%) !important;
+            color: #fff !important;
+            border-bottom: 3px solid #d69e2e !important;
+        }
+
+        .dark-mode .site-banner.alert-success {
+            background: linear-gradient(135deg, #38a169 0%, #11998e 100%) !important;
+            color: #fff !important;
+            border-bottom: 3px solid #38a169 !important;
+        }
+
+        .dark-mode .site-banner.alert-danger {
+            background: linear-gradient(135deg, #e53e3e 0%, #fa709a 100%) !important;
+            color: #fff !important;
+            border-bottom: 3px solid #c53030 !important;
+        }
+
+        @media (max-width: 768px) {
+            .site-banner {
+                font-size: 1rem;
+                padding: 0.75rem 0;
+            }
+            
+            .site-banner .material-icons {
+                font-size: 1.2rem;
+                margin-right: 0.5rem;
+            }
+        }
+
+        .banner-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 4rem;
+            z-index: 1050;
+            background: var(--secondary-color);
+        }
+
+        .site-banner .banner-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .site-banner .banner-icon.left {
+            margin-right: 0.5rem;
+        }
+        .site-banner .banner-icon.right {
+            margin-left: 0.5rem;
+        }
+        .site-banner .banner-close {
+            height: 2.5rem;
+            width: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .site-banner .banner-text {
+            flex: 1;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        .site-banner .banner-icon.right {
+            margin: 0 1.3rem;
+        }
+        .site-banner .btn-close {
+            height: 1.5rem;
+            width: 1.5rem;
+            min-width: 1.5rem;
+            min-height: 1.5rem;
+            padding: 0;
+            background: none;
+            border: none;
+            box-shadow: none;
+        }
     </style>
     <!-- TomSelect CSS -->
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
@@ -1933,6 +2090,35 @@
 </head>
 
 <body>
+    <!-- Site Banner -->
+    {% if banner_enabled and banner_text %}
+    <div id="siteBanner" class="site-banner alert alert-{{ banner_type }} mb-0" role="alert" style="border-radius: 0; border: none;">
+        <div class="container d-flex align-items-center" style="min-height: 2.5rem;">
+            <div class="d-flex align-items-center mx-auto">
+                <span class="banner-icon d-flex align-items-center justify-content-center">
+                    <i class="material-icons">
+                        {% if banner_type == 'info' %}info
+                        {% elif banner_type == 'warning' %}warning
+                        {% elif banner_type == 'success' %}check_circle
+                        {% elif banner_type == 'danger' %}error
+                        {% else %}info{% endif %}
+                    </i>
+                </span>
+                <span class="banner-text text-center mx-2" style="font-weight: 600;">{{ banner_text }}</span>
+                <span class="banner-icon d-flex align-items-center justify-content-center ms-2">
+                    <i class="material-icons">
+                        {% if banner_type == 'info' %}info
+                        {% elif banner_type == 'warning' %}warning
+                        {% elif banner_type == 'success' %}check_circle
+                        {% elif banner_type == 'danger' %}error
+                        {% else %}info{% endif %}
+                    </i>
+                </span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Mobile Header -->
     <div class="mobile-header">
         <a class="navbar-brand" href="{% url 'home' %}">
@@ -1942,10 +2128,10 @@
             <img src="{% static 'fursvp-logo.png' %}" alt="FURsvp Logo">
             {% endif %}
         </a>
-    </div>
+    </div>  
 
     <!-- Main Header -->
-    <header class="main-header">
+    <header class="main-header {% if banner_enabled and banner_text %}has-banner{% endif %}">
         <div class="container">
             <div class="header-content">
                 <!-- Logo -->
@@ -2509,5 +2695,4 @@
         });
     </script>
 </body>
-
 </html>

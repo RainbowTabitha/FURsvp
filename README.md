@@ -1,6 +1,6 @@
 # FURsvp Event Manager
 
-FURsvp is a Django-based event management system designed to help organizers within the furry community manage events, RSVPs, and user interactions. It provides a streamlined platform for event creation, attendee tracking, and administrative oversight.
+FURsvp is a Django-based event management system designed to help organizers within the furry fandom manage events, RSVPs, and user interactions. It provides a streamlined platform for event creation, attendee tracking, and administrative oversight.
 
 ## Features
 

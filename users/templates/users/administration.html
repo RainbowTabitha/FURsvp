@@ -28,8 +28,13 @@
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="banner-tab" data-bs-toggle="tab" data-bs-target="#banner" type="button" role="tab" aria-controls="banner" aria-selected="false">
+                        <i class="material-icons align-middle me-1">campaign</i> Site Banner
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
                     <button class="nav-link" id="notify-tab" data-bs-toggle="tab" data-bs-target="#notify" type="button" role="tab" aria-controls="notify" aria-selected="false">
-                        <i class="material-icons align-middle me-1">campaign</i> Send Notification
+                        <i class="material-icons align-middle me-1">notifications</i> Send Notification
                     </button>
                 </li>
             </ul>
@@ -367,6 +372,87 @@
                         </table>
                     </div>
                 </div>
+                <div class="tab-pane fade" id="banner" role="tabpanel" aria-labelledby="banner-tab">
+                    <h2 class="card-title h4 mb-4 text-primary fw-bold">
+                        <i class="material-icons me-2">campaign</i> Site Banner Management
+                    </h2>
+                    
+                    <div class="card bg-light border-0 rounded-3 mb-4">
+                        <div class="card-body">
+                            <h3 class="h5 mb-3 text-secondary">
+                                <i class="material-icons me-2">settings</i> Configure Site Banner
+                            </h3>
+                            <form method="post" id="bannerForm">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="update_banner">
+                                
+                                <div class="mb-3">
+                                    <label for="banner_enabled" class="form-label">
+                                        <i class="material-icons align-middle me-1">toggle_on</i> Enable Banner
+                                    </label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="banner_enabled" name="banner_enabled" {% if banner_enabled %}checked{% endif %}>
+                                        <label class="form-check-label" for="banner_enabled">
+                                            Show banner at the top of the site
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="banner_text" class="form-label">
+                                        <i class="material-icons align-middle me-1">text_fields</i> Banner Text
+                                    </label>
+                                    <textarea class="form-control" id="banner_text" name="banner_text" rows="3" placeholder="Enter banner message...">{{ banner_text|default:'' }}</textarea>
+                                    <div class="form-text">This text will be displayed in the banner at the top of the site.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="banner_type" class="form-label">
+                                        <i class="material-icons align-middle me-1">palette</i> Banner Style
+                                    </label>
+                                    <select class="form-control" id="banner_type" name="banner_type">
+                                        <option value="info" {% if banner_type == 'info' %}selected{% endif %}>Information (Blue)</option>
+                                        <option value="warning" {% if banner_type == 'warning' %}selected{% endif %}>Warning (Yellow)</option>
+                                        <option value="success" {% if banner_type == 'success' %}selected{% endif %}>Success (Green)</option>
+                                        <option value="danger" {% if banner_type == 'danger' %}selected{% endif %}>Danger (Red)</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary btn-lg rounded-pill px-4 shadow-sm">
+                                        <i class="material-icons me-2">save</i> Update Banner
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Banner Preview -->
+                    <div class="card border-0 rounded-3 mb-4">
+                        <div class="card-header bg-light">
+                            <h4 class="h6 mb-0">
+                                <i class="material-icons me-2">visibility</i> Banner Preview
+                            </h4>
+                        </div>
+                        <div class="card-body p-0">
+                            <div id="bannerPreview" class="site-banner" style="display: none; margin: 0; border-radius: 0.5rem;">
+                                <div class="container">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            <i class="material-icons me-2">info</i>
+                                            <span id="previewText">Banner preview will appear here</span>
+                                        </div>
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="noBannerPreview" class="text-muted text-center py-4">
+                                <i class="material-icons fs-1 mb-2">visibility_off</i>
+                                <p class="mb-0">Banner is currently disabled</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="tab-pane fade" id="notify" role="tabpanel" aria-labelledby="notify-tab">
                     <div class="mb-4 mt-4">
                         <form method="post" action="{% url 'send_bulk_notification' %}" class="row g-2 align-items-end">
@@ -655,6 +741,63 @@
                 }
             });
         }
+
+        // Banner preview functionality
+        const bannerForm = document.getElementById('bannerForm');
+        const bannerEnabled = document.getElementById('banner_enabled');
+        const bannerText = document.getElementById('banner_text');
+        const bannerType = document.getElementById('banner_type');
+        const bannerPreview = document.getElementById('bannerPreview');
+        const noBannerPreview = document.getElementById('noBannerPreview');
+        const previewText = document.getElementById('previewText');
+
+        function updateBannerPreview() {
+            const enabled = bannerEnabled.checked;
+            const text = bannerText.value.trim();
+            const type = bannerType.value;
+
+            if (enabled && text) {
+                // Show banner preview
+                bannerPreview.style.display = 'block';
+                noBannerPreview.style.display = 'none';
+                
+                // Update preview content
+                previewText.textContent = text;
+                
+                // Update banner style - use the same classes as the actual banner
+                bannerPreview.className = `site-banner alert-${type}`;
+                bannerPreview.style.margin = '0';
+                bannerPreview.style.borderRadius = '0.5rem';
+                
+                // Update icon based on type
+                const icon = bannerPreview.querySelector('.material-icons');
+                const iconMap = {
+                    'info': 'info',
+                    'warning': 'warning',
+                    'success': 'check_circle',
+                    'danger': 'error'
+                };
+                icon.textContent = iconMap[type] || 'info';
+            } else {
+                // Hide banner preview
+                bannerPreview.style.display = 'none';
+                noBannerPreview.style.display = 'block';
+            }
+        }
+
+        // Add event listeners for banner preview
+        if (bannerEnabled) {
+            bannerEnabled.addEventListener('change', updateBannerPreview);
+        }
+        if (bannerText) {
+            bannerText.addEventListener('input', updateBannerPreview);
+        }
+        if (bannerType) {
+            bannerType.addEventListener('change', updateBannerPreview);
+        }
+
+        // Initialize banner preview on page load
+        updateBannerPreview();
     });
 </script>
 
