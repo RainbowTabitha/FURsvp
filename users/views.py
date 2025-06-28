@@ -28,6 +28,7 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.conf import settings
 from django.urls import reverse
+from django.core.cache import cache
 
 # Create your views here.
 
@@ -397,7 +398,7 @@ def administration(request):
 
         elif request.POST.get('action') == 'update_banner':
             try:                
-                # Store banner settings in session for now (simple approach)
+                # Store banner settings in cache instead of session
                 banner_enabled = 'banner_enabled' in request.POST
                 banner_text = request.POST.get('banner_text', '').strip()
                 banner_type = request.POST.get('banner_type', 'info')
@@ -407,13 +408,16 @@ def administration(request):
                 if banner_type not in valid_types:
                     banner_type = 'info'
                 
-                # Store in session
-                request.session['banner_enabled'] = banner_enabled
-                request.session['banner_text'] = banner_text
-                request.session['banner_type'] = banner_type
+                # Store in cache (with no timeout - persistent until manually cleared)
+                cache.set('banner_enabled', banner_enabled, timeout=None)
+                cache.set('banner_text', banner_text, timeout=None)
+                cache.set('banner_type', banner_type, timeout=None)
                 
-                # Force session save
-                request.session.modified = True
+                # Clear banner cache if disabled
+                if not banner_enabled:
+                    cache.delete('banner_enabled')
+                    cache.delete('banner_text')
+                    cache.delete('banner_type')
                 
                 if banner_enabled and banner_text:
                     messages.success(request, f'Site banner has been updated and is now visible with {banner_type} style.')
@@ -438,9 +442,9 @@ def administration(request):
         'all_banned_users': all_banned_users,
         'user_search': user_search,
         'group_search': group_search,
-        'banner_enabled': request.session.get('banner_enabled', False),
-        'banner_text': request.session.get('banner_text', ''),
-        'banner_type': request.session.get('banner_type', 'info'),
+        'banner_enabled': cache.get('banner_enabled', False),
+        'banner_text': cache.get('banner_text', ''),
+        'banner_type': cache.get('banner_type', 'info'),
     }
     
     return render(request, 'users/administration.html', context)

@@ -498,11 +498,13 @@
                 background: white;
                 box-shadow: 0 -6px 15px rgba(0, 0, 0, 0.15);
                 z-index: 1000;
-                padding: 0.5rem 0.25rem;
-                justify-content: space-between;
+                padding: 0.4rem 0.1rem;
+                justify-content: space-around;
                 align-items: center;
                 border-top-left-radius: 15px;
                 border-top-right-radius: 15px;
+                flex-wrap: nowrap;
+                overflow: hidden;
             }
 
             .mobile-bottom-nav .nav-link {
@@ -510,13 +512,14 @@
                 flex-direction: column;
                 align-items: center;
                 color: var(--primary-color);
-                font-size: 0.75rem;
-                flex-grow: 0;
-                margin-left: 10px;
-                margin-right: 10px;
+                font-size: 0.6rem;
+                flex: 1;
+                margin: 0 0.05rem;
                 text-align: center;
                 text-decoration: none;
                 transition: all 0.3s ease;
+                min-width: 0;
+                padding: 0.15rem 0.05rem;
             }
 
             .mobile-bottom-nav .nav-link:hover,
@@ -532,10 +535,18 @@
             }
 
             .mobile-bottom-nav .material-icons {
-                font-size: 1.5rem;
-                margin-bottom: 0.2rem;
+                font-size: 1.2rem;
+                margin-bottom: 0.05rem;
                 color: var(--primary-color);
                 transition: all 0.3s ease;
+            }
+
+            .mobile-bottom-nav .nav-link span {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 100%;
+                line-height: 1.1;
             }
 
             .main-content {
@@ -1480,8 +1491,9 @@
         @media (max-width: 768px) {
 
             .main-header,
-            .navigation-subheader {
-                display: none;
+            .navigation-subheader,
+            .modern-topnav {
+                display: none !important;
             }
 
             .header-content {
@@ -2011,13 +2023,22 @@
 
         @media (max-width: 768px) {
             .site-banner {
-                font-size: 1rem;
-                padding: 0.75rem 0;
+                font-size: 0.9rem;
+                padding: 0.5rem 0;
             }
             
             .site-banner .material-icons {
-                font-size: 1.2rem;
-                margin-right: 0.5rem;
+                font-size: 1rem;
+                margin-right: 0.3rem;
+            }
+            
+            .site-banner .banner-text {
+                font-size: 0.9rem;
+                font-weight: 500;
+            }
+            
+            .site-banner .container {
+                min-height: 1.8rem !important;
             }
         }
 
@@ -2071,6 +2092,30 @@
             background: none;
             border: none;
             box-shadow: none;
+        }
+
+        /* Mobile footer button adjustments */
+        @media (max-width: 768px) {
+            .footer-btn-modern {
+                padding: 0.4em 0.8em;
+                font-size: 0.8rem;
+                margin: 0.2em 0.2em 0.2em 0;
+                gap: 0.3em;
+            }
+            
+            .footer-btn-modern i,
+            .footer-btn-modern .material-icons {
+                font-size: 1em;
+            }
+            
+            .footer .d-flex.gap-2 {
+                gap: 0.3rem !important;
+            }
+            
+            .footer .btn-sm {
+                padding: 0.3rem 0.6rem;
+                font-size: 0.75rem;
+            }
         }
     </style>
     <!-- TomSelect CSS -->
@@ -2265,7 +2310,7 @@
 
     <!-- Mobile Bottom Navigation -->
     <nav class="mobile-bottom-nav">
-        <a href="{% url 'home' %}" style="padding-right: -2.5rem;"
+        <a href="{% url 'home' %}"
             class="nav-link home-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
             <i class="material-icons">home</i>
             <span>Home</span>
@@ -2273,38 +2318,38 @@
         {% if user.is_authenticated %}
         <a href="{% url 'notifications_page' %}" class="nav-link" id="mobileNotificationsLink">
             <i class="material-icons" id="mobileNotificationsIcon">notifications</i>
-            <span>Alerts</span>
+            <span>Alert</span>
         </a>
         {% endif %}
         {% if user.group_roles.all or user.delegated_groups_as_delegate.exists %}
         <a href="{% url 'create_event' %}" class="nav-link">
             <i class="material-icons">add</i>
-            <span>Create</span>
+            <span>New</span>
         </a>
         {% endif %}
         {% if user.is_authenticated %}
         <a href="{% url 'profile' %}"
             class="nav-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
             <i class="material-icons">person</i>
-            <span>Profile</span>
+            <span>Me</span>
         </a>
         <form action="{% url 'logout' %}" method="post" class="d-inline" style="margin: 0;">
             {% csrf_token %}
             <button type="submit" class="nav-link logout-link">
                 <i class="material-icons">logout</i>
-                <span>Logout</span>
+                <span>Out</span>
             </button>
         </form>
         {% else %}
         <a href="{% url 'login' %}"
             class="nav-link {% if request.resolver_match.url_name == 'login' %}active{% endif %}">
             <i class="material-icons">login</i>
-            <span>Login</span>
+            <span>In</span>
         </a>
         <a href="{% url 'register' %}"
             class="nav-link {% if request.resolver_match.url_name == 'register' %}active{% endif %}">
             <i class="material-icons">person_add</i>
-            <span>Register</span>
+            <span>Join</span>
         </a>
         {% endif %}
     </nav>

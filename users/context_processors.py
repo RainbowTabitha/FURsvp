@@ -1,9 +1,12 @@
+from django.core.cache import cache
+
 def banner_settings(request):
     """Context processor to make banner settings available in all templates"""
     try:
-        banner_enabled = request.session.get('banner_enabled', False)
-        banner_text = request.session.get('banner_text', '')
-        banner_type = request.session.get('banner_type', 'info')
+        # Get banner settings from cache instead of session
+        banner_enabled = cache.get('banner_enabled', False)
+        banner_text = cache.get('banner_text', '')
+        banner_type = cache.get('banner_type', 'info')
         
         # Validate banner type
         valid_types = ['info', 'warning', 'success', 'danger']
