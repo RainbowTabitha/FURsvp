@@ -15,7 +15,7 @@ MANAGE_PY="./manage.py"
 
 # --- Collect static files ---
 echo "Starting Django-Q cluster..."
-nohup "$PYTHON_PATH" "$MANAGE_PY" collectstatic
+nohup "$PYTHON_PATH" "$MANAGE_PY" collectstatic --noinput
 
 # --- Start Gunicorn in the background ---
 echo "Starting Web Server (Gunicorn)..."
