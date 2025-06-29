@@ -623,7 +623,7 @@ def link_telegram_account(request):
             return redirect('profile')
         # Link Telegram to current user
         profile = request.user.profile
-        profile.telegram_id = telegram_id
+        profile.telegram_id = int(telegram_id)
         profile.telegram_username = telegram_data.get('username')
         if not profile.display_name:
             profile.display_name = f"{telegram_data.get('first_name', '')} {telegram_data.get('last_name', '')}".strip()

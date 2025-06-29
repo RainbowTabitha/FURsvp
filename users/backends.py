@@ -110,7 +110,7 @@ class TelegramBackend(BaseBackend):
         # Create profile with Telegram data
         profile = Profile.objects.create(
             user=user,
-            telegram_id=telegram_id,
+            telegram_id=int(telegram_id),
             telegram_username=telegram_data.get('username'),
             display_name=f"{first_name} {last_name}".strip() or username
         )
