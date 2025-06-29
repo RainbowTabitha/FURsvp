@@ -318,7 +318,6 @@
     </div>
 </div>
 
-{% if telegram_login_enabled %}
 <script src="https://telegram.org/js/telegram-widget.js?22"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -338,7 +337,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Telegram Login Widget
     const telegramWidget = document.getElementById('telegram-login-widget');
-    if (telegramWidget && typeof Telegram !== 'undefined') {
+    if (telegramWidget) {
         Telegram.Login.Widget({
             dataOnauth: function(user) {
                 // Send Telegram data to our backend
@@ -388,23 +387,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-{% else %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Password visibility toggle only
-    const togglePassword = document.getElementById('togglePasswordIcon');
-    const passwordField = document.getElementById('id_password');
-    
-    if (togglePassword && passwordField) {
-        togglePassword.addEventListener('click', function() {
-            const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordField.setAttribute('type', type);
-            
-            const icon = this.querySelector('i');
-            icon.textContent = type === 'password' ? 'visibility' : 'visibility_off';
-        });
-    }
-});
-</script>
-{% endif %}
 {% endblock %} 
