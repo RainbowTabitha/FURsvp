@@ -591,6 +591,50 @@ def telegram_login(request):
     
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
+def telegram_login_embedded(request):
+    """
+    Handle Telegram login via embedded widget (GET parameters)
+    This is for users who are not yet logged in
+    """
+    if request.method == 'GET':
+        # Extract Telegram data from GET parameters
+        telegram_data = {
+            'id': request.GET.get('id'),
+            'first_name': request.GET.get('first_name', ''),
+            'last_name': request.GET.get('last_name', ''),
+            'username': request.GET.get('username', ''),
+            'photo_url': request.GET.get('photo_url', ''),
+            'auth_date': request.GET.get('auth_date'),
+            'hash': request.GET.get('hash'),
+        }
+        
+        # Validate all required fields
+        if not all([telegram_data['id'], telegram_data['auth_date'], telegram_data['hash']]):
+            messages.error(request, 'Missing required Telegram data.')
+            return redirect('login')
+        
+        # Hash verification (reuse backend logic)
+        from users.backends import TelegramBackend
+        backend = TelegramBackend()
+        if not backend._validate_telegram_data(telegram_data):
+            messages.error(request, 'Telegram authentication failed. Please try again.')
+            return redirect('login')
+        
+        # Authenticate user with Telegram data
+        user = authenticate(request, telegram_data=telegram_data)
+        
+        if user:
+            login(request, user)
+            messages.success(request, 'Successfully logged in with Telegram!')
+            # Redirect to the return_to URL if provided, otherwise to home
+            return_to = request.GET.get('return_to', '/')
+            return redirect(return_to)
+        else:
+            messages.error(request, 'Failed to authenticate with Telegram. Please try again.')
+            return redirect('login')
+    
+    return redirect('login')
+
 @login_required
 def link_telegram_account(request):
     if request.method == 'GET':
@@ -671,4 +715,5 @@ class CustomLoginView(LoginView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['telegram_bot_username'] = settings.TELEGRAM_BOT_USERNAME
+        context['telegram_login_enabled'] = settings.TELEGRAM_LOGIN_ENABLED
         return context

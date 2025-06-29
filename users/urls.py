@@ -20,6 +20,7 @@ urlpatterns = [
     
     # Telegram Authentication URLs
     path('telegram/login/', views.telegram_login, name='telegram_login'),
+    path('telegram/login/embedded/', views.telegram_login_embedded, name='telegram_login_embedded'),
     path('telegram/link/', views.link_telegram_account, name='link_telegram_account'),
     path('telegram/unlink/', views.unlink_telegram_account, name='unlink_telegram_account'),
 ] 

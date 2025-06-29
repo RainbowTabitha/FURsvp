@@ -306,7 +306,14 @@
                         <i class="material-icons">send</i>
                         Login with Telegram
                     </div>
-                    <div id="telegram-login-widget"></div>
+                    <div id="telegram-login-widget">
+                        <script async src="https://telegram.org/js/telegram-widget.js?22"
+                            data-telegram-login="{{ telegram_bot_username }}"
+                            data-size="large"
+                            data-userpic="true"
+                            data-auth-url="{% url 'telegram_login_embedded' %}?return_to={{ request.GET.next|default:'/'|urlencode }}">
+                        </script>
+                    </div>
                 </div>
                 {% endif %}
                 
@@ -333,57 +340,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const icon = this.querySelector('i');
             icon.textContent = type === 'password' ? 'visibility' : 'visibility_off';
         });
-    }
-    
-    // Telegram Login Widget
-    const telegramWidget = document.getElementById('telegram-login-widget');
-    if (telegramWidget) {
-        Telegram.Login.Widget({
-            dataOnauth: function(user) {
-                // Send Telegram data to our backend
-                fetch('{% url "telegram_login" %}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                    },
-                    body: JSON.stringify({
-                        telegram_data: user
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Show success message
-                        const successDiv = document.createElement('div');
-                        successDiv.className = 'alert alert-success';
-                        successDiv.textContent = data.message;
-                        telegramWidget.appendChild(successDiv);
-                        
-                        // Redirect after a short delay
-                        setTimeout(() => {
-                            window.location.href = data.redirect_url;
-                        }, 1500);
-                    } else {
-                        // Show error message
-                        const errorDiv = document.createElement('div');
-                        errorDiv.className = 'alert alert-danger';
-                        errorDiv.textContent = data.error;
-                        telegramWidget.appendChild(errorDiv);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    const errorDiv = document.createElement('div');
-                    errorDiv.className = 'alert alert-danger';
-                    errorDiv.textContent = 'An error occurred during login. Please try again.';
-                    telegramWidget.appendChild(errorDiv);
-                });
-            },
-            bot_id: '{{ telegram_bot_username }}',
-            request_access: true,
-            lang: 'en'
-        }, telegramWidget);
     }
 });
 </script>
