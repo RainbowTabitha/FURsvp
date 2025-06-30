@@ -254,6 +254,52 @@
         }
     }
 
+    @media (max-width: 480px) {
+        .calendar-container {
+            padding: 0.5rem;
+        }
+        .calendar-header {
+            padding: 0.7rem 0.5rem;
+            font-size: 1rem;
+        }
+        .calendar-title {
+            font-size: 1.1rem;
+        }
+        .calendar-grid-scroll {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+        .calendar-grid {
+            min-width: 560px;
+            font-size: 0.85rem;
+            display: grid;
+            grid-template-columns: repeat(7, minmax(64px, 1fr));
+        }
+        .calendar-day-header, .calendar-day {
+            min-width: 64px;
+            padding: 0.3rem 0.1rem;
+        }
+        .calendar-day {
+            min-height: 44px;
+        }
+        .calendar-legend {
+            padding: 0.7rem;
+            font-size: 0.9rem;
+        }
+        .calendar-grid-scroll::after {
+            content: '→';
+            position: absolute;
+            right: 8px;
+            top: 8px;
+            color: #b0b8c1;
+            font-size: 1.2em;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+    }
+
     .btn-today-pretty {
         background: linear-gradient(90deg, #8b5cf6 0%, #ec4899 100%);
         color: #fff;
@@ -343,39 +389,41 @@
             </div>
         </div>
 
-        <div class="calendar-grid">
-            <!-- Day headers -->
-            <div class="calendar-day-header">Sunday</div>
-            <div class="calendar-day-header">Monday</div>
-            <div class="calendar-day-header">Tuesday</div>
-            <div class="calendar-day-header">Wednesday</div>
-            <div class="calendar-day-header">Thursday</div>
-            <div class="calendar-day-header">Friday</div>
-            <div class="calendar-day-header">Saturday</div>
+        <div class="calendar-grid-scroll">
+            <div class="calendar-grid">
+                <!-- Day headers -->
+                <div class="calendar-day-header">Sunday</div>
+                <div class="calendar-day-header">Monday</div>
+                <div class="calendar-day-header">Tuesday</div>
+                <div class="calendar-day-header">Wednesday</div>
+                <div class="calendar-day-header">Thursday</div>
+                <div class="calendar-day-header">Friday</div>
+                <div class="calendar-day-header">Saturday</div>
 
-            <!-- Calendar days -->
-            {% for week in calendar %}
-                {% for day in week %}
-                    {% if day == 0 %}
-                        <div class="calendar-day other-month"></div>
-                    {% else %}
-                        {% make_date_key year month day as date_key %}
-                        <div class="calendar-day{% if events_by_date|get_item:date_key|length > 0 %} has-events{% endif %}"
-                             {% if events_by_date|get_item:date_key|length > 0 %}data-date="{{ date_key }}"{% endif %}>
-                            <div class="day-number">{{ day }}</div>
-                            {% if events_by_date|get_item:date_key|length > 0 %}
-                                <span class="event-dot-prominent"></span>
-                                {% for event in events_by_date|get_item:date_key %}
-                                    <a href="{% url 'event_detail' event.id %}" 
-                                       class="event-item {% if event.age_restriction == 'adult' %}adult{% elif event.age_restriction == 'mature' %}mature{% endif %}">
-                                        {{ event.title|truncatechars:20 }}
-                                    </a>
-                                {% endfor %}
-                            {% endif %}
-                        </div>
-                    {% endif %}
+                <!-- Calendar days -->
+                {% for week in calendar %}
+                    {% for day in week %}
+                        {% if day == 0 %}
+                            <div class="calendar-day other-month"></div>
+                        {% else %}
+                            {% make_date_key year month day as date_key %}
+                            <div class="calendar-day{% if events_by_date|get_item:date_key|length > 0 %} has-events{% endif %}"
+                                 {% if events_by_date|get_item:date_key|length > 0 %}data-date="{{ date_key }}"{% endif %}>
+                                <div class="day-number">{{ day }}</div>
+                                {% if events_by_date|get_item:date_key|length > 0 %}
+                                    <span class="event-dot-prominent"></span>
+                                    {% for event in events_by_date|get_item:date_key %}
+                                        <a href="{% url 'event_detail' event.id %}" 
+                                           class="event-item {% if event.age_restriction == 'adult' %}adult{% elif event.age_restriction == 'mature' %}mature{% endif %}">
+                                            {{ event.title|truncatechars:20 }}
+                                        </a>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
                 {% endfor %}
-            {% endfor %}
+            </div>
         </div>
 
         <div class="calendar-legend">
