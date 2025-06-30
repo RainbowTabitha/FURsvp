@@ -16,10 +16,33 @@ class EventForm(forms.ModelForm):
         ('adult', '18+ (Adult)'),
         ('mature', '21+ (Mature)'),
     ]
+    US_STATE_CHOICES = [
+        ('', 'Select State'),
+        ('Alabama', 'Alabama'), ('Alaska', 'Alaska'), ('Arizona', 'Arizona'), ('Arkansas', 'Arkansas'),
+        ('California', 'California'), ('Colorado', 'Colorado'), ('Connecticut', 'Connecticut'), ('Delaware', 'Delaware'),
+        ('Florida', 'Florida'), ('Georgia', 'Georgia'), ('Hawaii', 'Hawaii'), ('Idaho', 'Idaho'),
+        ('Illinois', 'Illinois'), ('Indiana', 'Indiana'), ('Iowa', 'Iowa'), ('Kansas', 'Kansas'),
+        ('Kentucky', 'Kentucky'), ('Louisiana', 'Louisiana'), ('Maine', 'Maine'), ('Maryland', 'Maryland'),
+        ('Massachusetts', 'Massachusetts'), ('Michigan', 'Michigan'), ('Minnesota', 'Minnesota'), ('Mississippi', 'Mississippi'),
+        ('Missouri', 'Missouri'), ('Montana', 'Montana'), ('Nebraska', 'Nebraska'), ('Nevada', 'Nevada'),
+        ('New Hampshire', 'New Hampshire'), ('New Jersey', 'New Jersey'), ('New Mexico', 'New Mexico'),
+        ('New York', 'New York'), ('North Carolina', 'North Carolina'), ('North Dakota', 'North Dakota'),
+        ('Ohio', 'Ohio'), ('Oklahoma', 'Oklahoma'), ('Oregon', 'Oregon'), ('Pennsylvania', 'Pennsylvania'),
+        ('Rhode Island', 'Rhode Island'), ('South Carolina', 'South Carolina'), ('South Dakota', 'South Dakota'),
+        ('Tennessee', 'Tennessee'), ('Texas', 'Texas'), ('Utah', 'Utah'), ('Vermont', 'Vermont'),
+        ('Virginia', 'Virginia'), ('Washington', 'Washington'), ('West Virginia', 'West Virginia'),
+        ('Wisconsin', 'Wisconsin'), ('Wyoming', 'Wyoming'),
+    ]
     age_restriction = forms.ChoiceField(
         choices=AGE_CHOICES,
         required=True,
         label='Age Restriction',
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    state = forms.ChoiceField(
+        choices=US_STATE_CHOICES,
+        required=False,
+        label='State',
         widget=forms.Select(attrs={'class': 'form-select'})
     )
     description = forms.CharField(widget=TinyMCE(attrs={'cols': 80, 'rows': 30}))
@@ -38,7 +61,7 @@ class EventForm(forms.ModelForm):
     )
     state_agreement = forms.BooleanField(
         required=True,
-        label='I confirm that this event is located in the same state as this FURsvp instance',
+        label='I confirm that all event details are accurate and truthful.',
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
     )
     start_time = forms.TimeField(
@@ -68,7 +91,6 @@ class EventForm(forms.ModelForm):
             'end_time': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
             'address': forms.TextInput(attrs={'class': 'form-control'}),
             'city': forms.TextInput(attrs={'class': 'form-control'}),
-            'state': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control'}),
             'waitlist_enabled': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'attendee_list_public': forms.CheckboxInput(attrs={'class': 'form-check-input'}),

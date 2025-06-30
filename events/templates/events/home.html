@@ -337,6 +337,86 @@
         filter: brightness(1.1);
         transform: translateY(-2px) scale(1.04);
     }
+    .modern-search-group {
+        background: linear-gradient(90deg, #b8d0ff 0%, #e0e7ef 100%);
+        border-radius: 2rem;
+        box-shadow: 0 2px 12px rgba(59, 130, 246, 0.07);
+        padding: 0.18rem;
+        gap: 0;
+    }
+    .modern-search-input {
+        border: none;
+        border-radius: 2rem 0 0 2rem !important;
+        background: transparent;
+        font-size: 1.1rem;
+        padding: 0.85rem 1.5rem;
+        font-weight: 500;
+        box-shadow: none;
+        outline: none;
+    }
+    .modern-search-input:focus {
+        background: #f1f5f9;
+        box-shadow: none;
+    }
+    .modern-state-dropdown {
+        border: none;
+        border-radius: 0;
+        background: transparent;
+        font-size: 1.1rem;
+        padding: 0.85rem 1.5rem;
+        font-weight: 500;
+        box-shadow: none;
+        outline: none;
+        min-width: 140px;
+    }
+    .modern-state-dropdown:focus {
+        background: #f1f5f9;
+        box-shadow: none;
+    }
+    .modern-gradient-btn {
+        border-radius: 2rem;
+        font-size: 1.13rem;
+        font-weight: 700;
+        padding: 0.85rem 1.7rem;
+        background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%);
+        color: #fff;
+        box-shadow: 0 2px 12px rgba(59, 130, 246, 0.10);
+        border: none;
+        margin-left: 0;
+        transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
+    }
+    .modern-gradient-btn:hover, .modern-gradient-btn:focus {
+        background: linear-gradient(90deg, #2563eb 0%, #0ea5e9 100%);
+        color: #fff;
+        box-shadow: 0 4px 18px rgba(59, 130, 246, 0.18);
+        transform: translateY(-2px) scale(1.04);
+    }
+    .modern-search-group > *:not(:last-child) {
+        border-top-right-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
+    }
+    .modern-search-group > *:not(:first-child) {
+        border-top-left-radius: 0 !important;
+        border-bottom-left-radius: 0 !important;
+    }
+    .modern-search-group > * {
+        border: none !important;
+        box-shadow: none !important;
+    }
+    @media (max-width: 768px) {
+        .modern-search-group {
+            flex-direction: column;
+            border-radius: 2rem;
+            padding: 0.18rem;
+        }
+        .modern-search-group > * {
+            border-radius: 2rem !important;
+            margin-bottom: 0.5rem;
+        }
+        .modern-gradient-btn {
+            width: 100%;
+        }
+    }
 </style>
 <nav aria-label="breadcrumb" class="mb-4">
     <div class="modern-breadcrumbs">
@@ -373,6 +453,20 @@
             <i class="material-icons me-2">event</i> Upcoming Events
         </div>
         <div class="modern-card-body">
+            <!-- Search and State Filter -->
+            <form method="get" class="mb-4" id="eventSearchFilterForm">
+                <div class="modern-search-group d-flex flex-row align-items-stretch">
+                    <input type="text" id="eventSearchInput" name="search" class="form-control modern-search-input flex-grow-1" placeholder="Search events by title, description, city, or group..." value="{{ request.GET.search|default:'' }}">
+                    <input type="hidden" name="sort" value="{{ current_sort }}">
+                    <input type="hidden" name="order" value="{{ current_order }}">
+                    <input type="hidden" name="adult" value="{{ filter_adult }}">
+                    <input type="hidden" name="view" value="{{ view_type }}">
+                    <button type="submit" class="btn modern-gradient-btn d-flex align-items-center justify-content-center">
+                        <i class="material-icons me-1">search</i> Search
+                    </button>
+                </div>
+            </form>
+            <!-- End Search and State Filter -->
             <!-- Sorting Controls -->
             <div class="row align-items-center justify-content-between mb-3">
                 <div class="col-12 mb-3">

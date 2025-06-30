@@ -57,6 +57,9 @@ def home(request):
     year = int(request.GET.get('year', timezone.now().year))
     month = int(request.GET.get('month', timezone.now().month))
     
+    search_query = request.GET.get('search', '').strip()
+    state_filter = request.GET.get('state', '').strip()
+    
     # Base queryset - filter out events that have already passed and cancelled events
     now = timezone.now()
     events = Event.objects.filter(
@@ -67,6 +70,19 @@ def home(request):
 
     if filter_adult == 'false':
         events = events.exclude(age_restriction__in=['adult', 'mature'])
+
+    # Apply search filter
+    if search_query:
+        events = events.filter(
+            models.Q(title__icontains=search_query) |
+            models.Q(description__icontains=search_query) |
+            models.Q(city__icontains=search_query) |
+            models.Q(group__name__icontains=search_query)
+        )
+
+    # Apply state filter
+    if state_filter:
+        events = events.filter(state__iexact=state_filter)
 
     events = events.annotate(
         confirmed_count=models.Count('rsvps', filter=models.Q(rsvps__status='confirmed'))
@@ -155,6 +171,9 @@ def home(request):
     else:
         calendar_data = None
     
+    # Get all unique states for the dropdown
+    all_states = Event.objects.exclude(state__isnull=True).exclude(state__exact='').values_list('state', flat=True).distinct().order_by('state')
+    
     context = {
         'events': events_page,
         'current_sort': sort_by,
@@ -165,6 +184,7 @@ def home(request):
         'paginator': paginator,
         'page_obj': events_page,
         'today': timezone.now().date(),
+        'all_states': all_states,
     }
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -466,6 +486,7 @@ def event_detail(request, event_id):
     if city_state_parts:
         location_components.append(", ".join(city_state_parts))
     
+    # Do NOT include county in location_components
     location_display_string = ", ".join(filter(None, location_components)) # filter(None, ...) removes empty strings
 
     # Check if user is an organizer or has group access
