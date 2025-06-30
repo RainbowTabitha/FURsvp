@@ -149,7 +149,7 @@
                                         <span class="input-group-text bg-light">
                                             <i class="material-icons text-primary">schedule</i>
                                         </span>
-                                        {{ form.start_time|attr:'placeholder:Start time' }}
+                                        {{ form.start_time|attr:'placeholder:Start time'|attr:'required' }}
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -157,7 +157,7 @@
                                     <span class="input-group-text bg-light">
                                         <i class="material-icons text-primary">schedule</i>
                                     </span>
-                                        {{ form.end_time|attr:'placeholder:End time' }}
+                                        {{ form.end_time|attr:'placeholder:End time'|attr:'required' }}
                                     </div>
                                 </div>
                             </div>

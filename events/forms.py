@@ -42,12 +42,12 @@ class EventForm(forms.ModelForm):
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
     )
     start_time = forms.TimeField(
-        required=False,
+        required=True,
         widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
         input_formats=['%H:%M', '%I:%M %p', '%I:%M%p']
     )
     end_time = forms.TimeField(
-        required=False,
+        required=True,
         widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
         input_formats=['%H:%M', '%I:%M %p', '%I:%M%p']
     )

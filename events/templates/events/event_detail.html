@@ -1572,7 +1572,7 @@
                                             <div class="col-md-4 mb-2 mb-md-0">
                                                 <label for="{{ event_form.start_time.id_for_label }}"
                                                     class="form-label visually-hidden">Start Time</label>
-                                                {% render_field event_form.start_time class="form-control flatpickr" placeholder="Start time" %}
+                                                {% render_field event_form.start_time class="form-control flatpickr" placeholder="Start time" required='required' %}
                                                 {% if event_form.start_time.errors %}
                                                 <div class="invalid-feedback d-block">{{ event_form.start_time.errors }}
                                                 </div>
@@ -1581,7 +1581,7 @@
                                             <div class="col-md-4">
                                                 <label for="{{ event_form.end_time.id_for_label }}"
                                                     class="form-label visually-hidden">End Time</label>
-                                                {% render_field event_form.end_time class="form-control flatpickr" placeholder="End time" %}
+                                                {% render_field event_form.end_time class="form-control flatpickr" placeholder="End time" required='required' %}
                                                 {% if event_form.end_time.errors %}
                                                 <div class="invalid-feedback d-block">{{ event_form.end_time.errors }}
                                                 </div>
