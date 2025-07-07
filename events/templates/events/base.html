@@ -2318,38 +2318,38 @@
         {% if user.is_authenticated %}
         <a href="{% url 'notifications_page' %}" class="nav-link" id="mobileNotificationsLink">
             <i class="material-icons" id="mobileNotificationsIcon">notifications</i>
-            <span>Alert</span>
+            <span>Alerts</span>
         </a>
         {% endif %}
         {% if user.group_roles.all or user.delegated_groups_as_delegate.exists %}
         <a href="{% url 'create_event' %}" class="nav-link">
             <i class="material-icons">add</i>
-            <span>New</span>
+            <span>New Event</span>
         </a>
         {% endif %}
         {% if user.is_authenticated %}
         <a href="{% url 'profile' %}"
             class="nav-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
             <i class="material-icons">person</i>
-            <span>Me</span>
+            <span>Profile</span>
         </a>
         <form action="{% url 'logout' %}" method="post" class="d-inline" style="margin: 0;">
             {% csrf_token %}
             <button type="submit" class="nav-link logout-link">
                 <i class="material-icons">logout</i>
-                <span>Out</span>
+                <span>Logout</span>
             </button>
         </form>
         {% else %}
         <a href="{% url 'login' %}"
             class="nav-link {% if request.resolver_match.url_name == 'login' %}active{% endif %}">
             <i class="material-icons">login</i>
-            <span>In</span>
+            <span>Login</span>
         </a>
         <a href="{% url 'register' %}"
             class="nav-link {% if request.resolver_match.url_name == 'register' %}active{% endif %}">
             <i class="material-icons">person_add</i>
-            <span>Join</span>
+            <span>Register</span>
         </a>
         {% endif %}
     </nav>
