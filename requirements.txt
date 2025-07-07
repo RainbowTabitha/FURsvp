@@ -12,3 +12,4 @@ requests
 python-dotenv
 django-csp
 djangorestframework
+drf_yasg
