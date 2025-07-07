@@ -1,0 +1,229 @@
+{% extends "events/base.html" %}
+{% load static %}
+
+{% block title %}FURsvp API{% endblock %}
+
+{% block style %}
+{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% static 'api-custom.css' %}">
+<style>
+    .navbar-brand {
+        font-size: 1.5em;
+        font-weight: bold;
+        color: #2c3e50 !important;
+    }
+    
+    .navbar {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        border-bottom: 3px solid #34495e;
+    }
+    
+    .navbar-brand:hover {
+        color: #ecf0f1 !important;
+    }
+    
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .api-section {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+        border-left: 4px solid #667eea;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .api-section h2 {
+        color: #2c3e50;
+        margin-bottom: 15px;
+        font-size: 1.4em;
+    }
+    
+    .api-endpoint {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 6px;
+        padding: 15px;
+        margin: 10px 0;
+        transition: all 0.3s ease;
+    }
+    
+    .api-endpoint:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+    
+    .endpoint-method {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.8em;
+        font-weight: bold;
+        margin-right: 10px;
+    }
+    
+    .method-get {
+        background: #28a745;
+        color: white;
+    }
+    
+    .endpoint-url {
+        font-family: 'Courier New', monospace;
+        color: #495057;
+        font-weight: bold;
+    }
+    
+    .endpoint-description {
+        color: #6c757d;
+        margin-top: 5px;
+        font-size: 0.9em;
+    }
+    
+    .welcome-header {
+        text-align: center;
+        margin-bottom: 30px;
+        padding: 30px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 10px;
+    }
+    
+    .welcome-header h1 {
+        margin-bottom: 10px;
+        font-size: 2.5em;
+    }
+    
+    .welcome-header p {
+        font-size: 1.1em;
+        opacity: 0.9;
+    }
+    
+    .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin: 30px 0;
+    }
+    
+    .feature-card {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border-top: 3px solid #667eea;
+    }
+    
+    .feature-card h3 {
+        color: #2c3e50;
+        margin-bottom: 10px;
+    }
+    
+    .feature-card p {
+        color: #6c757d;
+        line-height: 1.6;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="welcome-header">
+    <h1>🐾 FURsvp API</h1>
+    <p>Welcome to the FURsvp REST API. Explore events, groups, and more!</p>
+</div>
+
+<div class="container">
+    <div class="feature-grid">
+        <div class="feature-card">
+            <h3>📅 Events</h3>
+            <p>Access event information including details, capacity, location, and attendee lists. Filter by date, location, and group.</p>
+        </div>
+        <div class="feature-card">
+            <h3>👥 Groups</h3>
+            <p>Get information about furry groups, their events, and contact details.</p>
+        </div>
+        <div class="feature-card">
+            <h3>🔍 Filtering</h3>
+            <p>Powerful filtering options to find exactly what you're looking for - by date, location, age restrictions, and more.</p>
+        </div>
+    </div>
+
+    <div class="api-section">
+        <h2>📅 Events Endpoints</h2>
+        
+        <div class="api-endpoint">
+            <span class="endpoint-method method-get">GET</span>
+            <span class="endpoint-url">/api/events/</span>
+            <div class="endpoint-description">List all active events with optional filtering</div>
+        </div>
+        
+        <div class="api-endpoint">
+            <span class="endpoint-method method-get">GET</span>
+            <span class="endpoint-url">/api/events/{id}/</span>
+            <div class="endpoint-description">Get detailed information about a specific event</div>
+        </div>
+        
+        <div class="api-endpoint">
+            <span class="endpoint-method method-get">GET</span>
+            <span class="endpoint-url">/api/events/upcoming/</span>
+            <div class="endpoint-description">Get all upcoming events</div>
+        </div>
+        
+        <div class="api-endpoint">
+            <span class="endpoint-method method-get">GET</span>
+            <span class="endpoint-url">/api/events/today/</span>
+            <div class="endpoint-description">Get events happening today</div>
+        </div>
+        
+        <div class="api-endpoint">
+            <span class="endpoint-method method-get">GET</span>
+            <span class="endpoint-url">/api/events/{id}/attendees/</span>
+            <div class="endpoint-description">Get confirmed attendees for an event</div>
+        </div>
+        
+        <div class="api-endpoint">
+            <span class="endpoint-method method-get">GET</span>
+            <span class="endpoint-url">/api/events/{id}/waitlist/</span>
+            <div class="endpoint-description">Get waitlisted attendees for an event</div>
+        </div>
+    </div>
+
+    <div class="api-section">
+        <h2>👥 Groups Endpoints</h2>
+        
+        <div class="api-endpoint">
+            <span class="endpoint-method method-get">GET</span>
+            <span class="endpoint-url">/api/groups/</span>
+            <div class="endpoint-description">List all groups</div>
+        </div>
+        
+        <div class="api-endpoint">
+            <span class="endpoint-method method-get">GET</span>
+            <span class="endpoint-url">/api/groups/{id}/</span>
+            <div class="endpoint-description">Get detailed information about a specific group</div>
+        </div>
+        
+        <div class="api-endpoint">
+            <span class="endpoint-method method-get">GET</span>
+            <span class="endpoint-url">/api/groups/{id}/events/</span>
+            <div class="endpoint-description">Get all events for a specific group</div>
+        </div>
+    </div>
+
+    <div class="api-section">
+        <h2>🔍 Query Parameters</h2>
+        <p><strong>Events filtering:</strong> <code>group</code>, <code>start_date</code>, <code>end_date</code>, <code>type</code> (upcoming/past), <code>city</code>, <code>state</code>, <code>age_restriction</code></p>
+        <p><strong>Group events filtering:</strong> <code>type</code> (all/upcoming/past)</p>
+        <p><strong>Pagination:</strong> <code>page</code> for paginated results</p>
+    </div>
+
+    <div class="api-section">
+        <h2>📚 Documentation</h2>
+        <p>For detailed API documentation, see <a href="/API_DOCUMENTATION.md" target="_blank">API_DOCUMENTATION.md</a></p>
+        <p>All responses are in JSON format with pagination support.</p>
+    </div>
+</div>
+{% endblock %} 
