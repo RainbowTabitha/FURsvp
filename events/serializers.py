@@ -5,9 +5,11 @@ from django.contrib.auth.models import User
 
 class UserSerializer(serializers.ModelSerializer):
     """Serializer for User model (organizer info)"""
+    display_name = serializers.CharField(source='username', read_only=True)
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name', 'email']
+        fields = ['id', 'display_name']
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -23,13 +25,12 @@ class GroupSerializer(serializers.ModelSerializer):
 class EventSerializer(serializers.ModelSerializer):
     """Serializer for Event model with basic info"""
     group = GroupSerializer(read_only=True)
-    organizer = UserSerializer(read_only=True)
     
     class Meta:
         model = Event
         fields = [
             'id', 'title', 'group', 'date', 'start_time', 'end_time',
-            'description', 'address', 'city', 'state', 'organizer',
+            'description', 'address', 'city', 'state',
             'status', 'age_restriction', 'capacity', 'waitlist_enabled',
             'attendee_list_public', 'enable_rsvp_questions'
         ]
@@ -38,7 +39,6 @@ class EventSerializer(serializers.ModelSerializer):
 class EventDetailSerializer(serializers.ModelSerializer):
     """Detailed serializer for Event model with additional info"""
     group = GroupSerializer(read_only=True)
-    organizer = UserSerializer(read_only=True)
     attendee_count = serializers.SerializerMethodField()
     waitlist_count = serializers.SerializerMethodField()
     
@@ -46,7 +46,7 @@ class EventDetailSerializer(serializers.ModelSerializer):
         model = Event
         fields = [
             'id', 'title', 'group', 'date', 'start_time', 'end_time',
-            'description', 'address', 'city', 'state', 'organizer',
+            'description', 'address', 'city', 'state',
             'status', 'age_restriction', 'capacity', 'waitlist_enabled',
             'attendee_list_public', 'enable_rsvp_questions',
             'attendee_count', 'waitlist_count'

@@ -8,6 +8,7 @@ from datetime import datetime
 from django.db.models import Q
 from rest_framework.views import APIView
 from django.shortcuts import render
+from drf_yasg.utils import swagger_auto_schema
 
 from .models import Group, Event, RSVP
 from .serializers import (
@@ -166,5 +167,6 @@ class CustomAPIRootView(APIView):
     api_root_dict = None
     schema_urls = None
 
+    @swagger_auto_schema(auto_schema=None)
     def get(self, request, *args, **kwargs):
         return render(request, 'rest_framework/api_root.html') 
