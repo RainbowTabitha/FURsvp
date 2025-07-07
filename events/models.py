@@ -110,6 +110,10 @@ class Event(models.Model):
         default="",
         help_text="Custom text for RSVP Question 3. Leave blank for default."
     )
+    accessibility_details = models.TextField(
+        blank=True,
+        help_text="Describe how this event is accessible. If left blank, event is not marked as accessible."
+    )
     
     def clean(self):
         if self.waitlist_enabled and self.capacity is None:

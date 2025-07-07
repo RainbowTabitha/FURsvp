@@ -321,6 +321,18 @@
                                 </label>
                             </div>
                         </div>
+                        
+
+                        <!-- Accessibility Field -->
+                        <div class="mb-3">
+                            <label for="{{ form.accessibility_details.id_for_label }}" class="event-form-label">
+                                <i class="material-icons align-middle me-1 event-form-icon">accessible</i>
+                                Accessibility Details
+                            </label>
+                            {{ form.accessibility_details }}
+                            <small class="form-text text-muted">Leave blank if not accessible.</small>
+                        </div>
+
                         <!-- Enable RSVP Questions Field -->
                         <div id="rsvp-questions-section">
                             <div class="mb-3">
@@ -385,6 +397,23 @@
                                 </div>
                             </div>
                         </div>
+                        <script>
+                            // Toggle accessibility details field
+                            const accessibleCheckbox = document.querySelector('input[name="is_accessible"]');
+                            const detailsContainer = document.getElementById('accessibility-details-container');
+                            function toggleDetails() {
+                                if (accessibleCheckbox.checked) {
+                                    detailsContainer.style.display = '';
+                                } else {
+                                    detailsContainer.style.display = 'none';
+                                }
+                            }
+                            if (accessibleCheckbox) {
+                                accessibleCheckbox.addEventListener('change', toggleDetails);
+                                // Initial state
+                                toggleDetails();
+                            }
+                        </script>
 
                         <div class="d-grid gap-2 mt-5">
                             <button type="submit" class="btn btn-primary btn-lg">

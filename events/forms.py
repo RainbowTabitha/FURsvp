@@ -74,6 +74,11 @@ class EventForm(forms.ModelForm):
         widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
         input_formats=['%H:%M', '%I:%M %p', '%I:%M%p']
     )
+    accessibility_details = forms.CharField(
+        required=False,
+        label='Accessibility Details',
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Describe accessibility features (e.g., wheelchair access, ASL interpreter, etc.).'})
+    )
     
     class Meta:
         model = Event
@@ -82,6 +87,7 @@ class EventForm(forms.ModelForm):
             'address', 'city', 'state', 'age_restriction', 'description',
             'capacity', 'waitlist_enabled', 'attendee_list_public', 'enable_rsvp_questions',
             'question1_text', 'question2_text', 'question3_text',
+            'accessibility_details',
         ]
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Event Title'}),
