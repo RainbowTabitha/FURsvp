@@ -806,11 +806,13 @@ def custom_login(request):
         # If we're in the middle of 2FA (user id in session)
         if pre_2fa_user_id:
             from django.contrib.auth import get_user_model
+            from django.conf import settings
             User = get_user_model()
             user = User.objects.get(id=pre_2fa_user_id)
             device = TOTPDevice.objects.filter(user=user, confirmed=True).first()
             if device and token:
                 if device.verify_token(token):
+                    user.backend = settings.AUTHENTICATION_BACKENDS[0]
                     login(request, user)
                     del request.session['pre_2fa_user_id']
                     return redirect('profile')
