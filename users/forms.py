@@ -146,3 +146,6 @@ class GroupRoleForm(forms.ModelForm):
     class Meta:
         model = GroupRole
         fields = ['user', 'custom_label', 'can_post', 'can_manage_leadership'] 
+
+class TOTPDeviceForm(BaseTOTPDeviceForm):
+    pass 
