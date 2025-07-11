@@ -25,4 +25,5 @@ urlpatterns = [
     path('telegram/unlink/', views.unlink_telegram_account, name='unlink_telegram_account'),
     path('twofa/enable/', views.twofa_enable, name='twofa_enable'),
     path('twofa/disable/', views.twofa_disable, name='twofa_disable'),
+    path('twofa/settings/', views.twofa_settings, name='twofa_settings'),
 ] 
