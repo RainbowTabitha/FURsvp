@@ -50,6 +50,10 @@ INSTALLED_APPS = [
     'django_q',
     'rest_framework',
     'drf_yasg',
+    'django_otp',
+    'django_otp.plugins.otp_totp',
+    'two_factor',
+    'qrcode',
 ]
 
 MIDDLEWARE = [
@@ -62,6 +66,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'fursvp.middleware.StaticFilesMiddleware',
+    'django_otp.middleware.OTPMiddleware',
 ]
 
 CORS_ALLOWED_ORIGIN_REGEXES = [

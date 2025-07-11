@@ -3,6 +3,8 @@ from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from django.contrib.auth.models import User
 from events.models import Event, Group
 from users.models import Profile, GroupDelegation, GroupRole
+from two_factor.forms import TOTPDeviceForm as BaseTOTPDeviceForm
+import base64
 
 class UserRegisterForm(UserCreationForm):
     eula_agreement = forms.BooleanField(
@@ -144,3 +146,10 @@ class GroupRoleForm(forms.ModelForm):
     class Meta:
         model = GroupRole
         fields = ['user', 'custom_label', 'can_post', 'can_manage_leadership'] 
+
+class TOTPDeviceForm(BaseTOTPDeviceForm):
+    @property
+    def bin_key(self):
+        key = self.key
+        padding = '=' * ((8 - len(key) % 8) % 8)
+        return base64.b32decode(key + padding) 

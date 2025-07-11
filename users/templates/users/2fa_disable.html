@@ -1,0 +1,10 @@
+{% extends "events/base.html" %}
+{% block content %}
+<h2>Disable Two-Factor Authentication</h2>
+<p>Are you sure you want to disable 2FA? This will remove the extra layer of security from your account.</p>
+<form method="post">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-danger">Yes, Disable 2FA</button>
+  <a href="{% url 'profile' %}" class="btn btn-secondary ms-2">Cancel</a>
+</form>
+{% endblock %} 

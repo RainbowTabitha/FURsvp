@@ -29,6 +29,14 @@ from django.views import View
 from django.conf import settings
 from django.urls import reverse
 from django.core.cache import cache
+from users.forms import TOTPDeviceForm
+from django_otp.plugins.otp_totp.models import TOTPDevice
+import secrets
+import qrcode
+from io import BytesIO
+import urllib.parse
+from urllib.parse import quote
+import binascii
 
 # Create your views here.
 
@@ -70,6 +78,8 @@ def profile(request):
     banned_users_in_groups = []
     organizer_groups = Group.objects.filter(group_roles__user=request.user)
     banned_users_in_groups = BannedUser.objects.filter(group__in=organizer_groups).select_related('user__profile', 'group', 'banned_by').order_by('group__name', 'user__username')
+
+    device = TOTPDevice.objects.filter(user=request.user, confirmed=True).first()
 
     if request.method == 'POST':
         if 'submit_pfp_changes' in request.POST: # Handle profile picture upload
@@ -209,6 +219,7 @@ def profile(request):
         'profile_form': profile_form,
         'password_change_form': password_change_form,
         'banned_users_in_groups': banned_users_in_groups,
+        'device': device,
         'telegram_bot_username': settings.TELEGRAM_BOT_USERNAME,
         'telegram_login_enabled': settings.TELEGRAM_LOGIN_ENABLED,
     }
@@ -717,3 +728,120 @@ class CustomLoginView(LoginView):
         context['telegram_bot_username'] = settings.TELEGRAM_BOT_USERNAME
         context['telegram_login_enabled'] = settings.TELEGRAM_LOGIN_ENABLED
         return context
+
+@login_required
+def twofa_settings(request):
+    device = TOTPDevice.objects.filter(user=request.user, confirmed=True).first()
+    return render(request, 'users/2fa.html', {'device': device})
+
+@login_required
+def twofa_enable(request):
+    # Get or generate TOTP key
+    key = request.session.get('totp_key')
+    if not key:
+        hex_secret = secrets.token_hex(20)
+        key = hex_secret  # Store hex in the model
+        request.session['totp_key'] = key
+    else:
+        hex_secret = key
+
+    # For QR code, convert hex to base32
+    import base64, binascii
+    secret_bytes = binascii.unhexlify(hex_secret)
+    base32_key = base64.b32encode(secret_bytes).decode('utf-8').replace('=', '')
+
+    print(f"[2FA DEBUG] Using hex secret: {hex_secret}")
+    print(f"[2FA DEBUG] Using base32 key: {base32_key}")
+
+    if request.method == 'POST':
+        form = TOTPDeviceForm(data=request.POST, user=request.user, key=key)
+        if form.is_valid():
+            device = form.save()
+            device.confirmed = True
+            device.save()
+            request.session.pop('totp_key', None)  # Safely remove key
+            return redirect('profile')
+    else:
+        form = TOTPDeviceForm(user=request.user, key=key)
+
+    # Create otpauth URL
+    issuer = "FURsvp"
+    label = quote(f"{request.user.email}")
+    otpauth_url = f"otpauth://totp/{issuer}:{label}?secret={base32_key}&issuer={quote(issuer)}"
+    print(f"[2FA DEBUG] otpauth URL: {otpauth_url}")
+
+    # Generate QR code image
+    qr = qrcode.QRCode(box_size=10, border=2)
+    qr.add_data(otpauth_url)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white").resize((220, 220))
+
+    buffer = BytesIO()
+    img.save(buffer, format="PNG")
+    qr_code_base64 = base64.b64encode(buffer.getvalue()).decode()
+    qr_code_url = f"data:image/png;base64,{qr_code_base64}"
+
+    return render(request, 'users/2fa_enable.html', {
+        'form': form,
+        'qr_code_url': qr_code_url
+    })
+
+@login_required
+def twofa_disable(request):
+    if request.method == 'POST':
+        TOTPDevice.objects.filter(user=request.user).delete()
+        return redirect('twofa_settings')
+    return render(request, 'users/2fa_disable.html')
+
+@csrf_protect
+def custom_login(request):
+    error = None
+    show_2fa = False
+    username = request.POST.get('username') if request.method == 'POST' else ''
+    password = request.POST.get('password') if request.method == 'POST' else ''
+    token = request.POST.get('token') if request.method == 'POST' else ''
+    pre_2fa_user_id = request.session.get('pre_2fa_user_id')
+    user = None
+
+    if request.method == 'POST':
+        # If we're in the middle of 2FA (user id in session)
+        if pre_2fa_user_id:
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            user = User.objects.get(id=pre_2fa_user_id)
+            device = TOTPDevice.objects.filter(user=user, confirmed=True).first()
+            if device and token:
+                if device.verify_token(token):
+                    login(request, user)
+                    del request.session['pre_2fa_user_id']
+                    return redirect('profile')
+                else:
+                    error = 'Invalid 2FA code.'
+                    show_2fa = True
+            else:
+                error = '2FA code required.'
+                show_2fa = True
+        else:
+            # First step: username/password
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                device = TOTPDevice.objects.filter(user=user, confirmed=True).first()
+                if device:
+                    request.session['pre_2fa_user_id'] = user.id
+                    show_2fa = True
+                    error = None
+                else:
+                    login(request, user)
+                    return redirect('profile')
+            else:
+                error = 'Invalid username or password.'
+    else:
+        # GET request: clear any previous 2FA session
+        if 'pre_2fa_user_id' in request.session:
+            del request.session['pre_2fa_user_id']
+
+    return render(request, 'users/login.html', {
+        'error': error,
+        'show_2fa': show_2fa,
+        'username': username,
+    })

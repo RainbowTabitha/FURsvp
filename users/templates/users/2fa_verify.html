@@ -1,0 +1,7 @@
+<form method="post">
+  {% csrf_token %}
+  <label for="token">Enter 2FA code:</label>
+  <input type="text" name="token" id="token" required>
+  <button type="submit">Verify</button>
+  {% if error %}<div class="error" style="color:red;">{{ error }}</div>{% endif %}
+</form> 
