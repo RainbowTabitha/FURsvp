@@ -146,10 +146,3 @@ class GroupRoleForm(forms.ModelForm):
     class Meta:
         model = GroupRole
         fields = ['user', 'custom_label', 'can_post', 'can_manage_leadership'] 
-
-class TOTPDeviceForm(BaseTOTPDeviceForm):
-    @property
-    def bin_key(self):
-        key = self.key
-        padding = '=' * ((8 - len(key) % 8) % 8)
-        return base64.b32decode(key + padding) 
