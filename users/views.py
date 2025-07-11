@@ -20,6 +20,7 @@ from .utils import create_notification
 from django.contrib.auth import get_user_model
 from urllib.parse import urlparse
 import base64
+import binascii
 from django.core.files.base import ContentFile
 from PIL import Image
 import io
@@ -36,7 +37,6 @@ import qrcode
 from io import BytesIO
 import urllib.parse
 from urllib.parse import quote
-import binascii
 
 # Create your views here.
 
@@ -746,7 +746,6 @@ def twofa_enable(request):
         hex_secret = key
 
     # For QR code, convert hex to base32
-    import base64, binascii
     secret_bytes = binascii.unhexlify(hex_secret)
     base32_key = base64.b32encode(secret_bytes).decode('utf-8').replace('=', '')
 
