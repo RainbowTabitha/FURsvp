@@ -287,7 +287,7 @@
                             <span class="input-group-text">
                                 <i class="material-icons">lock</i>
                             </span>
-                            <input type="password" class="form-control" id="id_password" name="password" required>
+                            <input type="password" class="form-control" id="id_password" name="password" required{% if password %} value="{{ password }}"{% endif %}>
                             <span class="input-group-text" id="togglePasswordIcon" style="cursor: pointer;">
                                 <i class="material-icons">visibility</i>
                             </span>

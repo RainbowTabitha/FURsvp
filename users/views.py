@@ -810,11 +810,16 @@ def custom_login(request):
             User = get_user_model()
             user = User.objects.get(id=pre_2fa_user_id)
             device = TOTPDevice.objects.filter(user=user, confirmed=True).first()
+            # Retrieve password from session if available
+            if not password:
+                password = request.session.get('pre_2fa_password', '')
             if device and token:
                 if device.verify_token(token):
                     user.backend = settings.AUTHENTICATION_BACKENDS[0]
                     login(request, user)
                     del request.session['pre_2fa_user_id']
+                    if 'pre_2fa_password' in request.session:
+                        del request.session['pre_2fa_password']
                     return redirect('profile')
                 else:
                     error = 'Invalid 2FA code.'
@@ -829,6 +834,7 @@ def custom_login(request):
                 device = TOTPDevice.objects.filter(user=user, confirmed=True).first()
                 if device:
                     request.session['pre_2fa_user_id'] = user.id
+                    request.session['pre_2fa_password'] = password
                     show_2fa = True
                     error = None
                 else:
@@ -840,9 +846,12 @@ def custom_login(request):
         # GET request: clear any previous 2FA session
         if 'pre_2fa_user_id' in request.session:
             del request.session['pre_2fa_user_id']
+        if 'pre_2fa_password' in request.session:
+            del request.session['pre_2fa_password']
 
     return render(request, 'users/login.html', {
         'error': error,
         'show_2fa': show_2fa,
         'username': username,
+        'password': password,
     })
