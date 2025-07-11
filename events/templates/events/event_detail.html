@@ -1693,6 +1693,19 @@
                                         </div>
                                         {% endif %}
                                     </div>
+                                    <!-- Description Field (TinyMCE) -->
+                                    <div class="mb-4 event-form-group">
+                                        <label for="{{ event_form.description.id_for_label }}"
+                                            class="form-label d-flex align-items-center"
+                                            style="font-weight: 500; color: #4f46e5;">
+                                            <i class="material-icons me-2" style="font-size: 1.3em;">description</i>
+                                            Description
+                                        </label>
+                                        {% render_field event_form.description class="form-control" %}
+                                        {% if event_form.description.errors %}
+                                        <div class="invalid-feedback d-block">{{ event_form.description.errors }}</div>
+                                        {% endif %}
+                                    </div>
                                     <!-- Event Capacity Field -->
                                     <div class="mb-4 event-form-group">
                                         <label for="{{ event_form.capacity.id_for_label }}"
