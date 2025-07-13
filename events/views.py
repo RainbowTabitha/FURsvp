@@ -98,6 +98,14 @@ def home(request):
                 ).values('status')[:1]
             )
         )
+        
+        # Add user's RSVP list for template compatibility
+        for event in events:
+            user_rsvp = event.rsvps.filter(user=request.user).first()
+            if user_rsvp:
+                event.user_rsvp_list = [user_rsvp]
+            else:
+                event.user_rsvp_list = []
     
     # Apply sorting
     if sort_by == 'date':
@@ -119,6 +127,16 @@ def home(request):
         events_page = paginator.page(1)
     except EmptyPage:
         events_page = paginator.page(paginator.num_pages)
+    
+    # Add user's RSVP information if user is authenticated (AFTER pagination)
+    if request.user.is_authenticated:
+        # Add user's RSVP list for template compatibility
+        for event in events_page:
+            user_rsvp = event.rsvps.filter(user=request.user).first()
+            if user_rsvp:
+                event.user_rsvp_list = [user_rsvp]
+            else:
+                event.user_rsvp_list = []
     
     # Calendar data
     if view_type == 'calendar':

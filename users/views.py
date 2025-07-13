@@ -460,6 +460,28 @@ def administration(request):
     
     return render(request, 'users/administration.html', context)
 
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def send_notification(request):
+    if request.method == 'POST':
+        user_ids = request.POST.getlist('user_ids')
+        message = request.POST.get('notification_message')
+        if not user_ids:
+            messages.error(request, "Please select at least one user.")
+            return redirect(reverse('administration'))
+        if not message:
+            messages.error(request, "Please enter a notification message.")
+            return redirect(reverse('administration'))
+        User = get_user_model()
+        users = User.objects.filter(id__in=user_ids)
+        for user in users:
+            create_notification(user, message, link='/users/notifications/')
+        messages.success(request, f"Notification sent to {users.count()} user(s).")
+        return redirect(reverse('administration'))
+    else:
+        messages.error(request, "Invalid request method.")
+        return redirect(reverse('administration'))
+
 # New view for username suggestions
 @user_passes_test(lambda u: u.is_superuser)
 def user_search_autocomplete(request):

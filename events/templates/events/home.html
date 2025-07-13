@@ -486,11 +486,11 @@
             <!-- Search and State Filter -->
             <form method="get" class="mb-4" id="eventSearchFilterForm">
                 <div class="modern-search-group d-flex flex-row align-items-stretch">
-                    <input type="text" id="eventSearchInput" name="search" class="form-control modern-search-input flex-grow-1" placeholder="Search events by title, description, city, or group..." value="{{ request.GET.search|default:'' }}">
-                    <input type="hidden" name="sort" value="{{ current_sort }}">
-                    <input type="hidden" name="order" value="{{ current_order }}">
-                    <input type="hidden" name="adult" value="{{ filter_adult }}">
-                    <input type="hidden" name="view" value="{{ view_type }}">
+                    <input type="text" id="eventSearchInput" name="search" class="form-control modern-search-input flex-grow-1" placeholder="Search events by title, description, city, or group..." value="{{ request.GET.search|default:''|escapejs }}">
+                                    <input type="hidden" name="sort" value="{{ current_sort|default:''|escapejs }}">
+                <input type="hidden" name="order" value="{{ current_order|default:''|escapejs }}">
+                <input type="hidden" name="adult" value="{{ filter_adult|default:''|escapejs }}">
+                <input type="hidden" name="view" value="{{ view_type|default:''|escapejs }}">
                     <button type="submit" class="btn modern-gradient-btn d-flex align-items-center justify-content-center">
                         <i class="material-icons me-1">search</i> Search
                     </button>
@@ -502,22 +502,22 @@
                 <div class="col-12 mb-3">
                     <div class="d-flex flex-wrap justify-content-center gap-2">
                         <div class="btn-group" role="group">
-                            <a href="#" data-sort="date" data-order="{{ current_order }}"
+                            <a href="#" data-sort="date" data-order="{{ current_order|default:'asc'|escapejs }}"
                                 class="gradient-sort-btn{% if current_sort == 'date' %} active{% else %} outline-sort-btn{% endif %} d-flex align-items-center justify-content-center sort-btn"
                                 style="padding: .5rem 1rem; font-size: 1.1rem;">
                                 <i class="material-icons me-1 align-middle" style="font-size: 20px;">calendar_today</i> Date
                             </a>
-                            <a href="#" data-sort="group" data-order="{{ current_order }}"
+                            <a href="#" data-sort="group" data-order="{{ current_order|default:'asc'|escapejs }}"
                                 class="{% if current_sort == 'group' %}gradient-sort-btn active{% else %}outline-sort-btn{% endif %} d-flex align-items-center justify-content-center sort-btn"
                                 style="padding: .5rem 1rem; font-size: 1.1rem;">
                                 <i class="material-icons me-1 align-middle" style="font-size: 20px;">group</i> Group
                             </a>
-                            <a href="#" data-sort="title" data-order="{{ current_order }}"
+                            <a href="#" data-sort="title" data-order="{{ current_order|default:'asc'|escapejs }}"
                                 class="{% if current_sort == 'title' %}gradient-sort-btn active{% else %}outline-sort-btn{% endif %} d-flex align-items-center justify-content-center sort-btn"
                                 style="padding: .5rem 1rem; font-size: 1.1rem;">
                                 <i class="material-icons me-1 align-middle" style="font-size: 20px;">title</i> Title
                             </a>
-                            <a href="#" data-sort="rsvps" data-order="{{ current_order }}"
+                            <a href="#" data-sort="rsvps" data-order="{{ current_order|default:'asc'|escapejs }}"
                                 class="{% if current_sort == 'rsvps' %}gradient-sort-btn active{% else %}outline-sort-btn{% endif %} d-flex align-items-center justify-content-center sort-btn"
                                 style="padding: .5rem 1rem; font-size: 1.1rem;">
                                 <i class="material-icons me-1 align-middle" style="font-size: 20px;">people</i> RSVPs
@@ -532,7 +532,7 @@
                             Show 18+/21+
                         </button>
                         <div class="btn-group" role="group">
-                            <a href="#" id="orderToggleBtn" data-sort="{{ current_sort }}" data-order="{% if current_order == 'asc' %}desc{% else %}asc{% endif %}"
+                            <a href="#" id="orderToggleBtn" data-sort="{{ current_sort|default:'date'|escapejs }}" data-order="{% if current_order == 'asc' %}desc{% else %}asc{% endif %}"
                                 class="gradient-toggle-btn d-flex align-items-center justify-content-center order-toggle-btn flex-shrink-0"
                                 style="width: 48px; height: 48px; border-radius: 24px; font-size: 1.15rem; padding: 0; margin-left: 0.5rem;"
                                 title="Toggle Order">
@@ -551,6 +551,7 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
 {% block extra_js %}
 {{ block.super }}
@@ -568,8 +569,8 @@
         // Set initial state
         let isListView = localStorage.getItem('eventViewPreference') === 'list';
         let showAdult = false; // Start in SFW mode (green)
-        let currentSort = '{{ current_sort }}';
-        let currentOrder = '{{ current_order }}';
+        let currentSort = '{{ current_sort|default:"date"|escapejs }}';
+        let currentOrder = '{{ current_order|default:"asc"|escapejs }}';
 
         // Function to update the UI based on events data
         function updateEventDisplay(eventsHtml) {
@@ -806,5 +807,4 @@
         attachPaginationListeners();
     });
 </script>
-{% endblock %}
 {% endblock %}

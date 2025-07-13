@@ -73,5 +73,21 @@
     box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.16);
     transform: translateY(-2px) scale(1.02);
 }
+.pagination .page-link {
+    padding: 0.7rem 1.3rem;
+    font-size: 1.1rem;
+    min-width: 44px;
+    border-radius: 1.5rem;
+    font-weight: 600;
+    color: #2563eb;
+    background: #f8fafc;
+    border: none;
+    margin: 0 0.2em;
+    transition: background 0.18s, color 0.18s;
+}
+.pagination .page-item.active .page-link, .pagination .page-link:hover {
+    background: linear-gradient(90deg, #2563eb 0%, #06b6d4 100%);
+    color: #fff;
+}
 </style>
 {% endblock %} 

@@ -309,7 +309,6 @@
         font-size: 1.2rem;
         margin-right: 0.3rem;
     }
-}
 
 /* Dark mode improvements for event list partial */
 .dark-mode .event-card-modern {
@@ -348,7 +347,7 @@
             <!-- RSVP Status Icon Badge -->
             {% if event.user_rsvp_list %}
                 {% with user_rsvp=event.user_rsvp_list.0 %}
-                    <div class="rsvp-status-icon-badge"
+                    <div class="rsvp-status-icon-badge">
                         {% if user_rsvp.status == 'confirmed' %}
                             <span class="d-flex align-items-center">
                                 <span class="icon-badge going"><i class="material-icons">check_circle</i></span>
@@ -450,6 +449,7 @@
             {% endwith %}
         {% endif %}
         
+        
         <div class="d-flex w-100 p-4 align-items-center">
             <div class="flex-grow-1">
                 <h5 class="event-title mb-2">{{ event.title }}</h5>
@@ -517,7 +517,7 @@
             <!-- Previous Page -->
             {% if page_obj.has_previous %}
             <li class="page-item">
-                <a class="page-link modern-page-link" href="?page={{ page_obj.previous_page_number }}{% if current_sort %}&sort={{ current_sort }}{% endif %}{% if current_order %}&order={{ current_order }}{% endif %}{% if filter_adult %}&adult={{ filter_adult }}{% endif %}{% if view_type %}&view={{ view_type }}{% endif %}" aria-label="Previous">
+                <a class="page-link modern-page-link" href="?page={{ page_obj.previous_page_number }}{% if current_sort %}&sort={{ current_sort|escapejs }}{% endif %}{% if current_order %}&order={{ current_order|escapejs }}{% endif %}{% if filter_adult %}&adult={{ filter_adult|escapejs }}{% endif %}{% if view_type %}&view={{ view_type|escapejs }}{% endif %}" aria-label="Previous">
                     <i class="material-icons">chevron_left</i>
                     <span class="d-none d-sm-inline">Previous</span>
                 </a>
@@ -534,7 +534,7 @@
             <!-- First Page -->
             {% if page_obj.number > 3 %}
             <li class="page-item">
-                <a class="page-link modern-page-link" href="?page=1{% if current_sort %}&sort={{ current_sort }}{% endif %}{% if current_order %}&order={{ current_order }}{% endif %}{% if filter_adult %}&adult={{ filter_adult }}{% endif %}{% if view_type %}&view={{ view_type }}{% endif %}">1</a>
+                <a class="page-link modern-page-link" href="?page=1{% if current_sort %}&sort={{ current_sort|escapejs }}{% endif %}{% if current_order %}&order={{ current_order|escapejs }}{% endif %}{% if filter_adult %}&adult={{ filter_adult|escapejs }}{% endif %}{% if view_type %}&view={{ view_type|escapejs }}{% endif %}">1</a>
             </li>
             {% if page_obj.number > 4 %}
             <li class="page-item disabled">
@@ -552,7 +552,7 @@
                     </li>
                     {% else %}
                     <li class="page-item">
-                        <a class="page-link modern-page-link" href="?page={{ num }}{% if current_sort %}&sort={{ current_sort }}{% endif %}{% if current_order %}&order={{ current_order }}{% endif %}{% if filter_adult %}&adult={{ filter_adult }}{% endif %}{% if view_type %}&view={{ view_type }}{% endif %}">{{ num }}</a>
+                        <a class="page-link modern-page-link" href="?page={{ num }}{% if current_sort %}&sort={{ current_sort|escapejs }}{% endif %}{% if current_order %}&order={{ current_order|escapejs }}{% endif %}{% if filter_adult %}&adult={{ filter_adult|escapejs }}{% endif %}{% if view_type %}&view={{ view_type|escapejs }}{% endif %}">{{ num }}</a>
                     </li>
                     {% endif %}
                 {% endif %}
@@ -566,7 +566,7 @@
             </li>
             {% endif %}
             <li class="page-item">
-                <a class="page-link modern-page-link" href="?page={{ paginator.num_pages }}{% if current_sort %}&sort={{ current_sort }}{% endif %}{% if current_order %}&order={{ current_order }}{% endif %}{% if filter_adult %}&adult={{ filter_adult }}{% endif %}{% if view_type %}&view={{ view_type }}{% endif %}">{{ paginator.num_pages }}</a>
+                <a class="page-link modern-page-link" href="?page={{ paginator.num_pages }}{% if current_sort %}&sort={{ current_sort|escapejs }}{% endif %}{% if current_order %}&order={{ current_order|escapejs }}{% endif %}{% if filter_adult %}&adult={{ filter_adult|escapejs }}{% endif %}{% if view_type %}&view={{ view_type|escapejs }}{% endif %}">{{ paginator.num_pages }}</a>
             </li>
             {% endif %}
 

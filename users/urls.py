@@ -17,6 +17,7 @@ urlpatterns = [
     path('notifications/purge_read/', views.purge_read_notifications, name='purge_read_notifications'),
     path('notifications/all/', views.notifications_page, name='notifications_page'),
     path('send_bulk_notification/', views.send_bulk_notification, name='send_bulk_notification'),
+    path('send_notification/', views.send_notification, name='send_notification'),
     
     # Telegram Authentication URLs
     path('telegram/login/', views.telegram_login, name='telegram_login'),

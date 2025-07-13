@@ -455,18 +455,23 @@
                 </div>
                 <div class="tab-pane fade" id="notify" role="tabpanel" aria-labelledby="notify-tab">
                     <div class="mb-4 mt-4">
-                        <form method="post" action="{% url 'send_bulk_notification' %}" class="row g-2 align-items-end">
+                        <form method="post" action="{% url 'send_notification' %}" class="row g-2 align-items-end">
                             {% csrf_token %}
                             <div class="col-md-7">
-                                <label for="notification_message" class="form-label fw-bold">Send Notification to All Users</label>
-                                <input type="text" class="form-control" id="notification_message" name="notification_message" placeholder="Enter notification message..." required>
+                                <label for="user_select" class="form-label fw-bold">Select users to notify</label>
+                                <select id="user_select" name="user_ids" multiple required class="form-control tomselect-user-select">
+                                    <option value="" disabled selected>Please select users</option>
+                                    {% for user_obj in users_to_promote %}
+                                        <option value="{{ user_obj.id }}">{{ user_obj.profile.get_display_name }} ({{ user_obj.email }})</option>
+                                    {% endfor %}
+                                </select>
                             </div>
                             <div class="col-md-3">
-                                <label for="notification_link" class="form-label">Optional Link</label>
-                                <input type="url" class="form-control" id="notification_link" name="notification_link" placeholder="https://...">
+                                <label for="notification_message" class="form-label fw-bold">Message</label>
+                                <input type="text" class="form-control" id="notification_message" name="notification_message" placeholder="Enter notification message..." required>
                             </div>
                             <div class="col-md-2 d-grid">
-                                <button type="submit" class="btn btn-warning btn-lg rounded-pill shadow-sm" name="send_bulk_notification">
+                                <button type="submit" class="btn btn-warning btn-lg rounded-pill shadow-sm mt-4">
                                     <i class="material-icons me-1">campaign</i> Send
                                 </button>
                             </div>
@@ -478,7 +483,6 @@
         </div>
     </div>
 </div>
-
 {% endblock %}
 
 {% block extra_js %}
@@ -798,6 +802,25 @@
 
         // Initialize banner preview on page load
         updateBannerPreview();
+
+        // TomSelect for user notification
+        if (window.TomSelect) {
+            new TomSelect('#user_select', {
+                plugins: {
+                    remove_button: {
+                        title: 'Remove this user',
+                    }
+                },
+                dropdownParent: 'body',
+                create: false,
+                maxOptions: 1000,
+                render: {
+                    option: function(data, escape) {
+                        return `<div>${escape(data.text)}</div>`;
+                    }
+                }
+            });
+        }
     });
 </script>
 
@@ -930,16 +953,19 @@
         box-shadow: 0 4px 18px rgba(59, 130, 246, 0.18);
         transform: scale(1.03);
     }
-    .admin-pagination .page-link {
-        border-radius: 2em !important;
-        background: #f0f9ff;
+    .pagination .page-link {
+        padding: 0.7rem 1.3rem;
+        font-size: 1.1rem;
+        min-width: 44px;
+        border-radius: 1.5rem;
+        font-weight: 600;
         color: #2563eb;
-        font-weight: 700;
+        background: #f8fafc;
         border: none;
         margin: 0 0.2em;
         transition: background 0.18s, color 0.18s;
     }
-    .admin-pagination .page-item.active .page-link, .admin-pagination .page-link:hover {
+    .pagination .page-item.active .page-link, .pagination .page-link:hover {
         background: linear-gradient(90deg, #2563eb 0%, #06b6d4 100%);
         color: #fff;
     }
