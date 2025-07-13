@@ -799,7 +799,7 @@
         height: 300,
         width: '100%',
         menubar: false,
-                plugins: 'advlist autolink lists image charmap anchor searchreplace visualblocks code insertdatetime table help wordcount textcolor backcolor',
+                plugins: 'advlist autolink lists image charmap anchor searchreplace visualblocks code insertdatetime table help wordcount textcolor backcolor link',
                 toolbar: 'bold italic strikethrough | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | image code | removeformat',
         branding: false,
         promotion: false,
@@ -816,6 +816,9 @@
                 toolbar_sticky: true,
                 toolbar_sticky_offset: 0,
                 content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; } img { max-width: 100%; height: auto; display: block; margin: 1em auto; } .tox-statusbar { display: none !important; }',
+                auto_link: true,
+                link_default_target: '_blank',
+                link_default_rel: 'noopener noreferrer',
                 document_base_url: '{{ request.scheme }}://{{ request.get_host }}/',
         file_picker_callback: function (callback, value, meta) {
             if (meta.filetype === 'image') {
