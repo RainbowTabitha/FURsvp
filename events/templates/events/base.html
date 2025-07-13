@@ -1263,7 +1263,8 @@
 
         .notification-bell-icon,
         .user-profile-icon,
-        .logout-btn {
+        .logout-btn,
+        .group-access-icon {
             background: linear-gradient(135deg, #e0e7ff 0%, #f0f9ff 100%);
             color: #223b7b !important;
             box-shadow: 0 4px 16px rgba(59, 130, 246, 0.10);
@@ -1287,7 +1288,8 @@
 
         .notification-bell-icon:hover,
         .user-profile-icon:hover,
-        .logout-btn:hover {
+        .logout-btn:hover,
+        .group-access-icon:hover {
             background: linear-gradient(135deg, #2563eb 0%, #6366f1 100%);
             color: #fff !important;
             box-shadow: 0 8px 24px rgba(59, 130, 246, 0.18);
@@ -1297,7 +1299,8 @@
 
         .notification-bell-icon:active,
         .user-profile-icon:active,
-        .logout-btn:active {
+        .logout-btn:active,
+        .group-access-icon:active {
             transform: scale(0.97);
         }
 
@@ -1350,7 +1353,8 @@
 
             .notification-bell-icon,
             .user-profile-icon,
-            .logout-btn {
+            .logout-btn,
+            .group-access-icon {
                 width: 44px;
                 height: 44px;
                 font-size: 22px;
@@ -1358,7 +1362,8 @@
 
             .notification-bell-icon .material-icons,
             .user-profile-icon .material-icons,
-            .logout-btn .material-icons {
+            .logout-btn .material-icons,
+            .group-access-icon .material-icons {
                 font-size: 1.5rem;
             }
         }
@@ -1894,6 +1899,283 @@
             color: #fff !important;
         }
 
+        /* Modern Group Selector Modal Styles */
+        .modern-modal-dialog {
+            max-width: 500px;
+        }
+
+        .modern-modal-content {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: none;
+            border-radius: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .modern-modal-header {
+            background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+            color: #fff;
+            border: none;
+            padding: 1.5rem 2rem;
+            position: relative;
+        }
+
+        .modern-modal-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%);
+            pointer-events: none;
+        }
+
+        .modern-modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .modern-modal-title .material-icons {
+            font-size: 1.8rem;
+            margin-right: 0.75rem;
+        }
+
+        .modern-btn-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            transition: all 0.2s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .modern-btn-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .modern-btn-close .material-icons {
+            font-size: 1.2rem;
+        }
+
+        .modern-modal-body {
+            padding: 2rem;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        }
+
+        .group-section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .group-section-title .material-icons {
+            font-size: 1.3rem;
+            color: #2563eb;
+        }
+
+        .modern-group-item {
+            background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+            border: 2px solid #e2e8f0;
+            border-radius: 1.5rem;
+            transition: all 0.3s ease;
+            color: #374151;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 1rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .modern-group-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 0;
+        }
+
+        .modern-group-item:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 12px 32px rgba(59, 130, 246, 0.2);
+            border-color: #2563eb;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .modern-group-item:hover::before {
+            opacity: 1;
+        }
+
+        .group-item-content {
+            display: flex;
+            align-items: center;
+            padding: 1.25rem 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .group-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #e0e7ff 0%, #f0f9ff 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2563eb;
+            margin-right: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+        }
+
+        .modern-group-item:hover .group-icon {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            transform: scale(1.1);
+        }
+
+        .group-icon .material-icons {
+            font-size: 1.5rem;
+        }
+
+        .group-info {
+            flex: 1;
+        }
+
+        .group-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 0 0 0.25rem 0;
+            color: inherit;
+        }
+
+        .group-role {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #6b7280;
+            display: block;
+            transition: color 0.3s ease;
+        }
+
+        .modern-group-item:hover .group-role {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .group-arrow {
+            color: #9ca3af;
+            transition: all 0.3s ease;
+        }
+
+        .modern-group-item:hover .group-arrow {
+            color: #fff;
+            transform: translateX(4px);
+        }
+
+        .group-arrow .material-icons {
+            font-size: 1.2rem;
+        }
+
+        /* Dark mode for modern group selector */
+        .dark-mode .modern-modal-content {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        }
+
+        .dark-mode .modern-modal-header {
+            background: linear-gradient(135deg, #1e40af 0%, #0891b2 100%);
+        }
+
+        .dark-mode .modern-modal-body {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        }
+
+        .dark-mode .group-section-title {
+            color: #e2e8f0;
+            border-bottom-color: #475569;
+        }
+
+        .dark-mode .group-section-title .material-icons {
+            color: #60a5fa;
+        }
+
+        .dark-mode .modern-group-item {
+            background: linear-gradient(135deg, #334155 0%, #475569 100%);
+            border-color: #475569;
+            color: #e2e8f0;
+        }
+
+        .dark-mode .group-icon {
+            background: linear-gradient(135deg, #334155 0%, #475569 100%);
+            color: #60a5fa;
+        }
+
+        .dark-mode .group-role {
+            color: #9ca3af;
+        }
+
+        .dark-mode .group-arrow {
+            color: #6b7280;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 600px) {
+            .modern-modal-dialog {
+                margin: 1rem;
+                max-width: calc(100vw - 2rem);
+            }
+
+            .modern-modal-header {
+                padding: 1.25rem 1.5rem;
+            }
+
+            .modern-modal-title {
+                font-size: 1.25rem;
+            }
+
+            .modern-modal-body {
+                padding: 1.5rem;
+            }
+
+            .group-item-content {
+                padding: 1rem 1.25rem;
+            }
+
+            .group-icon {
+                width: 48px;
+                height: 48px;
+            }
+
+            .group-icon .material-icons {
+                font-size: 1.25rem;
+            }
+
+            .group-name {
+                font-size: 1rem;
+            }
+        }
+
         .dark-mode .gradient-footer {
             background: linear-gradient(90deg, #22335a 0%, #1a233a 100%) !important;
             color: #e0e7ef !important;
@@ -1901,7 +2183,8 @@
 
         .dark-mode .notification-bell-icon,
         .dark-mode .user-profile-icon,
-        .dark-mode .logout-btn {
+        .dark-mode .logout-btn,
+        .dark-mode .group-access-icon {
             background: linear-gradient(135deg, #2563eb 0%, #22335a 100%) !important;
             color: #e0e7ef !important;
             border: 2px solid #22335a !important;
@@ -1914,7 +2197,8 @@
         }
 
         .dark-mode .notification-bell-icon .material-icons,
-        .dark-mode .user-profile-icon .material-icons {
+        .dark-mode .user-profile-icon .material-icons,
+        .dark-mode .group-access-icon .material-icons {
             color: #fff !important;
             font-size: 2.3rem !important;
             text-shadow: 0 2px 8px rgba(59, 130, 246, 0.18);
@@ -2215,6 +2499,32 @@
                         </ul>
                     </div>
 
+                    <!-- Group Access -->
+                    {% if user.group_roles.all or user.delegated_groups_as_delegate.exists %}
+                    <div class="group-access-container">
+                        {% if user.group_roles.count == 1 and user.delegated_groups_as_delegate.count == 0 %}
+                            <!-- Single group - direct link -->
+                            {% with user.group_roles.first as group_role %}
+                            <a class="group-access-icon" href="{% url 'group_detail' group_role.group.id %}" title="{{ group_role.group.name }}">
+                                <i class="material-icons">groups</i>
+                            </a>
+                            {% endwith %}
+                        {% elif user.delegated_groups_as_delegate.count == 1 and user.group_roles.count == 0 %}
+                            <!-- Single delegated group - direct link -->
+                            {% with user.delegated_groups_as_delegate.first as delegation %}
+                            <a class="group-access-icon" href="{% url 'group_detail' delegation.group.id %}" title="{{ delegation.group.name }}">
+                                <i class="material-icons">groups</i>
+                            </a>
+                            {% endwith %}
+                        {% else %}
+                            <!-- Multiple groups - show modal trigger -->
+                            <a class="group-access-icon" href="#" id="groupSelectorTrigger" title="My Groups">
+                                <i class="material-icons">groups</i>
+                            </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
                     <!-- User Profile -->
                     <div class="user-profile-container">
                         <a class="user-profile-icon" href="{% url 'profile' %}" title="Profile">
@@ -2287,6 +2597,76 @@
             </div>
         </div>
     </nav>
+
+    <!-- Group Selector Modal -->
+    <div class="modal fade" id="groupSelectorModal" tabindex="-1" aria-labelledby="groupSelectorModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modern-modal-dialog">
+            <div class="modal-content modern-modal-content">
+                <div class="modal-header modern-modal-header">
+                    <h5 class="modal-title modern-modal-title" id="groupSelectorModalLabel">
+                        <i class="material-icons me-2">groups</i>
+                        My Groups
+                    </h5>
+                    <button type="button" class="btn-close modern-btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <i class="material-icons">close</i>
+                    </button>
+                </div>
+                <div class="modal-body modern-modal-body">
+                    <div class="group-list">
+                        {% if user.group_roles.all %}
+                        <div class="group-section mb-4">
+                            <h6 class="group-section-title">
+                                <i class="material-icons me-2">admin_panel_settings</i>
+                                Groups I Lead
+                            </h6>
+                            {% for group_role in user.group_roles.all %}
+                            <a href="{% url 'group_detail' group_role.group.id %}" class="group-item modern-group-item">
+                                <div class="group-item-content">
+                                    <div class="group-icon">
+                                        <i class="material-icons">groups</i>
+                                    </div>
+                                    <div class="group-info">
+                                        <h6 class="group-name">{{ group_role.group.name }}</h6>
+                                        <span class="group-role">{{ group_role.custom_label|default:"Leader" }}</span>
+                                    </div>
+                                    <div class="group-arrow">
+                                        <i class="material-icons">arrow_forward</i>
+                                    </div>
+                                </div>
+                            </a>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        {% if user.delegated_groups_as_delegate.exists %}
+                        <div class="group-section">
+                            <h6 class="group-section-title">
+                                <i class="material-icons me-2">assistant</i>
+                                Groups I Assist
+                            </h6>
+                            {% for delegation in user.delegated_groups_as_delegate.all %}
+                            <a href="{% url 'group_detail' delegation.group.id %}" class="group-item modern-group-item">
+                                <div class="group-item-content">
+                                    <div class="group-icon">
+                                        <i class="material-icons">groups</i>
+                                    </div>
+                                    <div class="group-info">
+                                        <h6 class="group-name">{{ delegation.group.name }}</h6>
+                                        <span class="group-role">Assistant</span>
+                                    </div>
+                                    <div class="group-arrow">
+                                        <i class="material-icons">arrow_forward</i>
+                                    </div>
+                                </div>
+                            </a>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="main-content">
         <div class="container">
@@ -2734,6 +3114,19 @@
                 bell.addEventListener('dblclick', function (e) {
                     e.preventDefault();
                     window.location.href = '/users/notifications/all/';
+                });
+            }
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Group Selector Modal
+            const groupSelectorTrigger = document.getElementById('groupSelectorTrigger');
+            if (groupSelectorTrigger) {
+                groupSelectorTrigger.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const modal = new bootstrap.Modal(document.getElementById('groupSelectorModal'));
+                    modal.show();
                 });
             }
         });
