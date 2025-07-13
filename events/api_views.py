@@ -78,20 +78,21 @@ class EventViewSet(viewsets.ReadOnlyModelViewSet):
         if end_date:
             queryset = queryset.filter(date__lte=end_date)
         
-        # Filter by event type (upcoming/past)
+        # Filter by event type (upcoming/past) - only if explicitly requested
         event_type = self.request.query_params.get('type', None)
-        now = timezone.now()
-        
-        if event_type == 'upcoming':
-            queryset = queryset.filter(
-                Q(date__gt=now.date()) | 
-                (Q(date=now.date()) & Q(end_time__gt=now.time()))
-            )
-        elif event_type == 'past':
-            queryset = queryset.filter(
-                Q(date__lt=now.date()) | 
-                (Q(date=now.date()) & Q(end_time__lt=now.time()))
-            )
+        if event_type:
+            now = timezone.now()
+            
+            if event_type == 'upcoming':
+                queryset = queryset.filter(
+                    Q(date__gt=now.date()) | 
+                    (Q(date=now.date()) & Q(end_time__gt=now.time()))
+                )
+            elif event_type == 'past':
+                queryset = queryset.filter(
+                    Q(date__lt=now.date()) | 
+                    (Q(date=now.date()) & Q(end_time__lt=now.time()))
+                )
         
         # Filter by location
         city = self.request.query_params.get('city', None)
