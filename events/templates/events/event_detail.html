@@ -2206,34 +2206,9 @@
                 var discord = button.getAttribute('data-discord');
                 var telegram = button.getAttribute('data-telegram');
                 var userId = button.getAttribute('data-user-id');
-                var eventId = {
-                    {
-                        event.id |
-                            default: 'null'
-                    }
-                };
-                var isOrganizer = ({
-                        %
-                        if is_organizer or is_site_admin %
-                    }
-                    true {
-                        %
-                        else %
-                    }
-                    false {
-                        % endif %
-                    });
-                var canBanUser = ({
-                        %
-                        if can_ban_user %
-                    }
-                    true {
-                        %
-                        else %
-                    }
-                    false {
-                        % endif %
-                    });
+                var eventId = {{ event.id|default:'null' }};
+                var isOrganizer = {% if is_organizer or is_site_admin %}true{% else %}false{% endif %};
+                var canBanUser = {% if can_ban_user %}true{% else %}false{% endif %};
                 var modalDisplayName = contactInfoModal.querySelector('#modalContactDisplayName');
                 var modalDiscord = contactInfoModal.querySelector('#modalContactDiscord');
                 var modalTelegram = contactInfoModal.querySelector('#modalContactTelegram');
