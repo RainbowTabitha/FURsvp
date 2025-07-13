@@ -791,6 +791,56 @@
     });
     </script>
     {% endif %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle card/list view for upcoming events
+    const evCardBtn = document.getElementById('groupCardViewBtn');
+    const evListBtn = document.getElementById('groupListViewBtn');
+    const evCardView = document.getElementById('groupEventsCardView');
+    const evListView = document.getElementById('groupEventsListView');
+    if (evCardBtn && evListBtn && evCardView && evListView) {
+        evCardBtn.addEventListener('click', function() {
+            evCardBtn.classList.add('active');
+            evCardBtn.classList.remove('outline');
+            evListBtn.classList.remove('active');
+            evListBtn.classList.add('outline');
+            evCardView.style.display = '';
+            evListView.style.display = 'none';
+        });
+        evListBtn.addEventListener('click', function() {
+            evListBtn.classList.add('active');
+            evListBtn.classList.remove('outline');
+            evCardBtn.classList.remove('active');
+            evCardBtn.classList.add('outline');
+            evCardView.style.display = 'none';
+            evListView.style.display = '';
+        });
+    }
+    // Toggle card/list view for past events
+    const pastCardBtn = document.getElementById('pastCardViewBtn');
+    const pastListBtn = document.getElementById('pastListViewBtn');
+    const pastCardView = document.getElementById('pastEventsCardView');
+    const pastListView = document.getElementById('pastEventsListView');
+    if (pastCardBtn && pastListBtn && pastCardView && pastListView) {
+        pastCardBtn.addEventListener('click', function() {
+            pastCardBtn.classList.add('active');
+            pastCardBtn.classList.remove('outline');
+            pastListBtn.classList.remove('active');
+            pastListBtn.classList.add('outline');
+            pastCardView.style.display = '';
+            pastListView.style.display = 'none';
+        });
+        pastListBtn.addEventListener('click', function() {
+            pastListBtn.classList.add('active');
+            pastListBtn.classList.remove('outline');
+            pastCardBtn.classList.remove('active');
+            pastCardBtn.classList.add('outline');
+            pastCardView.style.display = 'none';
+            pastListView.style.display = '';
+        });
+    }
+});
+</script>
 </div>
 
 <!-- Edit Group Modal -->
