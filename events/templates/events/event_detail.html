@@ -1350,7 +1350,7 @@
                                 <strong class="text-primary">Description:</strong>
                                 <br>
                             </div>
-                            <div>{{ event.description|urlize|safe }}</div>
+                            <div>{{ event.description|safe }}</div>
                             {% if event.accessibility_details %}
                             <span class="material-icons text-primary"
                                 style="font-size: 1.3em; margin-right: 0.3em;">accessible</span><strong
@@ -1862,6 +1862,33 @@
                                     editor.getContainer().style.transition =
                                         'border-color 0.15s ease-in-out';
                                 });
+                                
+                                // Auto-convert URLs to links when pasting or typing
+                                editor.on('PastePreProcess', function (e) {
+                                    // Convert plain text URLs to links when pasting
+                                    if (e.content && !e.content.includes('<')) {
+                                        e.content = convertUrlsToLinks(e.content);
+                                    }
+                                });
+                                
+                                // Convert URLs to links when typing
+                                editor.on('KeyUp', function (e) {
+                                    if (e.keyCode === 32 || e.keyCode === 13) { // Space or Enter
+                                        var content = editor.getContent();
+                                        var newContent = convertUrlsToLinks(content);
+                                        if (newContent !== content) {
+                                            editor.setContent(newContent);
+                                        }
+                                    }
+                                });
+                                
+                                function convertUrlsToLinks(text) {
+                                    var urlPattern = /(https?:\/\/[^\s<>"{}|\\^`\[\]]+|www\.[^\s<>"{}|\\^`\[\]]+)/g;
+                                    return text.replace(urlPattern, function(url) {
+                                        var href = url.startsWith('www.') ? 'http://' + url : url;
+                                        return '<a href="' + href + '" target="_blank" rel="noopener noreferrer">' + url + '</a>';
+                                    });
+                                }
                             },
                             file_picker_callback: function (callback, value, meta) {
                                 if (meta.filetype === 'image') {

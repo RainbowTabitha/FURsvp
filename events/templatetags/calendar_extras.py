@@ -18,7 +18,7 @@ def urlize(text):
     if not text:
         return text
     
-    # Check if the text contains HTML tags - if so, return as-is to preserve TinyMCE formatting
+    # Check if the text contains actual HTML tags (not entities) - if so, return as-is to preserve TinyMCE formatting
     if re.search(r'<[^>]+>', text):
         return text
     
