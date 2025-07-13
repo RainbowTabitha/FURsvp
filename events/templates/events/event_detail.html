@@ -13,6 +13,29 @@
         box-sizing: border-box;
     }
 
+    .card-body a,
+    .modern-card-body a {
+        color: #2563eb;
+        text-decoration: underline;
+        transition: color 0.15s ease-in-out;
+    }
+
+    .card-body a:hover,
+    .modern-card-body a:hover {
+        color: #1d4ed8;
+        text-decoration: underline;
+    }
+
+    .dark-mode .card-body a,
+    .dark-mode .modern-card-body a {
+        color: #60a5fa;
+    }
+
+    .dark-mode .card-body a:hover,
+    .dark-mode .modern-card-body a:hover {
+        color: #93c5fd;
+    }
+
     .organizer-tools-buttons .btn {
         white-space: nowrap;
     }
@@ -1327,7 +1350,7 @@
                                 <strong class="text-primary">Description:</strong>
                                 <br>
                             </div>
-                            <div>{{ event.description|safe }}</div>
+                            <div>{{ event.description|urlize|safe }}</div>
                             {% if event.accessibility_details %}
                             <span class="material-icons text-primary"
                                 style="font-size: 1.3em; margin-right: 0.3em;">accessible</span><strong
@@ -2161,9 +2184,34 @@
                 var discord = button.getAttribute('data-discord');
                 var telegram = button.getAttribute('data-telegram');
                 var userId = button.getAttribute('data-user-id');
-                var eventId = {{ event.id|default:'null' }};
-                var isOrganizer = ({% if is_organizer or is_site_admin %}true{% else %}false{% endif %});
-                var canBanUser = ({% if can_ban_user %}true{% else %}false{% endif %});
+                var eventId = {
+                    {
+                        event.id |
+                            default: 'null'
+                    }
+                };
+                var isOrganizer = ({
+                        %
+                        if is_organizer or is_site_admin %
+                    }
+                    true {
+                        %
+                        else %
+                    }
+                    false {
+                        % endif %
+                    });
+                var canBanUser = ({
+                        %
+                        if can_ban_user %
+                    }
+                    true {
+                        %
+                        else %
+                    }
+                    false {
+                        % endif %
+                    });
                 var modalDisplayName = contactInfoModal.querySelector('#modalContactDisplayName');
                 var modalDiscord = contactInfoModal.querySelector('#modalContactDiscord');
                 var modalTelegram = contactInfoModal.querySelector('#modalContactTelegram');
