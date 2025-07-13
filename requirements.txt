@@ -13,3 +13,6 @@ python-dotenv
 django-csp
 djangorestframework
 drf_yasg
+django-two-factor-auth
+qrcode
+phonenumbers

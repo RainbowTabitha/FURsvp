@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'D71CFE3703158C6A495D119ED73820B99ACAC6E07BA1A910BC4F66B971466AC3'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 
@@ -50,6 +50,10 @@ INSTALLED_APPS = [
     'django_q',
     'rest_framework',
     'drf_yasg',
+    'django_otp',
+    'django_otp.plugins.otp_totp',
+    'two_factor',
+    'qrcode',
 ]
 
 MIDDLEWARE = [
@@ -62,6 +66,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'fursvp.middleware.StaticFilesMiddleware',
+    'django_otp.middleware.OTPMiddleware',
 ]
 
 CORS_ALLOWED_ORIGIN_REGEXES = [

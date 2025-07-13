@@ -14,7 +14,7 @@
     </div>
 </nav>
 
-<div class="container">
+<div class="profile-gradient-bg">
     <div class="row justify-content-center">
         <div class="col-lg-10">
             <div class="card shadow-sm mb-4 profile-glass-card">
@@ -51,6 +51,12 @@
                             <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#password"
                                 type="button" role="tab" aria-controls="password" aria-selected="false">
                                 <i class="material-icons align-middle me-1">lock</i> Change Password
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="twofa-tab" data-bs-toggle="tab" data-bs-target="#twofa"
+                                type="button" role="tab" aria-controls="twofa" aria-selected="false">
+                                <i class="material-icons align-middle me-1">verified_user</i> 2FA
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
@@ -207,6 +213,21 @@
                                         </button>
                                     </div>
                                 </form>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="twofa" role="tabpanel" aria-labelledby="twofa-tab">
+                            <div class="card-body">
+                                <h2>Two-Factor Authentication (2FA)</h2>
+                                {% if device %}
+                                  <div class="alert alert-success">2FA is <strong>enabled</strong> on your account.</div>
+                                  <form method="post" action="{% url 'twofa_disable' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger">Disable 2FA</button>
+                                  </form>
+                                {% else %}
+                                  <div class="alert alert-warning">2FA is <strong>not enabled</strong> on your account.</div>
+                                  <a href="{% url 'twofa_enable' %}" class="btn btn-primary">Enable 2FA</a>
+                                {% endif %}
                             </div>
                         </div>
                         <div class="tab-pane fade" id="delete" role="tabpanel" aria-labelledby="delete-tab">
@@ -382,13 +403,14 @@
     }
 
     .profile-glass-card {
-        background: rgba(255, 255, 255, 0.88);
-        border-radius: 1.5rem;
-        box-shadow: 0 8px 32px rgba(59, 130, 246, 0.13);
-        backdrop-filter: blur(6px);
-        padding: 2.5rem 2.2rem 2.2rem 2.2rem;
+        background: rgba(255, 255, 255, 0.92);
+        border-radius: 1.7rem;
+        box-shadow: 0 8px 32px rgba(59, 130, 246, 0.18);
+        backdrop-filter: blur(8px);
+        padding: 2.7rem 2.3rem 2.3rem 2.3rem;
         margin-bottom: 2.5rem;
         border: 1.5px solid #e0e7ef;
+        transition: box-shadow 0.2s, border 0.2s;
     }
 
     .profile-glass-card {
@@ -447,18 +469,14 @@
     .profile-tabs .nav-link {
         border: none !important;
         border-radius: 2em !important;
-        background: #f4f8ff;
+        background: linear-gradient(90deg, #f4f8ff 0%, #e0f2fe 100%);
         color: #223b7b;
         font-weight: 700;
         font-size: 1.13rem;
         padding: 0.8em 2.2em;
         margin: 0 0.1em;
         box-shadow: 0 2px 8px rgba(59, 130, 246, 0.07);
-        transition:
-            background 0.18s,
-            color 0.18s,
-            box-shadow 0.18s,
-            transform 0.13s;
+        transition: background 0.18s, color 0.18s, box-shadow 0.18s, transform 0.13s;
         position: relative;
         z-index: 1;
         outline: none;
@@ -647,6 +665,56 @@
         color: #fff !important;
         box-shadow: 0 4px 18px rgba(59, 130, 246, 0.18);
         transform: scale(1.03);
+    }
+    .profile-save-btn, .profile-password-btn, .btn-danger, .btn-primary {
+        width: 100%;
+        background: linear-gradient(90deg, #2563eb 0%, #06b6d4 100%);
+        color: #fff !important;
+        font-weight: 800;
+        border: none;
+        border-radius: 2em;
+        box-shadow: 0 2px 12px rgba(59, 130, 246, 0.10);
+        padding: 1em 0;
+        font-size: 1.18rem;
+        transition: background 0.18s, box-shadow 0.18s, transform 0.13s;
+        margin-top: 0.2rem;
+        margin-bottom: 0.7rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.7em;
+    }
+    .profile-save-btn:hover, .profile-password-btn:hover, .btn-danger:hover, .btn-primary:hover,
+    .profile-save-btn:focus, .profile-password-btn:focus, .btn-danger:focus, .btn-primary:focus {
+        background: linear-gradient(90deg, #1a2f9a 0%, #0e7490 100%);
+        color: #fff !important;
+        box-shadow: 0 4px 18px rgba(59, 130, 246, 0.18);
+        transform: scale(1.03);
+    }
+    .profile-delete-section .btn-danger {
+        background: linear-gradient(90deg, #dc3545 0%, #ff6f6f 100%);
+        color: #fff;
+    }
+    .profile-delete-section .btn-danger:hover, .profile-delete-section .btn-danger:focus {
+        background: linear-gradient(90deg, #b91c1c 0%, #dc2626 100%);
+        color: #fff;
+    }
+    @media (max-width: 600px) {
+        .profile-glass-card {
+            padding: 1.2rem 0.5rem 1.2rem 0.5rem;
+        }
+        .profile-tabs {
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+        .profile-tabs .nav-link {
+            font-size: 1rem;
+            padding: 0.7em 0.7em;
+        }
+        .profile-avatar {
+            width: 90px;
+            height: 90px;
+        }
     }
 </style>
 

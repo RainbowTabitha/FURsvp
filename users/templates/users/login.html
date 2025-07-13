@@ -48,10 +48,15 @@
 }
 
 #togglePasswordIcon {
-    font-size: 1.3rem;
+    font-size: 1.5rem;
     line-height: 1;
     margin: 0;
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 48px;
+    width: 48px;
+    padding: 0;
 }
 
 /* Modern Glassmorphism Card */
@@ -107,10 +112,11 @@
     color: #2563eb;
     font-size: 1.25rem;
     height: 48px;
+    width: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 0.9rem;
+    padding: 0;
 }
 .input-group-text:last-child {
     border-radius: 0 0.7rem 0.7rem 0 !important;
@@ -246,6 +252,10 @@
 .divider::after {
     margin-left: 1rem;
 }
+
+.input-group .form-control#id_password {
+    border-radius: 0 0 0 0 !important;
+}
 </style>
 
 <div class="container mt-5">
@@ -255,11 +265,11 @@
                 <h1 class="login-title mb-4">
                     <i class="material-icons">login</i> Login
                 </h1>
-                <form method="post">
+                <form method="post" id="login-form">
                     {% csrf_token %}
-                    {% if form.non_field_errors %}
+                    {% if error %}
                         <div class="alert alert-danger login-error-box">
-                            {{ form.non_field_errors|join:" " }}
+                            {{ error }}
                         </div>
                     {% endif %}
                     <div class="mb-3">
@@ -268,13 +278,8 @@
                             <span class="input-group-text">
                                 <i class="material-icons">person</i>
                             </span>
-                            {{ form.username|add_class:'form-control' }}
+                            <input type="text" class="form-control" id="id_username" name="username" required value="{{ username|default:'' }}">
                         </div>
-                        {% if form.username.errors %}
-                            <div class="invalid-feedback d-block">
-                                {{ form.username.errors }}
-                            </div>
-                        {% endif %}
                     </div>
                     <div class="mb-3">
                         <label for="id_password" class="form-label login-form-label">Password</label>
@@ -282,18 +287,17 @@
                             <span class="input-group-text">
                                 <i class="material-icons">lock</i>
                             </span>
-                            {{ form.password|add_class:'form-control' }}
+                            <input type="password" class="form-control" id="id_password" name="password" required{% if password %} value="{{ password }}"{% endif %}>
                             <span class="input-group-text" id="togglePasswordIcon" style="cursor: pointer;">
                                 <i class="material-icons">visibility</i>
                             </span>
                         </div>
-                        {% if form.password.errors %}
-                            <div class="invalid-feedback d-block">
-                                {{ form.password.errors }}
-                            </div>
-                        {% endif %}
                     </div>
-                    <button type="submit" class="login-btn-modern">
+                    <div class="mb-3" id="twofa-section" style="display: {% if show_2fa %}block{% else %}none{% endif %};">
+                        <label for="id_token" class="form-label login-form-label">Enter 2FA code</label>
+                        <input type="text" class="form-control" id="id_token" name="token" autocomplete="one-time-code">
+                    </div>
+                    <button type="submit" class="login-btn-modern" id="login-btn">
                         <i class="material-icons">login</i> Login
                     </button>
                 </form>
@@ -341,6 +345,16 @@ document.addEventListener('DOMContentLoaded', function() {
             icon.textContent = type === 'password' ? 'visibility' : 'visibility_off';
         });
     }
+    // Focus 2FA input if shown
+    if (document.getElementById('twofa-section').style.display !== 'none') {
+        document.getElementById('id_token').focus();
+    }
 });
 </script>
+{% if error and '2FA' in error %}
+<script>
+    document.getElementById('twofa-section').style.display = '';
+    document.getElementById('id_token').focus();
+</script>
+{% endif %}
 {% endblock %} 

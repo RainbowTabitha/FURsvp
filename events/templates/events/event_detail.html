@@ -1835,33 +1835,50 @@
                     function initTinyMCEEventModal() {
                         const isDark = document.body.classList.contains('dark-mode');
                         tinymce.init({
-                            selector: '#{{ event_form.description.id_for_label }}',
-                            height: 450,
-                            width: '100%',
-                            menubar: false,
-                            plugins: 'advlist autolink lists image charmap anchor searchreplace visualblocks code insertdatetime table help wordcount textcolor backcolor',
-                            toolbar: 'bold italic strikethrough | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | image code | removeformat',
-                            branding: false,
-                            promotion: false,
-                            license_key: 'gpl',
-                            automatic_uploads: true,
-                            file_picker_types: 'image',
-                            images_reuse_filename: true,
-                            statusbar: false,
-                            resize: false,
-                            skin: isDark ? 'oxide-dark' : 'oxide',
-                            content_css: isDark ? '/static/tinymce-dark-content.css' : '',
-                            toolbar_mode: 'wrap',
-                            toolbar_location: 'top',
-                            toolbar_sticky: true,
-                            toolbar_sticky_offset: 0,
-                            content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; } img { max-width: 100%; height: auto; display: block; margin: 1em auto; } .tox-statusbar { display: none !important; }',
-                            document_base_url: window.location.origin + '/',
+                selector: '#{{ event_form.description.id_for_label }}',
+                height: 300,
+                width: '100%',
+                menubar: false,
+                        plugins: 'advlist autolink lists image charmap anchor searchreplace visualblocks code insertdatetime table help wordcount textcolor backcolor',
+                        toolbar: 'bold italic strikethrough | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | image code | removeformat',
+                branding: false,
+                promotion: false,
+                        license_key: 'gpl',
+                automatic_uploads: true,
+                file_picker_types: 'image',
+                images_reuse_filename: true,
+                        statusbar: false,
+                        resize: false,
+                        menubar: false,
+                        skin: isDark ? 'oxide-dark' : 'oxide',
+                        content_css: isDark ? '/static/tinymce-dark-content.css' : '',
+                        toolbar_mode: 'wrap',
+                        toolbar_sticky: true,
+                        toolbar_sticky_offset: 0,
+                        content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; } img { max-width: 100%; height: auto; display: block; margin: 1em auto; } .tox-statusbar { display: none !important; }',
+                        document_base_url: '{{ request.scheme }}://{{ request.get_host }}/',
                             setup: function (editor) {
                                 editor.on('init', function () {
                                     editor.getContainer().style.transition =
                                         'border-color 0.15s ease-in-out';
                                 });
+                            },
+                            file_picker_callback: function (callback, value, meta) {
+                                if (meta.filetype === 'image') {
+                                    var input = document.createElement('input');
+                                    input.setAttribute('type', 'file');
+                                    input.setAttribute('accept', 'image/*');
+                                    input.onchange = function () {
+                                        var file = this.files[0];
+                                        var reader = new FileReader();
+                                        reader.onload = function () {
+                                            // For production, upload the file to your server and use the returned URL
+                                            callback(reader.result, { title: file.name });
+                                        };
+                                        reader.readAsDataURL(file);
+                                    };
+                                    input.click();
+                                }
                             }
                         });
                     }

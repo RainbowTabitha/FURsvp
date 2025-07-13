@@ -6,7 +6,7 @@ urlpatterns = [
     path('register/', views.register, name='register'),
     path('register/success/', views.registration_success, name='registration_success'),
     path('pending-approval/', views.pending_approval, name='pending_approval'),
-    path('login/', views.CustomLoginView.as_view(), name='login'),
+    path('login/', views.custom_login, name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
     path('profile/', views.profile, name='profile'),
     path('administration/', views.administration, name='administration'),
@@ -23,4 +23,7 @@ urlpatterns = [
     path('telegram/login/embedded/', views.telegram_login_embedded, name='telegram_login_embedded'),
     path('telegram/link/', views.link_telegram_account, name='link_telegram_account'),
     path('telegram/unlink/', views.unlink_telegram_account, name='unlink_telegram_account'),
+    path('twofa/enable/', views.twofa_enable, name='twofa_enable'),
+    path('twofa/disable/', views.twofa_disable, name='twofa_disable'),
+    path('twofa/settings/', views.twofa_settings, name='twofa_settings'),
 ] 
