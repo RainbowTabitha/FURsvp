@@ -14,8 +14,12 @@ def make_date_key(year, month, day):
 
 @register.filter
 def urlize(text):
-    """Convert plain text URLs to clickable HTML links."""
+    """Convert plain text URLs to clickable HTML links, but only if the text doesn't contain HTML tags."""
     if not text:
+        return text
+    
+    # Check if the text contains HTML tags - if so, return as-is to preserve TinyMCE formatting
+    if re.search(r'<[^>]+>', text):
         return text
     
     # URL pattern that matches http, https, www, and common TLDs
