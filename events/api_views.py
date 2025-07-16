@@ -268,73 +268,7 @@ class EventViewSet(viewsets.ReadOnlyModelViewSet):
         rsvps = event.rsvps.filter(status='waitlisted').order_by('timestamp')
         serializer = RSVPSerializer(rsvps, many=True)
         return Response(serializer.data)
-    
-    @swagger_auto_schema(
-        operation_description="Look up users for events with public registration",
-        manual_parameters=[
-            openapi.Parameter('q', openapi.IN_QUERY, description="Search query (minimum 2 characters)", type=openapi.TYPE_STRING, required=True),
-            openapi.Parameter('limit', openapi.IN_QUERY, description="Maximum number of results (default: 10, max: 50)", type=openapi.TYPE_INTEGER, required=False),
-            openapi.Parameter('type', openapi.IN_QUERY, description="Search type: all, username, display_name, discord, telegram", type=openapi.TYPE_STRING, required=False),
-        ],
-        responses={
-            200: openapi.Response('Success', UserLookupSerializer(many=True)),
-            400: 'Bad Request - Invalid query parameters',
-            403: 'Forbidden - Event does not have public registration'
-        }
-    )
-    @action(detail=True, methods=['get'])
-    def user_lookup(self, request, pk=None):
-        """Look up users for events with public registration"""
-        event = self.get_object()
-        
-        # Check if this event has public registration (attendee list is public)
-        if not event.attendee_list_public:
-            return Response(
-                {'error': 'User lookup is only available for events with public registration'},
-                status=status.HTTP_403_FORBIDDEN
-            )
-        
-        # Get query parameters
-        query = request.query_params.get('q', '').strip()
-        limit = min(int(request.query_params.get('limit', 10)), 50)  # Max 50 results
-        search_type = request.query_params.get('type', 'all')  # all, username, display_name, discord, telegram
-        
-        if not query or len(query) < 2:
-            return Response(
-                {'error': 'Query parameter "q" is required and must be at least 2 characters'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        # Build the search query based on search type
-        if search_type == 'username':
-            users = User.objects.filter(username__icontains=query)
-        elif search_type == 'display_name':
-            users = User.objects.filter(profile__display_name__icontains=query)
-        elif search_type == 'discord':
-            users = User.objects.filter(profile__discord_username__icontains=query)
-        elif search_type == 'telegram':
-            users = User.objects.filter(profile__telegram_username__icontains=query)
-        else:  # 'all' - search across all fields
-            users = User.objects.filter(
-                Q(username__icontains=query) |
-                Q(profile__display_name__icontains=query) |
-                Q(profile__discord_username__icontains=query) |
-                Q(profile__telegram_username__icontains=query)
-            ).distinct()
-        
-        # Apply limit and order by username
-        users = users.order_by('username')[:limit]
-        
-        serializer = UserLookupSerializer(users, many=True)
-        return Response({
-            'query': query,
-            'search_type': search_type,
-            'results': serializer.data,
-            'count': len(serializer.data),
-            'event_id': event.id,
-            'event_title': event.title
-        })
-    
+
     @action(detail=False, methods=['get'])
     def upcoming(self, request):
         """Get upcoming events"""
