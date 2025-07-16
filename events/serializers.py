@@ -14,6 +14,31 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'display_name']
 
 
+class UserLookupSerializer(serializers.ModelSerializer):
+    """Serializer for user lookup in events with public registration"""
+    display_name = serializers.SerializerMethodField()
+    profile_info = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'display_name', 'profile_info']
+    
+    def get_display_name(self, obj):
+        """Get user's display name from profile if available"""
+        if hasattr(obj, 'profile'):
+            return obj.profile.get_display_name()
+        return obj.username
+    
+    def get_profile_info(self, obj):
+        """Get basic profile information"""
+        if hasattr(obj, 'profile'):
+            return {
+                'discord_username': obj.profile.discord_username,
+                'telegram_username': obj.profile.telegram_username,
+            }
+        return {}
+
+
 class GroupSerializer(serializers.ModelSerializer):
     """Serializer for Group model"""
     class Meta:

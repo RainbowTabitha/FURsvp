@@ -9,11 +9,138 @@ from django.db.models import Q
 from rest_framework.views import APIView
 from django.shortcuts import render
 from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+from django.contrib.auth.models import User
 
 from .models import Group, Event, RSVP
 from .serializers import (
-    GroupSerializer, EventSerializer, EventDetailSerializer, RSVPSerializer
+    GroupSerializer, EventSerializer, EventDetailSerializer, RSVPSerializer, UserLookupSerializer
 )
+
+
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    """API viewset for User model - read-only"""
+    queryset = User.objects.all()
+    serializer_class = UserLookupSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    
+    @swagger_auto_schema(
+        operation_description="Look up user by Telegram username",
+        manual_parameters=[
+            openapi.Parameter('username', openapi.IN_QUERY, description="Telegram username (with or without @)", type=openapi.TYPE_STRING, required=True),
+        ],
+        responses={
+            200: openapi.Response('Success - User found'),
+            400: 'Bad Request - Missing username parameter',
+            404: 'Not Found - User not found'
+        }
+    )
+    @action(detail=False, methods=['get'])
+    def by_telegram(self, request):
+        """Look up user by Telegram username"""
+        telegram_username = request.query_params.get('username', '').strip()
+        
+        if not telegram_username:
+            return Response(
+                {'error': 'Query parameter "username" is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Remove @ if present
+        if telegram_username.startswith('@'):
+            telegram_username = telegram_username[1:]
+        
+        try:
+            user = User.objects.get(profile__telegram_username=telegram_username)
+            serializer = UserLookupSerializer(user)
+            return Response({
+                'found': True,
+                'user': serializer.data
+            })
+        except User.DoesNotExist:
+            return Response({
+                'found': False,
+                'message': f'No user found with Telegram username: {telegram_username}'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+    @swagger_auto_schema(
+        operation_description="Get events registered by a specific user (respecting privacy settings)",
+        manual_parameters=[
+            openapi.Parameter('user_id', openapi.IN_QUERY, description="User ID to look up events for", type=openapi.TYPE_INTEGER, required=True),
+        ],
+        responses={
+            200: openapi.Response('Success - User events retrieved'),
+            400: 'Bad Request - Missing user_id parameter',
+            404: 'Not Found - User not found'
+        }
+    )
+    @action(detail=False, methods=['get'])
+    def events(self, request):
+        """Get events registered by a specific user (respecting privacy settings)"""
+        user_id = request.query_params.get('user_id', '').strip()
+        
+        if not user_id:
+            return Response(
+                {'error': 'Query parameter "user_id" is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({
+                'error': f'User with ID {user_id} not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        # Get user's RSVPs
+        user_rsvps = RSVP.objects.filter(user=user).select_related('event', 'event__group')
+        
+        # Filter events based on privacy settings
+        visible_events = []
+        for rsvp in user_rsvps:
+            event = rsvp.event
+            
+            # Skip cancelled events
+            if event.status == 'cancelled':
+                continue
+            
+            # Check if event is visible based on privacy settings
+            is_visible = False
+            
+            # Event is visible if:
+            # 1. User is requesting their own events
+            # 2. Event has public attendee list
+            # 3. User is authenticated and is an organizer/admin
+            if (request.user.is_authenticated and 
+                (request.user == user or 
+                 request.user == event.organizer or 
+                 request.user.is_staff)):
+                is_visible = True
+            elif event.attendee_list_public:
+                is_visible = True
+            
+            if is_visible:
+                event_data = {
+                    'event_id': event.id,
+                    'event_title': event.title,
+                    'group_name': event.group.name,
+                    'event_date': event.date,
+                    'rsvp_status': rsvp.status,
+                    'rsvp_timestamp': rsvp.timestamp,
+                    'attendee_list_public': event.attendee_list_public
+                }
+                visible_events.append(event_data)
+        
+        # Sort by event date (most recent first)
+        visible_events.sort(key=lambda x: x['event_date'], reverse=True)
+        
+        return Response({
+            'user_id': user_id,
+            'username': user.username,
+            'display_name': user.profile.get_display_name() if hasattr(user, 'profile') else user.username,
+            'events': visible_events,
+            'count': len(visible_events)
+        })
 
 
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
@@ -141,6 +268,72 @@ class EventViewSet(viewsets.ReadOnlyModelViewSet):
         rsvps = event.rsvps.filter(status='waitlisted').order_by('timestamp')
         serializer = RSVPSerializer(rsvps, many=True)
         return Response(serializer.data)
+    
+    @swagger_auto_schema(
+        operation_description="Look up users for events with public registration",
+        manual_parameters=[
+            openapi.Parameter('q', openapi.IN_QUERY, description="Search query (minimum 2 characters)", type=openapi.TYPE_STRING, required=True),
+            openapi.Parameter('limit', openapi.IN_QUERY, description="Maximum number of results (default: 10, max: 50)", type=openapi.TYPE_INTEGER, required=False),
+            openapi.Parameter('type', openapi.IN_QUERY, description="Search type: all, username, display_name, discord, telegram", type=openapi.TYPE_STRING, required=False),
+        ],
+        responses={
+            200: openapi.Response('Success', UserLookupSerializer(many=True)),
+            400: 'Bad Request - Invalid query parameters',
+            403: 'Forbidden - Event does not have public registration'
+        }
+    )
+    @action(detail=True, methods=['get'])
+    def user_lookup(self, request, pk=None):
+        """Look up users for events with public registration"""
+        event = self.get_object()
+        
+        # Check if this event has public registration (attendee list is public)
+        if not event.attendee_list_public:
+            return Response(
+                {'error': 'User lookup is only available for events with public registration'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Get query parameters
+        query = request.query_params.get('q', '').strip()
+        limit = min(int(request.query_params.get('limit', 10)), 50)  # Max 50 results
+        search_type = request.query_params.get('type', 'all')  # all, username, display_name, discord, telegram
+        
+        if not query or len(query) < 2:
+            return Response(
+                {'error': 'Query parameter "q" is required and must be at least 2 characters'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Build the search query based on search type
+        if search_type == 'username':
+            users = User.objects.filter(username__icontains=query)
+        elif search_type == 'display_name':
+            users = User.objects.filter(profile__display_name__icontains=query)
+        elif search_type == 'discord':
+            users = User.objects.filter(profile__discord_username__icontains=query)
+        elif search_type == 'telegram':
+            users = User.objects.filter(profile__telegram_username__icontains=query)
+        else:  # 'all' - search across all fields
+            users = User.objects.filter(
+                Q(username__icontains=query) |
+                Q(profile__display_name__icontains=query) |
+                Q(profile__discord_username__icontains=query) |
+                Q(profile__telegram_username__icontains=query)
+            ).distinct()
+        
+        # Apply limit and order by username
+        users = users.order_by('username')[:limit]
+        
+        serializer = UserLookupSerializer(users, many=True)
+        return Response({
+            'query': query,
+            'search_type': search_type,
+            'results': serializer.data,
+            'count': len(serializer.data),
+            'event_id': event.id,
+            'event_title': event.title
+        })
     
     @action(detail=False, methods=['get'])
     def upcoming(self, request):
