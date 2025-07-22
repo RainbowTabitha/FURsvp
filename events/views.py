@@ -366,11 +366,11 @@ def event_detail(request, event_id):
         form = RSVPForm(request.POST, instance=user_rsvp, event=event)
         if form.is_valid():
             new_status = form.cleaned_data['status']
-                rsvp = form.save(commit=False)
-                        rsvp.event = event
-                        rsvp.user = request.user
-                        rsvp.save()
-                        create_notification(request.user, f'Your RSVP status has been updated to {rsvp.get_status_display()!s} for {event.title}.', link=event.get_absolute_url())
+            rsvp = form.save(commit=False)
+            rsvp.event = event
+            rsvp.user = request.user
+            rsvp.save()
+            create_notification(request.user, f'Your RSVP status has been updated to {rsvp.get_status_display()!s} for {event.title}.', link=event.get_absolute_url())
             # Telegram webhook for public RSVP (any status)
             if event.attendee_list_public and event.group and getattr(event.group, 'telegram_webhook_channel', None):
                 telegram_username = None
@@ -378,7 +378,7 @@ def event_detail(request, event_id):
                     telegram_username = request.user.profile.telegram_username
                 if telegram_username:
                     mention = f'@{telegram_username}'
-                        else:
+                else:
                     mention = request.user.get_username() if request.user else 'Someone'
                 date_str = event.date.strftime('%m/%d/%Y') if hasattr(event.date, 'strftime') else str(event.date)
                 event_url = request.build_absolute_uri(event.get_absolute_url())
