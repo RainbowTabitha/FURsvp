@@ -1146,5 +1146,5 @@ def rsvp_telegram(request, event_id):
     from events.models import RSVP
     rsvp, created = RSVP.objects.get_or_create(event=event, user=profile.user, defaults={'status': 'confirmed'})
     if not created:
-        return HttpResponse('You have already RSVP'd to this event.', status=200)
+        return HttpResponse('You have already RSVP\'d to this event.', status=200)
     return HttpResponse('RSVP successful! You are now confirmed for this event.', status=200)
