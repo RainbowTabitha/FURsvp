@@ -10,7 +10,7 @@ from .models import Profile, GroupDelegation, BannedUser, Notification, GroupRol
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST, require_GET
-from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Q
 from django.db import models, transaction
@@ -526,6 +526,7 @@ def user_search_autocomplete(request):
     return JsonResponse({'results': []})
 
 @login_required
+@ensure_csrf_cookie
 def get_notifications(request):
     notifications = Notification.objects.filter(user=request.user).order_by('-timestamp')
     unread_count = notifications.filter(is_read=False).count()
@@ -576,6 +577,7 @@ def purge_read_notifications(request):
         return JsonResponse({'status': 'error', 'message': f'Failed to purge notifications: {str(e)}'}, status=500)
 
 @login_required
+@ensure_csrf_cookie
 def notifications_page(request):
     notifications = Notification.objects.filter(user=request.user).order_by('-timestamp')
     return render(request, 'users/notifications.html', {'notifications': notifications})
