@@ -988,8 +988,7 @@ def telegram_bot_webhook(request):
             if not events:
                 send_telegram_message(chat_id, "No events found.")
             else:
-                msg = "*Upcoming Events:*
-"
+                msg = "*Upcoming Events:*\n"
                 keyboard = []
                 for event in events:
                     url = f"https://{request.get_host()}{event.get_absolute_url()}"
