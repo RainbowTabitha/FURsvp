@@ -951,17 +951,25 @@ def telegram_bot_webhook(request):
     if text.startswith('/event'):
         parts = text.split()
         if len(parts) == 1:
-            # Show next event from any group
-            event = Event.objects.order_by('date').first()
+            # List upcoming events (limit to 10)
+            events = Event.objects.order_by('date')[:10]
+            if not events:
+                send_telegram_message(chat_id, "No events found.")
+            else:
+                msg = "*Upcoming Events:*\n"
+                for event in events:
+                    url = f"https://{request.get_host()}{event.get_absolute_url()}"
+                    msg += f"\n• [{event.title}]({url}) — {event.date.strftime('%m/%d/%Y')}"
+                send_telegram_message(chat_id, msg, parse_mode="Markdown")
         else:
             event_id = parts[1]
             event = Event.objects.filter(id=event_id).first()
-        if not event:
-            send_telegram_message(chat_id, "No event found.")
-        else:
-            url = f"https://{request.get_host()}{event.get_absolute_url()}"
-            msg = f"*{event.title}*\nDate: {event.date.strftime('%m/%d/%Y')}\n[View Event]({url})\n{event.description or ''}"
-            send_telegram_message(chat_id, msg, parse_mode="Markdown")
+            if not event:
+                send_telegram_message(chat_id, "No event found.")
+            else:
+                url = f"https://{request.get_host()}{event.get_absolute_url()}"
+                msg = f"*{event.title}*\nDate: {event.date.strftime('%m/%d/%Y')}\n[View Event]({url})\n{event.description or ''}"
+                send_telegram_message(chat_id, msg, parse_mode="Markdown")
 
     elif text.startswith('/rsvplist'):
         parts = text.split()
