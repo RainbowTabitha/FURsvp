@@ -940,12 +940,14 @@ def telegram_bot_webhook(request):
     chat_id = str(chat.get('id'))
     text = message.get('text', '')
 
-    def send_telegram_message(chat_id, text, parse_mode=None):
+    def send_telegram_message(chat_id, text, parse_mode=None, reply_markup=None):
         token = os.environ.get('TELEGRAM_BOT_TOKEN')
         url = f"https://api.telegram.org/bot{token}/sendMessage"
         payload = {"chat_id": chat_id, "text": text}
         if parse_mode:
             payload["parse_mode"] = parse_mode
+        if reply_markup:
+            payload["reply_markup"] = reply_markup
         requests.post(url, json=payload)
 
     # Try to find a group for this chat_id
@@ -964,10 +966,13 @@ def telegram_bot_webhook(request):
             else:
                 msg = "*Upcoming Events:*
 "
+                keyboard = []
                 for event in events:
                     url = f"https://{request.get_host()}{event.get_absolute_url()}"
-                    msg += f"\n• [{event.title}]({url}) — {event.date.strftime('%m/%d/%Y')}"
-                send_telegram_message(chat_id, msg, parse_mode="Markdown")
+                    msg += f"• [{event.title}]({url}) — {event.date.strftime('%m/%d/%Y')}\n"
+                    keyboard.append([{"text": event.title, "url": url}])
+                reply_markup = {"inline_keyboard": keyboard}
+                send_telegram_message(chat_id, msg, parse_mode="Markdown", reply_markup=reply_markup)
         else:
             event_id = parts[1]
             if group:
