@@ -957,11 +957,24 @@ def telegram_bot_webhook(request):
     # Try to find a group for this chat_id
     group = Group.objects.filter(telegram_webhook_channel=chat_id).first()
 
-    # Handle callback queries for RSVP list
+    # Handle callback queries for RSVP list and show all groups
     if "callback_query" in data:
         callback = data["callback_query"]
         chat_id = callback["message"]["chat"]["id"]
         data_str = callback["data"]
+        if data_str == "show_all_groups":
+            events = Event.objects.filter(date__gte=today).order_by('date')[:10]
+            if not events:
+                send_telegram_message(chat_id, "No events found.")
+            else:
+                msg = "<b>Upcoming Events (All Groups)</b>\n\n"
+                keyboard = []
+                for event in events:
+                    url = f"https://{request.get_host()}{event.get_absolute_url()}"
+                    msg += f"• <a href='{url}'>{event.title}</a> — <code>{event.date.strftime('%m/%d/%Y')}</code>\n"
+                    keyboard.append([{"text": event.title, "callback_data": f"rsvplist_{event.id}"}])
+                send_telegram_message(chat_id, msg, parse_mode="HTML", reply_markup={"inline_keyboard": keyboard})
+            return JsonResponse({'ok': True})
         if data_str.startswith("rsvplist_"):
             event_id = data_str.split("_", 1)[1]
             if group:
@@ -971,7 +984,6 @@ def telegram_bot_webhook(request):
             if not event:
                 send_telegram_message(chat_id, "Event not found.")
             else:
-                # Show all RSVP'd users if in a group/channel, else check attendee_list_public
                 show_all = bool(group)
                 if not show_all and not event.attendee_list_public:
                     send_telegram_message(chat_id, "The group organizer has hidden RSVPs from the public view.")
@@ -983,7 +995,7 @@ def telegram_bot_webhook(request):
                     else:
                         msg = f"<b>RSVP'd Users for</b> <i>{event.title}</i>\n\n<em>No RSVPs yet.</em>"
                     send_telegram_message(chat_id, msg, parse_mode="HTML")
-        return JsonResponse({'ok': True})
+            return JsonResponse({'ok': True})
 
     if text.startswith('/event'):
         parts = text.split()
@@ -1002,6 +1014,9 @@ def telegram_bot_webhook(request):
                     url = f"https://{request.get_host()}{event.get_absolute_url()}"
                     msg += f"• <a href='{url}'>{event.title}</a> — <code>{event.date.strftime('%m/%d/%Y')}</code>\n"
                     keyboard.append([{"text": event.title, "callback_data": f"rsvplist_{event.id}"}])
+                # Add a button to show all groups if in a group
+                if group:
+                    keyboard.append([{"text": "Show All Groups", "callback_data": "show_all_groups"}])
                 reply_markup = {"inline_keyboard": keyboard}
                 send_telegram_message(chat_id, msg, parse_mode="HTML", reply_markup=reply_markup)
         else:
