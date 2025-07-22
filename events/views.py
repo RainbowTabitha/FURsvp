@@ -940,11 +940,6 @@ def telegram_bot_webhook(request):
     chat_id = str(chat.get('id'))
     text = message.get('text', '')
 
-    # Only respond if this chat_id is linked to a group
-    group = Group.objects.filter(telegram_webhook_channel=chat_id).first()
-    if not group:
-        return JsonResponse({'ok': True})  # Ignore if not authorized
-
     def send_telegram_message(chat_id, text, parse_mode=None):
         token = os.environ.get('TELEGRAM_BOT_TOKEN')
         url = f"https://api.telegram.org/bot{token}/sendMessage"
@@ -956,11 +951,11 @@ def telegram_bot_webhook(request):
     if text.startswith('/event'):
         parts = text.split()
         if len(parts) == 1:
-            # Show next event
-            event = group.get_upcoming_events().first()
+            # Show next event from any group
+            event = Event.objects.order_by('date').first()
         else:
             event_id = parts[1]
-            event = Event.objects.filter(id=event_id, group=group).first()
+            event = Event.objects.filter(id=event_id).first()
         if not event:
             send_telegram_message(chat_id, "No event found.")
         else:
@@ -974,7 +969,7 @@ def telegram_bot_webhook(request):
             send_telegram_message(chat_id, "Usage: /rsvplist <event_id>")
         else:
             event_id = parts[1]
-            event = Event.objects.filter(id=event_id, group=group).first()
+            event = Event.objects.filter(id=event_id).first()
             if not event:
                 send_telegram_message(chat_id, "Event not found.")
             else:
