@@ -3,6 +3,7 @@ from .models import Group, Event, RSVP
 from django.contrib.auth.models import User
 from datetime import datetime
 from django.utils import timezone
+from django.utils.html import strip_tags
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -41,6 +42,7 @@ class UserLookupSerializer(serializers.ModelSerializer):
 
 class GroupSerializer(serializers.ModelSerializer):
     """Serializer for Group model"""
+    description = serializers.SerializerMethodField()
     class Meta:
         model = Group
         fields = [
@@ -48,12 +50,17 @@ class GroupSerializer(serializers.ModelSerializer):
             'contact_email', 'telegram_channel'
         ]
 
+    def get_description(self, obj):
+        text = strip_tags(obj.description) if obj.description else ""
+        return text.replace("&nbsp;", "\n")
+
 
 class EventSerializer(serializers.ModelSerializer):
     """Serializer for Event model with basic info"""
     group = GroupSerializer(read_only=True)
     start_timestamp = serializers.SerializerMethodField()
     end_timestamp = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField()
     
     class Meta:
         model = Event
@@ -84,6 +91,10 @@ class EventSerializer(serializers.ModelSerializer):
             return dt.isoformat()
         return None
 
+    def get_description(self, obj):
+        text = strip_tags(obj.description) if obj.description else ""
+        return text.replace("&nbsp;", "\n")
+
 
 class EventDetailSerializer(serializers.ModelSerializer):
     """Detailed serializer for Event model with additional info"""
@@ -92,6 +103,7 @@ class EventDetailSerializer(serializers.ModelSerializer):
     waitlist_count = serializers.SerializerMethodField()
     start_timestamp = serializers.SerializerMethodField()
     end_timestamp = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField()
     
     class Meta:
         model = Event
@@ -130,6 +142,10 @@ class EventDetailSerializer(serializers.ModelSerializer):
                 dt = timezone.make_aware(dt, timezone.get_current_timezone())
             return dt.isoformat()
         return None
+
+    def get_description(self, obj):
+        text = strip_tags(obj.description) if obj.description else ""
+        return text.replace("&nbsp;", "\n")
 
 
 class RSVPSerializer(serializers.ModelSerializer):
