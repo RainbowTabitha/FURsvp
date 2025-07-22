@@ -19,6 +19,7 @@ from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 import calendar
 from django.forms.utils import ErrorList
 from events.utils import post_to_telegram_channel
+from django.urls import reverse
 
 # Create your views here.
 
@@ -319,7 +320,23 @@ def event_detail(request, event_id):
                     was_confirmed = (user_rsvp.status == 'confirmed')
                     user_rsvp.delete()
                     create_notification(request.user, f'You have removed your RSVP for {event.title}.', link=event.get_absolute_url())
-
+                    # Telegram webhook for public RSVP removal
+                    if event.attendee_list_public and event.group and getattr(event.group, 'telegram_webhook_channel', None):
+                        telegram_username = None
+                        if hasattr(request.user, 'profile') and getattr(request.user.profile, 'telegram_username', None):
+                            telegram_username = request.user.profile.telegram_username
+                        if telegram_username:
+                            mention = f'@{telegram_username}'
+                        else:
+                            mention = request.user.get_username() if request.user else 'Someone'
+                        date_str = event.date.strftime('%m/%d/%Y') if hasattr(event.date, 'strftime') else str(event.date)
+                        event_url = request.build_absolute_uri(event.get_absolute_url())
+                        msg = (
+                            f'❌ {mention} removed their RSVP for [{event.title}]({event_url}).\n'
+                            f'*Date:* {date_str}\n'
+                            f'*Group:* {event.group.name}'
+                        )
+                        post_to_telegram_channel(event.group.telegram_webhook_channel, msg, parse_mode="Markdown")
                     # If a confirmed spot opened up and waitlist is enabled, promote oldest waitlisted
                     if was_confirmed:
                         promote_waitlisted_if_spot(event)
@@ -329,81 +346,50 @@ def event_detail(request, event_id):
         
         if 'delete_event' in request.POST and can_ban_user:
             event_title = event.title
+            event_url = request.build_absolute_uri(event.get_absolute_url())
             event.delete()
             create_notification(request.user, f'Event "{event_title}" has been deleted.', link='/') # Link to home since event is deleted
+            # Telegram webhook for event deletion
+            if event.group and getattr(event.group, 'telegram_webhook_channel', None):
+                msg = (
+                    f'🚫 *Event Deleted!*\n'
+                    f'*Title:* [{event_title}]({event_url})\n'
+                    f'*Group:* {event.group.name}'
+                )
+                post_to_telegram_channel(event.group.telegram_webhook_channel, msg, parse_mode="Markdown")
             return redirect('home')
             
         form = RSVPForm(request.POST, instance=user_rsvp, event=event)
         if form.is_valid():
             new_status = form.cleaned_data['status']
-
-            # If user is already confirmed and tries to RSVP again, just update other fields.
-            # If changing from waitlisted to maybe/not_attending, no capacity check needed.
-            if user_rsvp and user_rsvp.status == 'confirmed' and new_status == 'confirmed':
-                rsvp = form.save(commit=False)
-                rsvp.event = event
-                rsvp.user = request.user
-                rsvp.save()
-                create_notification(request.user, f'Your RSVP for {event.title} has been updated.', link=event.get_absolute_url())
-            elif new_status == 'confirmed':
-                with transaction.atomic():
-                    # Re-check counts inside transaction to prevent race conditions
-                    current_confirmed_count = event.rsvps.filter(status='confirmed').count()
-
-                    if event.capacity is not None and current_confirmed_count >= event.capacity:
-                        # Event is full
-                        if event.waitlist_enabled:
-                            rsvp = form.save(commit=False)
-                            rsvp.status = 'waitlisted' # Force status to waitlisted
-                            rsvp.event = event
-                            rsvp.user = request.user
-                            rsvp.save()
-                            create_notification(request.user, f"The event {event.title} is full, but you've been added to the waitlist!", link=event.get_absolute_url())
-                        else:
-                            messages.error(request, 'The event is full and waitlist is not enabled.', extra_tags='admin_notification')
-                            return redirect('event_detail', event_id=event.id)
-                    else:
-                        # Event has space
-                        rsvp = form.save(commit=False)
-                        rsvp.status = 'confirmed' # Ensure status is confirmed if there's space
-                        rsvp.event = event
-                        rsvp.user = request.user
-                        rsvp.save()
-                        create_notification(request.user, f'Your RSVP status has been updated to {rsvp.get_status_display()!s} for {event.title}.', link=event.get_absolute_url())
-                        # Telegram webhook for public RSVP
-                        if event.attendee_list_public and event.group and getattr(event.group, 'telegram_webhook_channel', None):
-                            telegram_username = None
-                            if hasattr(request.user, 'profile') and getattr(request.user.profile, 'telegram_username', None):
-                                telegram_username = request.user.profile.telegram_username
-                            if telegram_username:
-                                mention = f'@{telegram_username}'
-                            else:
-                                mention = request.user.get_username() if request.user else 'Someone'
-                            msg = f'{mention} just RSVP\'d for {event.title}!'
-                            post_to_telegram_channel(event.group.telegram_webhook_channel, msg)
-                        # If a new confirmed spot was taken, no need to promote here as current user took it.
-            else: # If status is 'maybe' or 'not_attending'
-                if user_rsvp and user_rsvp.status == 'confirmed': # If changing from confirmed to maybe/not_attending
-                    with transaction.atomic():
-                        if new_status == 'maybe' and event.waitlist_enabled and event.capacity is not None and event.rsvps.filter(status='confirmed').count() >= event.capacity:
-                            # Move this user to waitlist
-                            user_rsvp.status = 'waitlisted'
-                            user_rsvp.save()
-                            create_notification(request.user, f'You have been moved to the waitlist for {event.title} because the event is full.', link=event.get_absolute_url())
-                            # Promote the oldest waitlisted user (could be this user if they're now the oldest)
-                            promote_waitlisted_if_spot(event)
-                        else:
-                            user_rsvp.status = new_status
-                            user_rsvp.save()
-                            create_notification(request.user, f'Your RSVP status has been updated to {user_rsvp.get_status_display()!s} for {event.title}.', link=event.get_absolute_url())
-                            promote_waitlisted_if_spot(event)
+            rsvp = form.save(commit=False)
+            rsvp.event = event
+            rsvp.user = request.user
+            rsvp.save()
+            create_notification(request.user, f'Your RSVP status has been updated to {rsvp.get_status_display()!s} for {event.title}.', link=event.get_absolute_url())
+            # Telegram webhook for public RSVP (any status)
+            if event.attendee_list_public and event.group and getattr(event.group, 'telegram_webhook_channel', None):
+                telegram_username = None
+                if hasattr(request.user, 'profile') and getattr(request.user.profile, 'telegram_username', None):
+                    telegram_username = request.user.profile.telegram_username
+                if telegram_username:
+                    mention = f'@{telegram_username}'
                 else:
-                    rsvp = form.save(commit=False)
-                    rsvp.event = event
-                    rsvp.user = request.user
-                    rsvp.save()
-                    create_notification(request.user, f'Your RSVP status has been updated to {rsvp.get_status_display()!s} for {event.title}.', link=event.get_absolute_url())
-            
+                    mention = request.user.get_username() if request.user else 'Someone'
+                date_str = event.date.strftime('%m/%d/%Y') if hasattr(event.date, 'strftime') else str(event.date)
+                event_url = request.build_absolute_uri(event.get_absolute_url())
+                status_emoji = {
+                    'confirmed': '✅',
+                    'waitlisted': '⏳',
+                    'maybe': '❔',
+                    'not_attending': '🚫'
+                }.get(new_status, '')
+                msg = (
+                    f'{status_emoji} {mention} RSVP\'d as *{rsvp.get_status_display()}* for [{event.title}]({event_url}).\n'
+                    f'*Date:* {date_str}\n'
+                    f'*Group:* {event.group.name}'
+                )
+                post_to_telegram_channel(event.group.telegram_webhook_channel, msg, parse_mode="Markdown")
             return redirect('event_detail', event_id=event.id)
         else:
             messages.error(request, f'Error updating RSVP: {form.errors}', extra_tags='admin_notification')
@@ -599,8 +585,15 @@ def create_event(request):
             # Telegram webhook for new event
             group = event.group
             if group and getattr(group, 'telegram_webhook_channel', None):
-                msg = f'New event created: {event.title} on {event.date} for group {group.name}!'
-                post_to_telegram_channel(group.telegram_webhook_channel, msg)
+                date_str = event.date.strftime('%m/%d/%Y') if hasattr(event.date, 'strftime') else str(event.date)
+                event_url = request.build_absolute_uri(event.get_absolute_url())
+                msg = (
+                    "🎉 *New Event Created!*\n"
+                    f"*Title:* [{event.title}]({event_url})\n"
+                    f"*Date:* {date_str}\n"
+                    f"*Group:* {group.name}"
+                )
+                post_to_telegram_channel(group.telegram_webhook_channel, msg, parse_mode="Markdown")
             return redirect('event_detail', event_id=event.id)
     else:
         form = EventForm(user=request.user)
