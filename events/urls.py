@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import manage_group_leadership
+from .views import manage_group_leadership, telegram_bot_webhook
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -17,4 +17,5 @@ urlpatterns = [
     path('group/<int:group_id>/leadership/', manage_group_leadership, name='manage_group_leadership'),
     path('group/', views.groups_list, name='groups_list'),
     path('event/<int:event_id>/rsvp_answers/<int:user_id>/', views.rsvp_answers, name='rsvp_answers'),
+    path('telegram/bot/', telegram_bot_webhook, name='telegram_bot_webhook'),
 ] 
