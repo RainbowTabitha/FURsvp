@@ -818,7 +818,14 @@ def manage_group_leadership(request, group_id):
         return render(request, 'events/leadership_editor.html', {'group': group, 'roles': roles, 'form': form, 'can_manage': can_manage})
 
 def groups_list(request):
-    groups = Group.objects.all().order_by('name')
+    search_query = request.GET.get('search', '').strip()
+    groups = Group.objects.all()
+    if search_query:
+        groups = groups.filter(
+            models.Q(name__icontains=search_query) |
+            models.Q(description__icontains=search_query)
+        )
+    groups = groups.order_by('name')
     paginator = Paginator(groups, 9)  # 9 groups per page
     page = request.GET.get('page', 1)
     try:
@@ -829,6 +836,7 @@ def groups_list(request):
         paginated_groups = paginator.page(paginator.num_pages)
     context = {
         'groups': paginated_groups,
+        'search_query': search_query,
     }
     return render(request, 'events/groups_list.html', context)
 
