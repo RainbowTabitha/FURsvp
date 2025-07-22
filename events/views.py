@@ -18,7 +18,7 @@ from django.db.models import Q
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 import calendar
 from django.forms.utils import ErrorList
-from events.utils import post_to_telegram_webhook, post_to_telegram_channel
+from events.utils import post_to_telegram_channel
 
 # Create your views here.
 
