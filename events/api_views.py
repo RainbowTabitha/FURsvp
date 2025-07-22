@@ -51,7 +51,7 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
             telegram_username = telegram_username[1:]
         
         try:
-            user = User.objects.get(profile__telegram_username=telegram_username)
+            user = User.objects.get(profile__telegram_username__iexact=telegram_username)
             serializer = UserLookupSerializer(user)
             return Response({
                 'found': True,

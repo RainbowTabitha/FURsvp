@@ -9,7 +9,7 @@ from events.forms import GroupForm, RenameGroupForm
 from .models import Profile, GroupDelegation, BannedUser, Notification, GroupRole
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import JsonResponse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_GET
 from django.views.decorators.csrf import csrf_protect
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Q
@@ -877,3 +877,20 @@ def custom_login(request):
         'username': username,
         'password': password,
     })
+
+@require_GET
+def api_user_by_telegram(request):
+    username = request.GET.get('username', '').strip()
+    if not username:
+        return JsonResponse({'error': 'Missing username parameter'}, status=400)
+    try:
+        profile = Profile.objects.get(telegram_username__iexact=username)
+        return JsonResponse({
+            'id': profile.user.id,
+            'username': profile.user.username,
+            'display_name': profile.get_display_name(),
+            'telegram_username': profile.telegram_username,
+            'telegram_id': profile.telegram_id,
+        })
+    except Profile.DoesNotExist:
+        return JsonResponse({'error': 'User not found'}, status=404)
