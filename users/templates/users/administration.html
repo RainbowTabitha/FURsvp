@@ -113,6 +113,7 @@
                         {% if users_to_promote.paginator.num_pages > 1 %}
                         <nav aria-label="User list pagination" class="mt-4">
                             <ul class="pagination justify-content-center material-circular-pagination">
+                                {% if users_to_promote.has_previous %}
                                 <li class="page-item">
                                     <a class="page-link material-page-link" href="?user_page=1{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="First">
                                         <i class="material-icons" style="font-size: 24px;">first_page</i>
@@ -123,6 +124,18 @@
                                         <i class="material-icons" style="font-size: 24px;">chevron_left</i>
                                     </a>
                                 </li>
+                                {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link material-page-link disabled">
+                                        <i class="material-icons" style="font-size: 24px;">first_page</i>
+                                    </span>
+                                </li>
+                                <li class="page-item disabled">
+                                    <span class="page-link material-page-link disabled">
+                                        <i class="material-icons" style="font-size: 24px;">chevron_left</i>
+                                    </span>
+                                </li>
+                                {% endif %}
                                 {% for num in users_to_promote.paginator.page_range %}
                                     {% if users_to_promote.number == num %}
                                         <li class="page-item active"><a class="page-link material-page-link active" href="#">{{ num }}</a></li>
@@ -130,6 +143,7 @@
                                         <li class="page-item"><a class="page-link material-page-link" href="?user_page={{ num }}{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}">{{ num }}</a></li>
                                     {% endif %}
                                 {% endfor %}
+                                {% if users_to_promote.has_next %}
                                 <li class="page-item">
                                     <a class="page-link material-page-link" href="?user_page={{ users_to_promote.next_page_number }}{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="Next">
                                         <i class="material-icons" style="font-size: 24px;">chevron_right</i>
@@ -140,6 +154,18 @@
                                         <i class="material-icons" style="font-size: 24px;">last_page</i>
                                     </a>
                                 </li>
+                                {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link material-page-link disabled">
+                                        <i class="material-icons" style="font-size: 24px;">chevron_right</i>
+                                    </span>
+                                </li>
+                                <li class="page-item disabled">
+                                    <span class="page-link material-page-link disabled">
+                                        <i class="material-icons" style="font-size: 24px;">last_page</i>
+                                    </span>
+                                </li>
+                                {% endif %}
                             </ul>
                         </nav>
                         {% endif %}
@@ -230,6 +256,7 @@
                         {% if all_groups.paginator.num_pages > 1 %}
                         <nav aria-label="Group list pagination" class="mt-4">
                             <ul class="pagination justify-content-center material-circular-pagination">
+                                {% if all_groups.has_previous %}
                                 <li class="page-item">
                                     <a class="page-link material-page-link" href="?group_page=1{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="First">
                                         <i class="material-icons" style="font-size: 24px;">first_page</i>
@@ -240,6 +267,18 @@
                                         <i class="material-icons" style="font-size: 24px;">chevron_left</i>
                                     </a>
                                 </li>
+                                {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link material-page-link disabled">
+                                        <i class="material-icons" style="font-size: 24px;">first_page</i>
+                                    </span>
+                                </li>
+                                <li class="page-item disabled">
+                                    <span class="page-link material-page-link disabled">
+                                        <i class="material-icons" style="font-size: 24px;">chevron_left</i>
+                                    </span>
+                                </li>
+                                {% endif %}
                                 {% for num in all_groups.paginator.page_range %}
                                     {% if all_groups.number == num %}
                                         <li class="page-item active"><a class="page-link material-page-link active" href="#">{{ num }}</a></li>
@@ -247,6 +286,7 @@
                                         <li class="page-item"><a class="page-link material-page-link" href="?group_page={{ num }}{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}">{{ num }}</a></li>
                                     {% endif %}
                                 {% endfor %}
+                                {% if all_groups.has_next %}
                                 <li class="page-item">
                                     <a class="page-link material-page-link" href="?group_page={{ all_groups.next_page_number }}{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="Next">
                                         <i class="material-icons" style="font-size: 24px;">chevron_right</i>
@@ -257,6 +297,18 @@
                                         <i class="material-icons" style="font-size: 24px;">last_page</i>
                                     </a>
                                 </li>
+                                {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link material-page-link disabled">
+                                        <i class="material-icons" style="font-size: 24px;">chevron_right</i>
+                                    </span>
+                                </li>
+                                <li class="page-item disabled">
+                                    <span class="page-link material-page-link disabled">
+                                        <i class="material-icons" style="font-size: 24px;">last_page</i>
+                                    </span>
+                                </li>
+                                {% endif %}
                             </ul>
                         </nav>
                         {% endif %}
