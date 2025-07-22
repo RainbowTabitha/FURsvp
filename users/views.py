@@ -307,6 +307,12 @@ def administration(request):
     user_paginator = Paginator(all_users, 10)
     user_page = request.GET.get('user_page', 1)
     try:
+        user_page = int(user_page)
+        if user_page < 1:
+            user_page = 1
+    except (TypeError, ValueError):
+        user_page = 1
+    try:
         users_to_promote = user_paginator.page(user_page)
     except (PageNotAnInteger, EmptyPage):
         users_to_promote = user_paginator.page(1)
@@ -320,6 +326,12 @@ def administration(request):
     
     group_paginator = Paginator(all_groups, 10)
     group_page = request.GET.get('group_page', 1)
+    try:
+        group_page = int(group_page)
+        if group_page < 1:
+            group_page = 1
+    except (TypeError, ValueError):
+        group_page = 1
     try:
         paginated_groups = group_paginator.page(group_page)
     except (PageNotAnInteger, EmptyPage):
