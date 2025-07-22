@@ -948,22 +948,32 @@ def telegram_bot_webhook(request):
             payload["parse_mode"] = parse_mode
         requests.post(url, json=payload)
 
+    # Try to find a group for this chat_id
+    group = Group.objects.filter(telegram_webhook_channel=chat_id).first()
+
     if text.startswith('/event'):
         parts = text.split()
         if len(parts) == 1:
-            # List upcoming events (limit to 10)
-            events = Event.objects.order_by('date')[:10]
+            # List upcoming events for this group if found, else all
+            if group:
+                events = Event.objects.filter(group=group).order_by('date')[:10]
+            else:
+                events = Event.objects.order_by('date')[:10]
             if not events:
                 send_telegram_message(chat_id, "No events found.")
             else:
-                msg = "*Upcoming Events:*\n"
+                msg = "*Upcoming Events:*
+"
                 for event in events:
                     url = f"https://{request.get_host()}{event.get_absolute_url()}"
                     msg += f"\n• [{event.title}]({url}) — {event.date.strftime('%m/%d/%Y')}"
                 send_telegram_message(chat_id, msg, parse_mode="Markdown")
         else:
             event_id = parts[1]
-            event = Event.objects.filter(id=event_id).first()
+            if group:
+                event = Event.objects.filter(id=event_id, group=group).first()
+            else:
+                event = Event.objects.filter(id=event_id).first()
             if not event:
                 send_telegram_message(chat_id, "No event found.")
             else:
@@ -977,7 +987,10 @@ def telegram_bot_webhook(request):
             send_telegram_message(chat_id, "Usage: /rsvplist <event_id>")
         else:
             event_id = parts[1]
-            event = Event.objects.filter(id=event_id).first()
+            if group:
+                event = Event.objects.filter(id=event_id, group=group).first()
+            else:
+                event = Event.objects.filter(id=event_id).first()
             if not event:
                 send_telegram_message(chat_id, "Event not found.")
             else:
