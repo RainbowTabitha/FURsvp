@@ -20,6 +20,10 @@ import calendar
 from django.forms.utils import ErrorList
 from events.utils import post_to_telegram_channel
 from django.urls import reverse
+import os
+import json
+import requests
+from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
 
@@ -362,11 +366,11 @@ def event_detail(request, event_id):
         form = RSVPForm(request.POST, instance=user_rsvp, event=event)
         if form.is_valid():
             new_status = form.cleaned_data['status']
-            rsvp = form.save(commit=False)
-            rsvp.event = event
-            rsvp.user = request.user
-            rsvp.save()
-            create_notification(request.user, f'Your RSVP status has been updated to {rsvp.get_status_display()!s} for {event.title}.', link=event.get_absolute_url())
+                rsvp = form.save(commit=False)
+                        rsvp.event = event
+                        rsvp.user = request.user
+                        rsvp.save()
+                        create_notification(request.user, f'Your RSVP status has been updated to {rsvp.get_status_display()!s} for {event.title}.', link=event.get_absolute_url())
             # Telegram webhook for public RSVP (any status)
             if event.attendee_list_public and event.group and getattr(event.group, 'telegram_webhook_channel', None):
                 telegram_username = None
@@ -374,7 +378,7 @@ def event_detail(request, event_id):
                     telegram_username = request.user.profile.telegram_username
                 if telegram_username:
                     mention = f'@{telegram_username}'
-                else:
+                        else:
                     mention = request.user.get_username() if request.user else 'Someone'
                 date_str = event.date.strftime('%m/%d/%Y') if hasattr(event.date, 'strftime') else str(event.date)
                 event_url = request.build_absolute_uri(event.get_absolute_url())
@@ -922,3 +926,61 @@ def rsvp_answers(request, event_id, user_id):
         return JsonResponse(data)
     except RSVP.DoesNotExist:
         return JsonResponse({'error': 'RSVP not found'}, status=404)
+
+@csrf_exempt
+def telegram_bot_webhook(request):
+    if request.method != 'POST':
+        return JsonResponse({'ok': True})
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        return JsonResponse({'ok': False, 'error': 'Invalid JSON'})
+    message = data.get('message', {})
+    chat = message.get('chat', {})
+    chat_id = str(chat.get('id'))
+    text = message.get('text', '')
+
+    # Only respond if this chat_id is linked to a group
+    group = Group.objects.filter(telegram_webhook_channel=chat_id).first()
+    if not group:
+        return JsonResponse({'ok': True})  # Ignore if not authorized
+
+    def send_telegram_message(chat_id, text, parse_mode=None):
+        token = os.environ.get('TELEGRAM_BOT_TOKEN')
+        url = f"https://api.telegram.org/bot{token}/sendMessage"
+        payload = {"chat_id": chat_id, "text": text}
+        if parse_mode:
+            payload["parse_mode"] = parse_mode
+        requests.post(url, json=payload)
+
+    if text.startswith('/event'):
+        parts = text.split()
+        if len(parts) == 1:
+            # Show next event
+            event = group.get_upcoming_events().first()
+        else:
+            event_id = parts[1]
+            event = Event.objects.filter(id=event_id, group=group).first()
+        if not event:
+            send_telegram_message(chat_id, "No event found.")
+        else:
+            url = f"https://{request.get_host()}{event.get_absolute_url()}"
+            msg = f"*{event.title}*\nDate: {event.date.strftime('%m/%d/%Y')}\n[View Event]({url})\n{event.description or ''}"
+            send_telegram_message(chat_id, msg, parse_mode="Markdown")
+
+    elif text.startswith('/rsvplist'):
+        parts = text.split()
+        if len(parts) < 2:
+            send_telegram_message(chat_id, "Usage: /rsvplist <event_id>")
+        else:
+            event_id = parts[1]
+            event = Event.objects.filter(id=event_id, group=group).first()
+            if not event:
+                send_telegram_message(chat_id, "Event not found.")
+            else:
+                rsvps = RSVP.objects.filter(event=event, status='confirmed')
+                names = [r.user.profile.get_display_name() if r.user and hasattr(r.user, 'profile') else (r.user.username if r.user else r.name or 'Anonymous') for r in rsvps]
+                msg = "RSVP'd Users:\n" + ("\n".join(names) if names else "No RSVPs yet.")
+                send_telegram_message(chat_id, msg)
+
+    return JsonResponse({'ok': True})
