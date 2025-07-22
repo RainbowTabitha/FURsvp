@@ -16,3 +16,4 @@ drf_yasg
 django-two-factor-auth
 qrcode
 phonenumbers
+django-sslserver
