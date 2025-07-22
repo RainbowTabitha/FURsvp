@@ -112,40 +112,34 @@
                         <!-- User Pagination -->
                         {% if users_to_promote.paginator.num_pages > 1 %}
                         <nav aria-label="User list pagination" class="mt-4">
-                            <ul class="pagination justify-content-center">
-                                {% if users_to_promote.has_previous %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="?user_page=1{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="First">
-                                            <i class="material-icons" style="font-size: 24px;">first_page</i>
-                                        </a>
-                                    </li>
-                                    <li class="page-item">
-                                        <a class="page-link" href="?user_page={{ users_to_promote.previous_page_number }}{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="Previous">
-                                            <i class="material-icons" style="font-size: 24px;">chevron_left</i>
-                                        </a>
-                                    </li>
-                                {% endif %}
-
+                            <ul class="pagination justify-content-center material-circular-pagination">
+                                <li class="page-item">
+                                    <a class="page-link material-page-link" href="?user_page=1{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="First">
+                                        <i class="material-icons" style="font-size: 24px;">first_page</i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link material-page-link" href="?user_page={{ users_to_promote.previous_page_number }}{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="Previous">
+                                        <i class="material-icons" style="font-size: 24px;">chevron_left</i>
+                                    </a>
+                                </li>
                                 {% for num in users_to_promote.paginator.page_range %}
                                     {% if users_to_promote.number == num %}
-                                        <li class="page-item active"><a class="page-link" href="#" style="font-size: 21px;">{{ num }}</a></li>
+                                        <li class="page-item active"><a class="page-link material-page-link active" href="#">{{ num }}</a></li>
                                     {% elif num > users_to_promote.number|add:'-3' and num < users_to_promote.number|add:'3' %}
-                                        <li class="page-item"><a class="page-link" href="?user_page={{ num }}{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" style="font-size: 21px;">{{ num }}</a></li>
+                                        <li class="page-item"><a class="page-link material-page-link" href="?user_page={{ num }}{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}">{{ num }}</a></li>
                                     {% endif %}
                                 {% endfor %}
-
-                                {% if users_to_promote.has_next %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="?user_page={{ users_to_promote.next_page_number }}{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="Next">
-                                            <i class="material-icons" style="font-size: 24px;">chevron_right</i>
-                                        </a>
-                                    </li>
-                                    <li class="page-item">
-                                        <a class="page-link" href="?user_page={{ users_to_promote.paginator.num_pages }}{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="Last">
-                                            <i class="material-icons" style="font-size: 24px;">last_page</i>
-                                        </a>
-                                    </li>
-                                {% endif %}
+                                <li class="page-item">
+                                    <a class="page-link material-page-link" href="?user_page={{ users_to_promote.next_page_number }}{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="Next">
+                                        <i class="material-icons" style="font-size: 24px;">chevron_right</i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link material-page-link" href="?user_page={{ users_to_promote.paginator.num_pages }}{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="Last">
+                                        <i class="material-icons" style="font-size: 24px;">last_page</i>
+                                    </a>
+                                </li>
                             </ul>
                         </nav>
                         {% endif %}
@@ -235,40 +229,34 @@
                         <!-- Group Pagination -->
                         {% if all_groups.paginator.num_pages > 1 %}
                         <nav aria-label="Group list pagination" class="mt-4">
-                            <ul class="pagination justify-content-center">
-                                {% if all_groups.has_previous %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="?group_page=1{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="First">
-                                            <i class="material-icons" style="font-size: 24px;">first_page</i>
-                                        </a>
-                                    </li>
-                                    <li class="page-item">
-                                        <a class="page-link" href="?group_page={{ all_groups.previous_page_number }}{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="Previous">
-                                            <i class="material-icons" style="font-size: 24px;">chevron_left</i>
-                                        </a>
-                                    </li>
-                                {% endif %}
-
+                            <ul class="pagination justify-content-center material-circular-pagination">
+                                <li class="page-item">
+                                    <a class="page-link material-page-link" href="?group_page=1{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="First">
+                                        <i class="material-icons" style="font-size: 24px;">first_page</i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link material-page-link" href="?group_page={{ all_groups.previous_page_number }}{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="Previous">
+                                        <i class="material-icons" style="font-size: 24px;">chevron_left</i>
+                                    </a>
+                                </li>
                                 {% for num in all_groups.paginator.page_range %}
                                     {% if all_groups.number == num %}
-                                        <li class="page-item active"><a class="page-link" href="#" style="font-size: 21px;">{{ num }}</a></li>
+                                        <li class="page-item active"><a class="page-link material-page-link active" href="#">{{ num }}</a></li>
                                     {% elif num > all_groups.number|add:'-3' and num < all_groups.number|add:'3' %}
-                                        <li class="page-item"><a class="page-link" href="?group_page={{ num }}{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" style="font-size: 21px;">{{ num }}</a></li>
+                                        <li class="page-item"><a class="page-link material-page-link" href="?group_page={{ num }}{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}">{{ num }}</a></li>
                                     {% endif %}
                                 {% endfor %}
-
-                                {% if all_groups.has_next %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="?group_page={{ all_groups.next_page_number }}{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="Next">
-                                            <i class="material-icons" style="font-size: 24px;">chevron_right</i>
-                                        </a>
-                                    </li>
-                                    <li class="page-item">
-                                        <a class="page-link" href="?group_page={{ all_groups.paginator.num_pages }}{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="Last">
-                                            <i class="material-icons" style="font-size: 24px;">last_page</i>
-                                        </a>
-                                    </li>
-                                {% endif %}
+                                <li class="page-item">
+                                    <a class="page-link material-page-link" href="?group_page={{ all_groups.next_page_number }}{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="Next">
+                                        <i class="material-icons" style="font-size: 24px;">chevron_right</i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link material-page-link" href="?group_page={{ all_groups.paginator.num_pages }}{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="Last">
+                                        <i class="material-icons" style="font-size: 24px;">last_page</i>
+                                    </a>
+                                </li>
                             </ul>
                         </nav>
                         {% endif %}
@@ -982,4 +970,56 @@
             gap: 0.3rem;
         }
     }
+</style>
+
+<style>
+.material-circular-pagination .material-page-link {
+    border-radius: 50% !important;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    max-width: 44px;
+    max-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2563eb;
+    background: #fff;
+    border: 2px solid #2563eb;
+    margin: 0 0.18em;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.07);
+    transition: background 0.18s, color 0.18s, border 0.18s;
+}
+.material-circular-pagination .material-page-link.active,
+.material-circular-pagination .material-page-link:focus,
+.material-circular-pagination .material-page-link:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+    color: #fff;
+    border-color: #2563eb;
+    box-shadow: 0 4px 16px rgba(59,130,246,0.18);
+}
+.material-circular-pagination .page-item.active .material-page-link {
+    background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+    color: #fff;
+    border-color: #2563eb;
+    box-shadow: 0 4px 16px rgba(59,130,246,0.18);
+}
+.material-circular-pagination .material-page-link i.material-icons {
+    font-size: 24px;
+    vertical-align: middle;
+}
+.material-circular-pagination .page-link {
+    border: none;
+    outline: none;
+}
+.material-circular-pagination .page-item.disabled .material-page-link {
+    background: #f1f5f9;
+    color: #b3b3b3;
+    border-color: #e0e7ef;
+    box-shadow: none;
+    cursor: not-allowed;
+}
 </style>

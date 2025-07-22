@@ -39,34 +39,34 @@
     </div>
     {% if groups.paginator.num_pages > 1 %}
     <nav aria-label="Group list pagination" class="mt-4">
-        <ul class="pagination justify-content-center">
+        <ul class="pagination justify-content-center material-circular-pagination">
             {% if groups.has_previous %}
                 <li class="page-item">
-                    <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query|urlencode }}{% endif %}" aria-label="First">
+                    <a class="page-link material-page-link" href="?page=1{% if search_query %}&search={{ search_query|urlencode }}{% endif %}" aria-label="First">
                         <i class="material-icons" style="font-size: 24px;">first_page</i>
                     </a>
                 </li>
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ groups.previous_page_number }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}" aria-label="Previous">
+                    <a class="page-link material-page-link" href="?page={{ groups.previous_page_number }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}" aria-label="Previous">
                         <i class="material-icons" style="font-size: 24px;">chevron_left</i>
                     </a>
                 </li>
             {% endif %}
             {% for num in groups.paginator.page_range %}
                 {% if groups.number == num %}
-                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    <li class="page-item active"><span class="page-link material-page-link active">{{ num }}</span></li>
                 {% elif num > groups.number|add:'-3' and num < groups.number|add:'3' %}
-                    <li class="page-item"><a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}">{{ num }}</a></li>
+                    <li class="page-item"><a class="page-link material-page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}">{{ num }}</a></li>
                 {% endif %}
             {% endfor %}
             {% if groups.has_next %}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ groups.next_page_number }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}" aria-label="Next">
+                    <a class="page-link material-page-link" href="?page={{ groups.next_page_number }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}" aria-label="Next">
                         <i class="material-icons" style="font-size: 24px;">chevron_right</i>
                     </a>
                 </li>
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ groups.paginator.num_pages }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}" aria-label="Last">
+                    <a class="page-link material-page-link" href="?page={{ groups.paginator.num_pages }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}" aria-label="Last">
                         <i class="material-icons" style="font-size: 24px;">last_page</i>
                     </a>
                 </li>
@@ -154,6 +154,55 @@
         left: 1.1rem;
         top: 1.1rem;
     }
+}
+.material-circular-pagination .material-page-link {
+    border-radius: 50% !important;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    max-width: 44px;
+    max-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2563eb;
+    background: #fff;
+    border: 2px solid #2563eb;
+    margin: 0 0.18em;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.07);
+    transition: background 0.18s, color 0.18s, border 0.18s;
+}
+.material-circular-pagination .material-page-link.active,
+.material-circular-pagination .material-page-link:focus,
+.material-circular-pagination .material-page-link:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+    color: #fff;
+    border-color: #2563eb;
+    box-shadow: 0 4px 16px rgba(59,130,246,0.18);
+}
+.material-circular-pagination .page-item.active .material-page-link {
+    background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+    color: #fff;
+    border-color: #2563eb;
+    box-shadow: 0 4px 16px rgba(59,130,246,0.18);
+}
+.material-circular-pagination .material-page-link i.material-icons {
+    font-size: 24px;
+    vertical-align: middle;
+}
+.material-circular-pagination .page-link {
+    border: none;
+    outline: none;
+}
+.material-circular-pagination .page-item.disabled .material-page-link {
+    background: #f1f5f9;
+    color: #b3b3b3;
+    border-color: #e0e7ef;
+    box-shadow: none;
+    cursor: not-allowed;
 }
 </style>
 {% endblock %} 
