@@ -14,6 +14,12 @@ class Group(models.Model):
     website = models.URLField(blank=True, null=True, help_text="Group's website URL")
     contact_email = models.EmailField(blank=True, null=True, help_text="Primary contact email for the group")
     telegram_channel = models.CharField(max_length=100, blank=True, null=True, help_text="Telegram channel username (without @)")
+    telegram_webhook_channel = models.CharField(
+        max_length=100,
+        blank=True, null=True,
+        help_text="Telegram channel name for webhook posting (without @)",
+        verbose_name="Telegram Webhook Channel (without @)"
+    )
     
     def __str__(self):
         return self.name

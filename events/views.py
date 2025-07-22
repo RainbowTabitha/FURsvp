@@ -18,13 +18,14 @@ from django.db.models import Q
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 import calendar
 from django.forms.utils import ErrorList
+from events.utils import post_to_telegram_webhook, post_to_telegram_channel
 
 # Create your views here.
 
 def get_telegram_feed(channel='', limit=5):
     url = f"https://rss.tabithahanegan.com/telegram/channel/{channel}"
     if url == "https://rss.tabithahanegan.com/telegram/channel/None":
-        url = "" # hack to fix bug
+        url = ""
     feed = feedparser.parse(url)
     entries = feed.entries[:limit]
     eastern = pytz.timezone('America/New_York')
@@ -369,6 +370,17 @@ def event_detail(request, event_id):
                         rsvp.user = request.user
                         rsvp.save()
                         create_notification(request.user, f'Your RSVP status has been updated to {rsvp.get_status_display()!s} for {event.title}.', link=event.get_absolute_url())
+                        # Telegram webhook for public RSVP
+                        if event.attendee_list_public and event.group and getattr(event.group, 'telegram_webhook_channel', None):
+                            telegram_username = None
+                            if hasattr(request.user, 'profile') and getattr(request.user.profile, 'telegram_username', None):
+                                telegram_username = request.user.profile.telegram_username
+                            if telegram_username:
+                                mention = f'@{telegram_username}'
+                            else:
+                                mention = request.user.get_username() if request.user else 'Someone'
+                            msg = f'{mention} just RSVP\'d for {event.title}!'
+                            post_to_telegram_channel(event.group.telegram_webhook_channel, msg)
                         # If a new confirmed spot was taken, no need to promote here as current user took it.
             else: # If status is 'maybe' or 'not_attending'
                 if user_rsvp and user_rsvp.status == 'confirmed': # If changing from confirmed to maybe/not_attending
@@ -584,6 +596,11 @@ def create_event(request):
             event = form.save(commit=False)
             event.organizer = request.user
             event.save()
+            # Telegram webhook for new event
+            group = event.group
+            if group and getattr(group, 'telegram_webhook_channel', None):
+                msg = f'New event created: {event.title} on {event.date} for group {group.name}!'
+                post_to_telegram_channel(group.telegram_webhook_channel, msg)
             return redirect('event_detail', event_id=event.id)
     else:
         form = EventForm(user=request.user)
@@ -701,6 +718,7 @@ def group_detail(request, group_id):
                 group.website = request.POST.get('website', group.website)
                 group.contact_email = request.POST.get('contact_email', group.contact_email)
                 group.telegram_channel = request.POST.get('telegram_channel', group.telegram_channel)
+                group.telegram_webhook_channel = request.POST.get('telegram_webhook_channel', group.telegram_webhook_channel)
                 
                 # Handle logo upload
                 logo_base64 = request.POST.get('logo_base64')

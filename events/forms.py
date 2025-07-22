@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from events.models import Event, Group, RSVP
 from users.models import Profile, GroupDelegation, GroupRole
 from tinymce.widgets import TinyMCE
+from django.core.validators import URLValidator
 
 class UserRegisterForm(UserCreationForm):
     class Meta:
@@ -188,9 +189,10 @@ class EventForm(forms.ModelForm):
         return instance
 
 class GroupForm(forms.ModelForm):
+    telegram_webhook_channel = forms.CharField(required=False, max_length=100, label="Telegram Webhook Channel (without @)")
     class Meta:
         model = Group
-        fields = ['name']
+        fields = ['name', 'description', 'logo_base64', 'website', 'contact_email', 'telegram_channel', 'telegram_webhook_channel']
 
 class RenameGroupForm(forms.ModelForm):
     class Meta:

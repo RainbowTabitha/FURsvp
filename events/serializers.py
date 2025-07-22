@@ -47,7 +47,7 @@ class GroupSerializer(serializers.ModelSerializer):
         model = Group
         fields = [
             'id', 'name', 'description', 'website', 
-            'contact_email', 'telegram_channel'
+            'contact_email', 'telegram_channel', 'telegram_webhook_channel'
         ]
 
     def get_description(self, obj):
