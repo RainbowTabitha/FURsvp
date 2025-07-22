@@ -964,16 +964,16 @@ def telegram_bot_webhook(request):
         data_str = callback["data"]
         if data_str == "show_all_groups":
             events = Event.objects.filter(date__gte=today).order_by('date')[:10]
-            if not events:
-                send_telegram_message(chat_id, "No events found.")
-            else:
-                msg = "<b>Upcoming Events (All Groups)</b>\n\n"
-                keyboard = []
+            msg = "<b>Upcoming Events (All Groups)</b>\n\n"
+            keyboard = []
+            if events:
                 for event in events:
                     url = f"https://{request.get_host()}{event.get_absolute_url()}"
                     msg += f"• <a href='{url}'>{event.title}</a> — <code>{event.date.strftime('%m/%d/%Y')}</code>\n"
                     keyboard.append([{"text": event.title, "callback_data": f"rsvplist_{event.id}"}])
-                send_telegram_message(chat_id, msg, parse_mode="HTML", reply_markup={"inline_keyboard": keyboard})
+            else:
+                msg += "No events found."
+            send_telegram_message(chat_id, msg, parse_mode="HTML", reply_markup={"inline_keyboard": keyboard})
             return JsonResponse({'ok': True})
         if data_str.startswith("rsvplist_"):
             event_id = data_str.split("_", 1)[1]
@@ -1005,20 +1005,20 @@ def telegram_bot_webhook(request):
                 events = Event.objects.filter(group=group, date__gte=today).order_by('date')[:10]
             else:
                 events = Event.objects.filter(date__gte=today).order_by('date')[:10]
-            if not events:
-                send_telegram_message(chat_id, "No events found.")
-            else:
-                msg = "<b>Upcoming Events</b>\n\n"
-                keyboard = []
+            msg = "<b>Upcoming Events</b>\n\n"
+            keyboard = []
+            if events:
                 for event in events:
                     url = f"https://{request.get_host()}{event.get_absolute_url()}"
                     msg += f"• <a href='{url}'>{event.title}</a> — <code>{event.date.strftime('%m/%d/%Y')}</code>\n"
                     keyboard.append([{"text": event.title, "callback_data": f"rsvplist_{event.id}"}])
-                # Add a button to show all groups if in a group
-                if group:
-                    keyboard.append([{"text": "Show All Groups", "callback_data": "show_all_groups"}])
-                reply_markup = {"inline_keyboard": keyboard}
-                send_telegram_message(chat_id, msg, parse_mode="HTML", reply_markup=reply_markup)
+            else:
+                msg += "No events found for this group."
+            # Always add the Show All Groups button if in a group
+            if group:
+                keyboard.append([{"text": "Show All Groups", "callback_data": "show_all_groups"}])
+            reply_markup = {"inline_keyboard": keyboard}
+            send_telegram_message(chat_id, msg, parse_mode="HTML", reply_markup=reply_markup)
         else:
             event_id = parts[1]
             if group:
