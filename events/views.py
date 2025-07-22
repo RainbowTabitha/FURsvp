@@ -971,10 +971,18 @@ def telegram_bot_webhook(request):
             if not event:
                 send_telegram_message(chat_id, "Event not found.")
             else:
-                rsvps = RSVP.objects.filter(event=event, status='confirmed')
-                names = [r.user.profile.get_display_name() if r.user and hasattr(r.user, 'profile') else (r.user.username if r.user else r.name or 'Anonymous') for r in rsvps]
-                msg = f"*RSVP'd Users for {event.title}:*\n" + ("\n".join(names) if names else "No RSVPs yet.")
-                send_telegram_message(chat_id, msg, parse_mode="Markdown")
+                # Show all RSVP'd users if in a group/channel, else check attendee_list_public
+                show_all = bool(group)
+                if not show_all and not event.attendee_list_public:
+                    send_telegram_message(chat_id, "The group organizer has hidden RSVPs from the public view.")
+                else:
+                    rsvps = RSVP.objects.filter(event=event, status='confirmed')
+                    names = [r.user.profile.get_display_name() if r.user and hasattr(r.user, 'profile') else (r.user.username if r.user else r.name or 'Anonymous') for r in rsvps]
+                    if names:
+                        msg = f"<b>RSVP'd Users for</b> <i>{event.title}</i>\n\n" + "\n".join([f"• {name}" for name in names])
+                    else:
+                        msg = f"<b>RSVP'd Users for</b> <i>{event.title}</i>\n\n<em>No RSVPs yet.</em>"
+                    send_telegram_message(chat_id, msg, parse_mode="HTML")
         return JsonResponse({'ok': True})
 
     if text.startswith('/event'):
@@ -988,14 +996,14 @@ def telegram_bot_webhook(request):
             if not events:
                 send_telegram_message(chat_id, "No events found.")
             else:
-                msg = "*Upcoming Events:*\n"
+                msg = "<b>Upcoming Events</b>\n\n"
                 keyboard = []
                 for event in events:
                     url = f"https://{request.get_host()}{event.get_absolute_url()}"
-                    msg += f"• [{event.title}]({url}) — {event.date.strftime('%m/%d/%Y')}\n"
+                    msg += f"• <a href='{url}'>{event.title}</a> — <code>{event.date.strftime('%m/%d/%Y')}</code>\n"
                     keyboard.append([{"text": event.title, "callback_data": f"rsvplist_{event.id}"}])
                 reply_markup = {"inline_keyboard": keyboard}
-                send_telegram_message(chat_id, msg, parse_mode="Markdown", reply_markup=reply_markup)
+                send_telegram_message(chat_id, msg, parse_mode="HTML", reply_markup=reply_markup)
         else:
             event_id = parts[1]
             if group:
@@ -1006,7 +1014,7 @@ def telegram_bot_webhook(request):
                 send_telegram_message(chat_id, "No event found.")
             else:
                 url = f"https://{request.get_host()}{event.get_absolute_url()}"
-                msg = f"*{event.title}*\nDate: {event.date.strftime('%m/%d/%Y')}\n[View Event]({url})\n{event.description or ''}"
-                send_telegram_message(chat_id, msg, parse_mode="Markdown")
+                msg = f"<b>{event.title}</b>\nDate: <code>{event.date.strftime('%m/%d/%Y')}</code>\n<a href='{url}'>View Event</a>\n\n{event.description or ''}"
+                send_telegram_message(chat_id, msg, parse_mode="HTML")
 
     return JsonResponse({'ok': True})
