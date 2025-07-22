@@ -25,12 +25,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'D71CFE3703158C6A495D119ED73820B99ACAC6E07BA1A910BC4F66B971466AC3'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'D71CFE3703158C6A495D119ED73820B99ACAC6E07BA1A910BC4F66B971466AC3')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False  # Set to False for production
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["fursvp.org", "127.0.0.1", "localhost"]  # Set to your production domain
 
 
 # Application definition
@@ -141,6 +141,17 @@ USE_TZ = True
 # Make sure Django sees the original IP address and protocol
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# --- Security hardening for production ---
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = True
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+# --- End Security hardening ---
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/

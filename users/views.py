@@ -37,6 +37,7 @@ import qrcode
 from io import BytesIO
 import urllib.parse
 from urllib.parse import quote
+from django.utils.http import url_has_allowed_host_and_scheme
 
 # Create your views here.
 
@@ -661,6 +662,8 @@ def telegram_login_embedded(request):
             messages.success(request, 'Successfully logged in with Telegram!')
             # Redirect to the return_to URL if provided, otherwise to home
             return_to = request.GET.get('return_to', '/')
+            if not url_has_allowed_host_and_scheme(return_to, allowed_hosts={request.get_host()}):
+                return_to = '/'
             return redirect(return_to)
         else:
             messages.error(request, 'Failed to authenticate with Telegram. Please try again.')
