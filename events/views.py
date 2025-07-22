@@ -7,7 +7,7 @@ from .forms import EventForm, RSVPForm, Group
 from users.models import Profile, GroupDelegation, BannedUser, Notification, GroupRole
 from django.contrib import messages
 from django.db import models, transaction
-from django.http import JsonResponse, HttpResponseForbidden
+from django.http import JsonResponse, HttpResponseForbidden, HttpResponse
 from users.utils import create_notification
 import feedparser
 from django.views.generic import ListView, DetailView
@@ -23,7 +23,8 @@ from django.urls import reverse
 import os
 import json
 import requests
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
+from django.views.decorators.http import require_GET
 
 # Create your views here.
 
@@ -957,11 +958,21 @@ def telegram_bot_webhook(request):
     # Try to find a group for this chat_id
     group = Group.objects.filter(telegram_webhook_channel=chat_id).first()
 
-    # Handle callback queries for RSVP list and show all groups
+    # Get Telegram username if available
+    username = None
+    if 'from' in message and message['from'].get('username'):
+        username = message['from']['username']
+    elif 'callback_query' in data and data['callback_query']['from'].get('username'):
+        username = data['callback_query']['from']['username']
+
+    # Handle callback queries for RSVP list, show all groups, and RSVP menu/actions
     if "callback_query" in data:
         callback = data["callback_query"]
         chat_id = callback["message"]["chat"]["id"]
         data_str = callback["data"]
+        from events.models import RSVP
+        from users.models import Profile
+        # Show all groups
         if data_str == "show_all_groups":
             events = Event.objects.filter(date__gte=today).order_by('date')[:10]
             msg = "<b>Upcoming Events (All Groups)</b>\n\n"
@@ -969,12 +980,92 @@ def telegram_bot_webhook(request):
             if events:
                 for event in events:
                     url = f"https://{request.get_host()}{event.get_absolute_url()}"
+                    keyboard.append([
+                        {"text": event.title, "callback_data": f"rsvplist_{event.id}"},
+                        {"text": "RSVP", "callback_data": f"rsvp_menu_{event.id}"}
+                    ])
                     msg += f"• <a href='{url}'>{event.title}</a> — <code>{event.date.strftime('%m/%d/%Y')}</code>\n"
-                    keyboard.append([{"text": event.title, "callback_data": f"rsvplist_{event.id}"}])
             else:
                 msg += "No events found."
             send_telegram_message(chat_id, msg, parse_mode="HTML", reply_markup={"inline_keyboard": keyboard})
             return JsonResponse({'ok': True})
+        # RSVP menu
+        if data_str.startswith("rsvp_menu_"):
+            event_id = data_str.split("_", 2)[2]
+            try:
+                event = Event.objects.get(id=event_id, date__gte=today)
+            except Event.DoesNotExist:
+                send_telegram_message(chat_id, "Event not found.")
+                return JsonResponse({'ok': True})
+            # Find user by Telegram username
+            user = None
+            if username:
+                try:
+                    profile = Profile.objects.get(telegram_username=username)
+                    user = profile.user
+                except Profile.DoesNotExist:
+                    pass
+            # Check if user already RSVP'd
+            existing_rsvp = RSVP.objects.filter(event=event, user=user).first() if user else None
+            # Check if event is full
+            confirmed_count = RSVP.objects.filter(event=event, status='confirmed').count()
+            is_full = event.capacity is not None and confirmed_count >= event.capacity
+            # Build RSVP options
+            keyboard = []
+            keyboard.append([
+                {"text": "✅ Confirm", "callback_data": f"rsvp_confirm_{event.id}"},
+                {"text": "❔ Maybe", "callback_data": f"rsvp_maybe_{event.id}"},
+                {"text": "🚫 Not Attending", "callback_data": f"rsvp_no_{event.id}"}
+            ])
+            if is_full and event.waitlist_enabled:
+                keyboard.append([{"text": "⏳ Waitlist", "callback_data": f"rsvp_waitlist_{event.id}"}])
+            if existing_rsvp:
+                keyboard.append([{"text": "Remove RSVP", "callback_data": f"rsvp_remove_{event.id}"}])
+            send_telegram_message(chat_id, f"<b>Choose your RSVP status for</b> <i>{event.title}</i>", parse_mode="HTML", reply_markup={"inline_keyboard": keyboard})
+            return JsonResponse({'ok': True})
+        # RSVP actions
+        for status in ["confirm", "maybe", "no", "waitlist", "remove"]:
+            if data_str.startswith(f"rsvp_{status}_"):
+                event_id = data_str.split("_", 2)[2]
+                try:
+                    event = Event.objects.get(id=event_id, date__gte=today)
+                except Event.DoesNotExist:
+                    send_telegram_message(chat_id, "Event not found.")
+                    return JsonResponse({'ok': True})
+                # Find user by Telegram username
+                user = None
+                if username:
+                    try:
+                        profile = Profile.objects.get(telegram_username=username)
+                        user = profile.user
+                    except Profile.DoesNotExist:
+                        send_telegram_message(chat_id, "You must link your Telegram username in your FURsvp profile to RSVP.")
+                        return JsonResponse({'ok': True})
+                if not user:
+                    send_telegram_message(chat_id, "You must link your Telegram username in your FURsvp profile to RSVP.")
+                    return JsonResponse({'ok': True})
+                if status == "remove":
+                    deleted, _ = RSVP.objects.filter(event=event, user=user).delete()
+                    if deleted:
+                        send_telegram_message(chat_id, "Your RSVP has been removed.")
+                    else:
+                        send_telegram_message(chat_id, "You do not have an RSVP for this event.")
+                    return JsonResponse({'ok': True})
+                # Set RSVP status
+                rsvp, created = RSVP.objects.get_or_create(event=event, user=user, defaults={'status': status if status != 'no' else 'not_attending'})
+                if not created:
+                    if status == 'waitlist':
+                        rsvp.status = 'waitlisted'
+                    elif status == 'maybe':
+                        rsvp.status = 'maybe'
+                    elif status == 'no':
+                        rsvp.status = 'not_attending'
+                    else:
+                        rsvp.status = 'confirmed'
+                    rsvp.save()
+                send_telegram_message(chat_id, f"Your RSVP status for <b>{event.title}</b> is now <b>{'Waitlisted' if status == 'waitlist' else status.capitalize() if status != 'no' else 'Not Attending'}</b>.", parse_mode="HTML")
+                return JsonResponse({'ok': True})
+        # RSVP list (unchanged)
         if data_str.startswith("rsvplist_"):
             event_id = data_str.split("_", 1)[1]
             if group:
@@ -1010,8 +1101,11 @@ def telegram_bot_webhook(request):
             if events:
                 for event in events:
                     url = f"https://{request.get_host()}{event.get_absolute_url()}"
+                    keyboard.append([
+                        {"text": event.title, "callback_data": f"rsvplist_{event.id}"},
+                        {"text": "RSVP", "callback_data": f"rsvp_menu_{event.id}"}
+                    ])
                     msg += f"• <a href='{url}'>{event.title}</a> — <code>{event.date.strftime('%m/%d/%Y')}</code>\n"
-                    keyboard.append([{"text": event.title, "callback_data": f"rsvplist_{event.id}"}])
             else:
                 msg += "No events found for this group."
             # Always add the Show All Groups button if in a group
@@ -1033,3 +1127,24 @@ def telegram_bot_webhook(request):
                 send_telegram_message(chat_id, msg, parse_mode="HTML")
 
     return JsonResponse({'ok': True})
+
+# RSVP by Telegram username endpoint
+@require_GET
+@ensure_csrf_cookie
+def rsvp_telegram(request, event_id):
+    username = request.GET.get('username')
+    if not username:
+        return HttpResponse('Missing Telegram username.', status=400)
+    try:
+        profile = Profile.objects.get(telegram_username=username)
+    except Profile.DoesNotExist:
+        return HttpResponse('No user with that Telegram username is registered.', status=404)
+    try:
+        event = Event.objects.get(id=event_id)
+    except Event.DoesNotExist:
+        return HttpResponse('Event not found.', status=404)
+    from events.models import RSVP
+    rsvp, created = RSVP.objects.get_or_create(event=event, user=profile.user, defaults={'status': 'confirmed'})
+    if not created:
+        return HttpResponse('You have already RSVP'd to this event.', status=200)
+    return HttpResponse('RSVP successful! You are now confirmed for this event.', status=200)
