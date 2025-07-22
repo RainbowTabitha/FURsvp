@@ -940,6 +940,9 @@ def telegram_bot_webhook(request):
     chat_id = str(chat.get('id'))
     text = message.get('text', '')
 
+    from django.utils import timezone
+    today = timezone.now().date()
+
     def send_telegram_message(chat_id, text, parse_mode=None, reply_markup=None):
         token = os.environ.get('TELEGRAM_BOT_TOKEN')
         url = f"https://api.telegram.org/bot{token}/sendMessage"
@@ -948,59 +951,63 @@ def telegram_bot_webhook(request):
             payload["parse_mode"] = parse_mode
         if reply_markup:
             payload["reply_markup"] = reply_markup
-        requests.post(url, json=payload)
+        resp = requests.post(url, json=payload)
+        print(resp.text)
 
     # Try to find a group for this chat_id
     group = Group.objects.filter(telegram_webhook_channel=chat_id).first()
+
+    # Handle callback queries for RSVP list
+    if "callback_query" in data:
+        callback = data["callback_query"]
+        chat_id = callback["message"]["chat"]["id"]
+        data_str = callback["data"]
+        if data_str.startswith("rsvplist_"):
+            event_id = data_str.split("_", 1)[1]
+            if group:
+                event = Event.objects.filter(id=event_id, group=group, date__gte=today).first()
+            else:
+                event = Event.objects.filter(id=event_id, date__gte=today).first()
+            if not event:
+                send_telegram_message(chat_id, "Event not found.")
+            else:
+                rsvps = RSVP.objects.filter(event=event, status='confirmed')
+                names = [r.user.profile.get_display_name() if r.user and hasattr(r.user, 'profile') else (r.user.username if r.user else r.name or 'Anonymous') for r in rsvps]
+                msg = f"*RSVP'd Users for {event.title}:*\n" + ("\n".join(names) if names else "No RSVPs yet.")
+                send_telegram_message(chat_id, msg, parse_mode="Markdown")
+        return JsonResponse({'ok': True})
 
     if text.startswith('/event'):
         parts = text.split()
         if len(parts) == 1:
             # List upcoming events for this group if found, else all
             if group:
-                events = Event.objects.filter(group=group).order_by('date')[:10]
+                events = Event.objects.filter(group=group, date__gte=today).order_by('date')[:10]
             else:
-                events = Event.objects.order_by('date')[:10]
+                events = Event.objects.filter(date__gte=today).order_by('date')[:10]
             if not events:
                 send_telegram_message(chat_id, "No events found.")
             else:
-                msg = "*Upcoming Events:\n"
+                msg = "*Upcoming Events:*
+"
                 keyboard = []
                 for event in events:
                     url = f"https://{request.get_host()}{event.get_absolute_url()}"
                     msg += f"• [{event.title}]({url}) — {event.date.strftime('%m/%d/%Y')}\n"
-                    keyboard.append([{"text": event.title, "url": url}])
+                    keyboard.append([{"text": event.title, "callback_data": f"rsvplist_{event.id}"}])
                 reply_markup = {"inline_keyboard": keyboard}
                 send_telegram_message(chat_id, msg, parse_mode="Markdown", reply_markup=reply_markup)
         else:
             event_id = parts[1]
             if group:
-                event = Event.objects.filterfix (id=event_id, group=group).first()
+                event = Event.objects.filter(id=event_id, group=group, date__gte=today).first()
             else:
-                event = Event.objects.filter(id=event_id).first()
+                event = Event.objects.filter(id=event_id, date__gte=today).first()
             if not event:
                 send_telegram_message(chat_id, "No event found.")
             else:
                 url = f"https://{request.get_host()}{event.get_absolute_url()}"
                 msg = f"*{event.title}*\nDate: {event.date.strftime('%m/%d/%Y')}\n[View Event]({url})\n{event.description or ''}"
                 send_telegram_message(chat_id, msg, parse_mode="Markdown")
-
-    elif text.startswith('/rsvplist'):
-        parts = text.split()
-        if len(parts) < 2:
-            send_telegram_message(chat_id, "Usage: /rsvplist <event_id>")
-        else:
-            event_id = parts[1]
-            if group:
-                event = Event.objects.filter(id=event_id, group=group).first()
-            else:
-                event = Event.objects.filter(id=event_id).first()
-            if not event:
-                send_telegram_message(chat_id, "Event not found.")
-            else:
-                rsvps = RSVP.objects.filter(event=event, status='confirmed')
-                names = [r.user.profile.get_display_name() if r.user and hasattr(r.user, 'profile') else (r.user.username if r.user else r.name or 'Anonymous') for r in rsvps]
-                msg = "RSVP'd Users:\n" + ("\n".join(names) if names else "No RSVPs yet.")
-                send_telegram_message(chat_id, msg)
 
     return JsonResponse({'ok': True})
