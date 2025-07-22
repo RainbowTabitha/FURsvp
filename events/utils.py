@@ -13,9 +13,8 @@ def post_to_telegram_channel(channel, message):
     if not channel or not message:
         return None
     bot_token = os.environ.get('TELEGRAM_BOT_TOKEN', 'YOUR_TELEGRAM_BOT_TOKEN')
-    chat_id = f"@{channel.strip()}"
     url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-    payload = {"chat_id": f'{#}chat_id, "text": message}
+    payload = {"chat_id": channel, "text": message}
     try:
         response = requests.post(url, json=payload, timeout=5)
         response.raise_for_status()
