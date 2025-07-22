@@ -1,0 +1,14 @@
+{% extends "events/base.html" %}
+{% block content %}
+<h2>Two-Factor Authentication Settings</h2>
+{% if device %}
+  <p>Two-factor authentication is <strong>enabled</strong> on your account.</p>
+  <form method="post" action="{% url 'twofa_disable' %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Disable 2FA</button>
+  </form>
+{% else %}
+  <p>Two-factor authentication is <strong>not enabled</strong> on your account.</p>
+  <a href="{% url 'twofa_enable' %}" class="btn btn-primary">Enable 2FA</a>
+{% endif %}
+{% endblock %} 

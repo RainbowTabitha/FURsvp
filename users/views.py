@@ -757,11 +757,10 @@ class CustomLoginView(LoginView):
 @login_required
 def twofa_settings(request):
     device = TOTPDevice.objects.filter(user=request.user, confirmed=True).first()
-    return render(request, 'users/2fa.html', {'device': device})
+    return render(request, 'fkixusers/2fa.html', {'device': device})
 
 @login_required
 def twofa_enable(request):
-    # Get or generate TOTP key
     key = request.session.get('totp_key')
     if not key:
         hex_secret = secrets.token_hex(20)
