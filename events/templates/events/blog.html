@@ -1,0 +1,94 @@
+{% extends 'events/base.html' %}
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4">FURsvp Announcements</h1>
+    {% if bluesky_feed %}
+        <div class="blog-feed-list">
+            {% for entry in bluesky_feed %}
+                <div class="blog-feed-item py-4 mb-4 border-bottom">
+                    <h2 class="h4 mb-2">
+                        <a href="{{ entry.link }}" class="text-primary text-decoration-none" target="_blank" rel="noopener noreferrer">
+                            {{ entry.title|default:"Bluesky Post" }}
+                        </a>
+                    </h2>
+                    <div class="text-muted small mb-2 d-flex align-items-center">
+                        <i class="material-icons me-1" style="font-size: 18px; vertical-align: middle; color: #6366f1;">calendar_today</i>
+                        {% if entry.est_datetime %}
+                            <span class="me-3">{{ entry.est_datetime|date:'F j, Y' }}</span>
+                            <i class="material-icons me-1" style="font-size: 18px; vertical-align: middle; color: #06b6d4;">schedule</i>
+                            <span>{{ entry.est_datetime|date:'g:i A' }}</span>
+                        {% else %}
+                            Date unavailable
+                        {% endif %}
+                    </div>
+                    <div class="mb-3" style="font-size: 1.1rem;">
+                        {{ entry.summary|striptags|truncatechars:200 }}
+                    </div>
+                    <div class="d-flex justify-content-end">
+                        <a href="#" class="read-more-link" data-bs-toggle="modal" data-bs-target="#blogModal" data-index="{{ forloop.counter0 }}">Read more…</a>
+                    </div>
+                    <div class="d-none blog-full-content" id="blog-full-{{ forloop.counter0 }}">
+                        <h2 class="h4 mb-2">{{ entry.title|default:"Bluesky Post" }}</h2>
+                        <div class="text-muted small mb-2 d-flex align-items-center">
+                            <i class="material-icons me-1" style="font-size: 18px; vertical-align: middle; color: #6366f1;">calendar_today</i>
+                            {% if entry.est_datetime %}
+                                <span class="me-3">{{ entry.est_datetime|date:'F j, Y' }}</span>
+                                <i class="material-icons me-1" style="font-size: 18px; vertical-align: middle; color: #06b6d4;">schedule</i>
+                                <span>{{ entry.est_datetime|date:'g:i A' }}</span>
+                            {% else %}
+                                Date unavailable
+                            {% endif %}
+                        </div>
+                        <div class="mb-3" style="font-size: 1.1rem;">
+                            {{ entry.summary|safe }}
+                        </div>
+                        {% if entry.link %}
+                        <div class="d-flex justify-content-end">
+                            <a href="{{ entry.link }}" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                                Open Original
+                                <span class="material-icons ms-1" style="font-size: 18px; vertical-align: middle;">open_in_new</span>
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Material Design Modal for Blog Post -->
+        <div class="modal fade" id="blogModal" tabindex="-1" aria-labelledby="blogModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content rounded-4 shadow-lg">
+                    <div class="modal-header" style="border-bottom: 1px solid #e0e0e0;">
+                        <h5 class="modal-title" id="blogModalLabel">Announcement</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="blogModalBody" style="background: #fafafa;">
+                        <!-- Content will be injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var blogModal = document.getElementById('blogModal');
+            var blogModalBody = document.getElementById('blogModalBody');
+            var readMoreLinks = document.querySelectorAll('.read-more-link[data-index]');
+            readMoreLinks.forEach(function(link) {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var idx = link.getAttribute('data-index');
+                    var content = document.getElementById('blog-full-' + idx);
+                    if (content && blogModalBody) {
+                        blogModalBody.innerHTML = content.innerHTML;
+                    }
+                });
+            });
+        });
+        </script>
+    {% else %}
+        <div class="alert alert-info">No blog posts found.</div>
+    {% endif %}
+</div>
+{% endblock %} 

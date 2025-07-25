@@ -52,6 +52,28 @@ def get_telegram_feed(channel='', limit=5):
             entry.est_datetime = None
     return entries
 
+def get_bluesky_feed(profile='fursvp.org', limit=10):
+    url = f"https://rss.tabithahanegan.com/bsky/profile/{profile}"
+    feed = feedparser.parse(url)
+    entries = feed.entries[:limit]
+    eastern = pytz.timezone('America/New_York')
+    for entry in entries:
+        # Try published_parsed first
+        if hasattr(entry, 'published_parsed') and entry.published_parsed:
+            dt_utc = datetime.fromtimestamp(time.mktime(entry.published_parsed), pytz.utc)
+            entry.est_datetime = dt_utc.astimezone(eastern)
+        elif hasattr(entry, 'published') and entry.published:
+            try:
+                dt_utc = datetime.strptime(entry.published, '%a, %d %b %Y %H:%M:%S %Z')
+                dt_utc = pytz.utc.localize(dt_utc)
+                entry.est_datetime = dt_utc.astimezone(eastern)
+            except Exception:
+                entry.est_datetime = None
+        else:
+            entry.est_datetime = None
+    return entries
+
+
 def home(request):
     # Get sort parameters from request
     sort_by = request.GET.get('sort', 'date')  # Default sort by date
@@ -1148,3 +1170,12 @@ def rsvp_telegram(request, event_id):
     if not created:
         return HttpResponse('You have already RSVP\'d to this event.', status=200)
     return HttpResponse('RSVP successful! You are now confirmed for this event.', status=200)
+
+def blog(request):
+    profile = request.GET.get('profile', 'fursvp.org')
+    bluesky_feed = get_bluesky_feed(profile=profile, limit=10)
+    context = {
+        'bluesky_feed': bluesky_feed,
+        'bluesky_profile': profile,
+    }
+    return render(request, 'events/blog.html', context)
