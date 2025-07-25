@@ -8,9 +8,8 @@ class GroupRoleInline(admin.TabularInline):
 
 class ProfileAdmin(admin.ModelAdmin):
     list_display = ('user', 'display_name', 'discord_username', 'telegram_username', 'telegram_id')
-    list_filter = ('telegram_id', 'discord_username')
     search_fields = ('user__username', 'user__email', 'display_name', 'discord_username', 'telegram_username')
-    fields = ('user', 'display_name', 'discord_username', 'telegram_username', 'telegram_id', 'profile_picture_base64')
+    fields = ('user', 'display_name', 'discord_username', 'telegram_username', 'telegram_id', 'profile_picture_base64', 'can_post_blog')
     readonly_fields = ('user',)
 
 admin.site.register(Profile, ProfileAdmin)

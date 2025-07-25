@@ -35,6 +35,12 @@ class Profile(models.Model):
     discord_username = models.CharField(max_length=50, blank=True, null=True)
     telegram_username = models.CharField(max_length=50, blank=True, null=True)
     telegram_id = models.BigIntegerField(blank=True, null=True, unique=True, help_text="Telegram user ID for authentication")
+    can_post_blog = models.BooleanField(default=False, help_text='Can post blog posts')
+
+    class Meta:
+        permissions = [
+            ("can_post_blog", "Can post blog posts")
+        ]
 
     def __str__(self):
         return f"{self.user.username}'s profile"

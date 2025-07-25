@@ -38,6 +38,10 @@ from io import BytesIO
 import urllib.parse
 from urllib.parse import quote
 from django.utils.http import url_has_allowed_host_and_scheme
+from .forms import BlueskyBlogPostForm
+from django.contrib.auth.decorators import login_required, permission_required
+import os
+from atproto import Client, models as atproto_models
 
 # Create your views here.
 
@@ -287,7 +291,7 @@ def ban_user(request, user_id):
         return JsonResponse({'status': 'error', 'message': f'An unexpected error occurred: {str(e)}'}, status=500)
 
 @login_required
-@user_passes_test(lambda u: u.is_superuser)
+@user_passes_test(lambda u: u.is_superuser or (hasattr(u, 'profile') and getattr(u.profile, 'can_post_blog', False)))
 def administration(request):
     # Get search parameters
     user_search = request.GET.get('user_search', '').strip()
@@ -341,6 +345,27 @@ def administration(request):
     rename_group_forms = {group.id: RenameGroupForm(instance=group) for group in all_groups}
     user_profile_forms = {user_obj.id: UserProfileForm(instance=user_obj.profile, prefix=f'profile_{user_obj.id}') for user_obj in all_users}
     all_banned_users = BannedUser.objects.all().select_related('user', 'group', 'banned_by', 'organizer').order_by('-banned_at')
+
+    bluesky_posts = []
+    bluesky_posts_page = []
+    bluesky_posts_paginator = None
+    if hasattr(request.user, 'profile') and getattr(request.user.profile, 'can_post_blog', False):
+        try:
+            bsky_handle = os.environ.get('BLUESKY_HANDLE')
+            bsky_app_password = os.environ.get('BLUESKY_APP_PASSWORD')
+            if bsky_handle and bsky_app_password:
+                client = Client()
+                client.login(bsky_handle, bsky_app_password)
+                feed = client.get_author_feed(bsky_handle, limit=30)
+                bluesky_posts = feed.feed
+                blog_page = request.GET.get('blog_page', 1)
+                bluesky_posts_paginator = Paginator(bluesky_posts, 5)
+                try:
+                    bluesky_posts_page = bluesky_posts_paginator.page(blog_page)
+                except (PageNotAnInteger, EmptyPage):
+                    bluesky_posts_page = bluesky_posts_paginator.page(1)
+        except Exception as e:
+            messages.error(request, f'Error fetching Bluesky posts: {e}')
 
     if request.method == 'POST':
         if 'promote_users_submit' in request.POST:
@@ -469,9 +494,31 @@ def administration(request):
         'banner_enabled': cache.get('banner_enabled', False),
         'banner_text': cache.get('banner_text', ''),
         'banner_type': cache.get('banner_type', 'info'),
+        'bluesky_posts': bluesky_posts_page,
+        'bluesky_posts_paginator': bluesky_posts_paginator,
     }
     
     return render(request, 'users/administration.html', context)
+
+@require_POST
+@login_required
+def delete_bluesky_post(request):
+    if not (hasattr(request.user, 'profile') and getattr(request.user.profile, 'can_post_blog', False)):
+        messages.error(request, 'You do not have permission to delete Bluesky posts.')
+        return redirect('administration')
+    uri = request.POST.get('uri')
+    try:
+        bsky_handle = os.environ.get('BLUESKY_HANDLE')
+        bsky_app_password = os.environ.get('BLUESKY_APP_PASSWORD')
+        if not bsky_handle or not bsky_app_password:
+            raise Exception('Bluesky credentials not set in environment.')
+        client = Client()
+        client.login(bsky_handle, bsky_app_password)
+        client.delete_post(uri)
+        messages.success(request, 'Post deleted from Bluesky.')
+    except Exception as e:
+        messages.error(request, f'Error deleting post: {e}')
+    return redirect(f"{reverse('administration')}?tab=blogmgmt")
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
@@ -602,6 +649,37 @@ def send_bulk_notification(request):
     else:
         messages.error(request, 'Invalid request method.')
         return redirect('administration')
+
+@login_required
+def post_to_bluesky(request):
+    user = request.user
+    can_post = user.has_perm('users.can_post_blog') or (hasattr(user, 'profile') and getattr(user.profile, 'can_post_blog', False))
+    if not can_post:
+        messages.error(request, 'You do not have permission to post blog posts to Bluesky.')
+        return redirect('administration')
+
+    if request.method == 'POST':
+        form = BlueskyBlogPostForm(request.POST)
+        if form.is_valid():
+            title = form.cleaned_data['title']
+            content = form.cleaned_data['content']
+            # Bluesky API integration
+            try:
+                bsky_handle = os.environ.get('BLUESKY_HANDLE')
+                bsky_app_password = os.environ.get('BLUESKY_APP_PASSWORD')
+                if not bsky_handle or not bsky_app_password:
+                    raise Exception('Bluesky credentials not set in environment.')
+                client = Client()
+                client.login(bsky_handle, bsky_app_password)
+                post_text = f"{title}\n\n{content}"
+                client.send_post(text=post_text)
+                messages.success(request, 'Blog post successfully posted to Bluesky!')
+            except Exception as e:
+                messages.error(request, f'Error posting to Bluesky: {e}')
+            return redirect('administration')
+    else:
+        form = BlueskyBlogPostForm()
+    return render(request, 'users/post_to_bluesky.html', {'form': form})
 
 @csrf_exempt
 def telegram_login(request):

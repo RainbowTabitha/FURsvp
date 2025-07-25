@@ -27,4 +27,6 @@ urlpatterns = [
     path('twofa/enable/', views.twofa_enable, name='twofa_enable'),
     path('twofa/disable/', views.twofa_disable, name='twofa_disable'),
     path('twofa/settings/', views.twofa_settings, name='twofa_settings'),
+    path('post_to_bluesky/', views.post_to_bluesky, name='post_to_bluesky'),
+    path('delete_bluesky_post/', views.delete_bluesky_post, name='delete_bluesky_post'),
 ] 

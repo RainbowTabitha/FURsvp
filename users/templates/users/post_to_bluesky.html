@@ -1,0 +1,37 @@
+{% extends 'events/base.html' %}
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm rounded-4">
+                <div class="card-body p-4">
+                    <h2 class="h4 mb-3 text-primary fw-bold">
+                        <i class="material-icons me-2">rss_feed</i> Post Blog Post to Bluesky
+                    </h2>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            {{ form.title.label_tag }}
+                            {{ form.title }}
+                            {% for error in form.title.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.content.label_tag }}
+                            {{ form.content }}
+                            {% for error in form.content.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="material-icons me-1">send</i> Post to Bluesky
+                        </button>
+                        <a href="{% url 'administration' %}" class="btn btn-link ms-2">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

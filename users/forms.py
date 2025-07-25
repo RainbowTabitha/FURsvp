@@ -30,10 +30,11 @@ class UserProfileForm(forms.ModelForm):
         label="Groups"
     )
     clear_profile_picture = forms.BooleanField(required=False, label="Remove Profile Picture")
+    can_post_blog = forms.BooleanField(required=False, label="Can post blog posts to Bluesky")
 
     class Meta:
         model = Profile
-        fields = ['display_name', 'profile_picture_base64', 'discord_username', 'telegram_username']
+        fields = ['display_name', 'profile_picture_base64', 'discord_username', 'telegram_username', 'can_post_blog']
         widgets = {
             'display_name': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -56,6 +57,9 @@ class UserProfileForm(forms.ModelForm):
             self.fields['admin_groups'].initial = Group.objects.filter(group_roles__user=self.instance.user)
         if self.instance and self.instance.profile_picture_base64:
             self.initial['profile_picture_base64'] = self.instance.profile_picture_base64
+        # Only show can_post_blog to superusers
+        if not (self.instance and self.instance.user and self.instance.user.is_superuser):
+            self.fields.pop('can_post_blog', None)
 
     def save(self, commit=True):
         instance = super().save(commit=commit)
@@ -149,3 +153,7 @@ class GroupRoleForm(forms.ModelForm):
 
 class TOTPDeviceForm(BaseTOTPDeviceForm):
     pass 
+
+class BlueskyBlogPostForm(forms.Form):
+    title = forms.CharField(max_length=300, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Title'}))
+    content = forms.CharField(widget=forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Write your blog post here...', 'rows': 6})) 

@@ -37,6 +37,13 @@
                         <i class="material-icons align-middle me-1">notifications</i> Send Notification
                     </button>
                 </li>
+                {% if user.profile.can_post_blog %}
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="blogmgmt-tab" data-bs-toggle="tab" data-bs-target="#blogmgmt" type="button" role="tab" aria-controls="blogmgmt" aria-selected="false">
+                        <i class="material-icons align-middle me-1">rss_feed</i> Blog Management
+                    </button>
+                </li>
+                {% endif %}
             </ul>
 
             <div class="tab-content" id="adminTabsContent">
@@ -518,6 +525,83 @@
                         </form>
                     </div>
                 </div>
+                {% if user.profile.can_post_blog %}
+                <div class="tab-pane fade" id="blogmgmt" role="tabpanel" aria-labelledby="blogmgmt-tab">
+                    <h2 class="card-title h4 mb-4 text-primary fw-bold">
+                        <i class="material-icons me-2">rss_feed</i> Blog Management
+                    </h2>
+                    <form method="post" action="{% url 'post_to_bluesky' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="id_title" class="form-label">Title</label>
+                            <input type="text" name="title" id="id_title" class="form-control" placeholder="Title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_content" class="form-label">Content</label>
+                            <textarea name="content" id="id_content" class="form-control" rows="5" placeholder="Write your blog post here..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="material-icons me-1">send</i> Post to Blog/Bluesky
+                        </button>
+                    </form>
+                    <hr class="my-4">
+                    <h3 class="h5 mb-3 text-secondary fw-bold">
+                        <i class="material-icons me-2">list</i> Recent Blog Posts
+                    </h3>
+                    <div id="bluesky-posts-list">
+                        {% if bluesky_posts %}
+                            {% for post in bluesky_posts %}
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <div class="fw-bold mb-1">{{ post.post.record.text|linebreaksbr }}</div>
+                                        <div class="text-muted small mb-2">
+                                            {{ post.post.record.created_at|date:"F j, Y, g:i A" }}
+                                        </div>
+                                        <form method="post" action="{% url 'delete_bluesky_post' %}" onsubmit="return confirm('Are you sure you want to delete this post?');">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="uri" value="{{ post.post.uri }}">
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                <i class="material-icons">delete</i> Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                            {% if bluesky_posts_paginator and bluesky_posts_paginator.num_pages > 1 %}
+                            <nav aria-label="Bluesky blog post pagination" class="mt-3">
+                                <ul class="pagination justify-content-center">
+                                    {% if bluesky_posts.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?tab=blogmgmt&blog_page=1" aria-label="First">&laquo;</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?tab=blogmgmt&blog_page={{ bluesky_posts.previous_page_number }}" aria-label="Previous">&lsaquo;</a>
+                                        </li>
+                                    {% endif %}
+                                    {% for num in bluesky_posts_paginator.page_range %}
+                                        {% if bluesky_posts.number == num %}
+                                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                        {% elif num > bluesky_posts.number|add:'-3' and num < bluesky_posts.number|add:'3' %}
+                                            <li class="page-item"><a class="page-link" href="?tab=blogmgmt&blog_page={{ num }}">{{ num }}</a></li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% if bluesky_posts.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?tab=blogmgmt&blog_page={{ bluesky_posts.next_page_number }}" aria-label="Next">&rsaquo;</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?tab=blogmgmt&blog_page={{ bluesky_posts_paginator.num_pages }}" aria-label="Last">&raquo;</a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                            {% endif %}
+                        {% else %}
+                            <div class="alert alert-info">No recent posts found.</div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
             </div>
 
         </div>
