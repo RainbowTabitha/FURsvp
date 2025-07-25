@@ -2460,7 +2460,7 @@
     </div>  
 
     <!-- Main Header -->
-    <header class="main-header {% if banner_enabled and banner_text %}has-banner{% endif %}">
+    <header class="main-header {% if banner_enabled and banner_text %}has-banner{% endif %} gradient-bg">
         <div class="container">
             <div class="header-content">
                 <!-- Logo -->
@@ -2585,6 +2585,11 @@
                         </a>
                     </li>
                     {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'blog' %}">
+                            <i class="material-icons">announcement</i> Blog
+                        </a>
+                    </li>
                     {% if user.group_roles.all or user.delegated_groups_as_delegate.exists %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'create_event' %}">
@@ -2779,7 +2784,7 @@
                 style="color: #335588 !important; font-size: 1.1rem; font-weight: 600; text-align: center;">
                 <div>© 2010-{% now "Y" %} FURsvp. All rights reserved.</div>
                 <span class="footer-madeby">
-                    Made with <i class="material-icons footer-heart">favorite</i> by furtabs and Pawsouls
+                    Made with <i class="material-icons footer-heart">favorite</i> by the FURsvp Team
                 </span>
             </div>
         </div>

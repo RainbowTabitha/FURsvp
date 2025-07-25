@@ -1,94 +1,114 @@
 {% extends 'events/base.html' %}
 {% block content %}
 <div class="container py-4">
-    <h1 class="mb-4">FURsvp Announcements</h1>
-    {% if bluesky_feed %}
-        <div class="blog-feed-list">
-            {% for entry in bluesky_feed %}
-                <div class="blog-feed-item py-4 mb-4 border-bottom">
-                    <h2 class="h4 mb-2">
-                        <a href="{{ entry.link }}" class="text-primary text-decoration-none" target="_blank" rel="noopener noreferrer">
-                            {{ entry.title|default:"Bluesky Post" }}
-                        </a>
-                    </h2>
-                    <div class="text-muted small mb-2 d-flex align-items-center">
-                        <i class="material-icons me-1" style="font-size: 18px; vertical-align: middle; color: #6366f1;">calendar_today</i>
-                        {% if entry.est_datetime %}
-                            <span class="me-3">{{ entry.est_datetime|date:'F j, Y' }}</span>
-                            <i class="material-icons me-1" style="font-size: 18px; vertical-align: middle; color: #06b6d4;">schedule</i>
-                            <span>{{ entry.est_datetime|date:'g:i A' }}</span>
-                        {% else %}
-                            Date unavailable
-                        {% endif %}
-                    </div>
-                    <div class="mb-3" style="font-size: 1.1rem;">
-                        {{ entry.summary|striptags|truncatechars:200 }}
-                    </div>
-                    <div class="d-flex justify-content-end">
-                        <a href="#" class="read-more-link" data-bs-toggle="modal" data-bs-target="#blogModal" data-index="{{ forloop.counter0 }}">Read more…</a>
-                    </div>
-                    <div class="d-none blog-full-content" id="blog-full-{{ forloop.counter0 }}">
-                        <h2 class="h4 mb-2">{{ entry.title|default:"Bluesky Post" }}</h2>
-                        <div class="text-muted small mb-2 d-flex align-items-center">
-                            <i class="material-icons me-1" style="font-size: 18px; vertical-align: middle; color: #6366f1;">calendar_today</i>
-                            {% if entry.est_datetime %}
-                                <span class="me-3">{{ entry.est_datetime|date:'F j, Y' }}</span>
-                                <i class="material-icons me-1" style="font-size: 18px; vertical-align: middle; color: #06b6d4;">schedule</i>
-                                <span>{{ entry.est_datetime|date:'g:i A' }}</span>
-                            {% else %}
-                                Date unavailable
-                            {% endif %}
-                        </div>
-                        <div class="mb-3" style="font-size: 1.1rem;">
-                            {{ entry.summary|safe }}
-                        </div>
-                        {% if entry.link %}
-                        <div class="d-flex justify-content-end">
-                            <a href="{{ entry.link }}" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
-                                Open Original
-                                <span class="material-icons ms-1" style="font-size: 18px; vertical-align: middle;">open_in_new</span>
-                            </a>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-            {% endfor %}
+    <h1 class="mb-4 fw-bold text-primary">FURsvp Blog</h1>
+    <!-- Official Announcements Panel (Blue) -->
+    <div class="mb-4" style="border-radius: 1.25rem; overflow: hidden; box-shadow: 0 2px 8px rgba(59,130,246,0.07);">
+        <div style="background: linear-gradient(90deg, #2563eb 0%, #0ea5e9 100%); color: #fff; padding: 1rem 1.5rem; display: flex; align-items: center;">
+            <i class="material-icons me-2" style="font-size: 2rem;">info</i>
+            <span class="fw-bold" style="font-size: 1.25rem;">Official Announcements</span>
         </div>
-
-        <!-- Material Design Modal for Blog Post -->
-        <div class="modal fade" id="blogModal" tabindex="-1" aria-labelledby="blogModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg modal-dialog-centered">
-                <div class="modal-content rounded-4 shadow-lg">
-                    <div class="modal-header" style="border-bottom: 1px solid #e0e0e0;">
-                        <h5 class="modal-title" id="blogModalLabel">Announcement</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body" id="blogModalBody" style="background: #fafafa;">
-                        <!-- Content will be injected here -->
+        <div style="background: #f8fafc; padding: 1.5rem 1.5rem 1.2rem 1.5rem; font-size: 1.08rem;">
+            {{ official_announcement|default:"This is the official FURsvp blog for site-wide news, updates, and important announcements. Check back here for the latest from the FURsvp Team!" }}
+        </div>
+    </div>
+    <!-- Latest from FURsvp Widget (Bluesky Feed, Orange Gradient) -->
+    <div class="mb-4" style="border-radius: 1.25rem; overflow: hidden; box-shadow: 0 2px 8px rgba(255,128,0,0.07);">
+        <div style="background: linear-gradient(90deg, #ff6a00 0%, #ffb347 100%); color: #fff; padding: 1rem 1.5rem; display: flex; align-items: center;">
+            <i class="material-icons me-2" style="font-size: 2rem;">announcement</i>
+            <span class="fw-bold" style="font-size: 1.25rem;">Latest from FURsvp</span>
+        </div>
+        <div class="p-4" style="background: #f8fafc;">
+            {% if bluesky_feed %}
+                <div class="blog-feed-list">
+                    {% for entry in bluesky_feed %}
+                        <div class="mb-4" style="border-radius: 2rem; background: #fff; box-shadow: 0 2px 12px rgba(255,106,0,0.08); padding: 2.2rem 2rem 1.5rem 2rem;">
+                            <div class="fw-bold mb-2" style="color: #ff6a00; font-size: 1.18rem;">
+                                <a href="{{ entry.link }}" class="text-decoration-none" style="color: #ff6a00;" target="_blank" rel="noopener noreferrer">
+                                    {{ entry.title|default:"Bluesky Post" }}
+                                </a>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="material-icons me-1" style="font-size: 1.3rem; color: #ff6a00;">calendar_today</i>
+                                {% if entry.est_datetime %}
+                                    <span class="small text-muted">{{ entry.est_datetime|date:'F j, Y' }}</span>
+                                    <i class="material-icons ms-2 me-1" style="font-size: 1.3rem; color: #ffb347;">schedule</i>
+                                    <span class="small text-muted">{{ entry.est_datetime|date:'g:i A' }}</span>
+                                {% else %}
+                                    <span class="small text-muted">Date unavailable</span>
+                                {% endif %}
+                            </div>
+                            <div class="mb-2" style="font-size: 1.13rem; color: #444;">
+                                {{ entry.summary|striptags|truncatechars:300 }}
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <a href="#" class="read-more-link" style="color: #ff6a00; font-weight: 500;" data-bs-toggle="modal" data-bs-target="#blogModal" data-index="{{ forloop.counter0 }}">Read more…</a>
+                            </div>
+                            <div class="d-none blog-full-content" id="blog-full-{{ forloop.counter0 }}">
+                                <div class="fw-bold mb-2" style="color: #ff6a00; font-size: 1.18rem;">{{ entry.title|default:"Bluesky Post" }}</div>
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="material-icons me-1" style="font-size: 1.3rem; color: #ff6a00;">calendar_today</i>
+                                    {% if entry.est_datetime %}
+                                        <span class="small text-muted">{{ entry.est_datetime|date:'F j, Y' }}</span>
+                                        <i class="material-icons ms-2 me-1" style="font-size: 1.3rem; color: #ffb347;">schedule</i>
+                                        <span class="small text-muted">{{ entry.est_datetime|date:'g:i A' }}</span>
+                                    {% else %}
+                                        <span class="small text-muted">Date unavailable</span>
+                                    {% endif %}
+                                </div>
+                                <div style="font-size: 1.13rem; color: #444;">{{ entry.summary|safe }}</div>
+                                {% if entry.link %}
+                                <div class="d-flex justify-content-end mt-3">
+                                    <a href="{{ entry.link }}" class="btn btn-outline-warning" style="color: #ff6a00; border-color: #ffb347;" target="_blank" rel="noopener noreferrer">
+                                        Open on Bluesky
+                                        <span class="material-icons ms-1" style="font-size: 18px; vertical-align: middle;">open_in_new</span>
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="card h-100 shadow-sm" style="border-radius: 1rem;">
+                    <div class="card-body">
+                        <div class="fw-bold mb-2" style="color: #ff6a00; font-size: 1.1rem;">No posts found</div>
+                        <div style="font-size: 1.08rem; color: #444;">
+                            There are no recent FURsvp blog posts to display.
+                        </div>
                     </div>
                 </div>
+            {% endif %}
+        </div>
+    </div>
+    <!-- Blog Modal -->
+    <div class="modal fade" id="blogModal" tabindex="-1" aria-labelledby="blogModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content rounded-4 shadow-lg">
+                <div class="modal-header" style="border-bottom: 1px solid #e0e0e0; background: linear-gradient(90deg, #ff6a00 0%, #ffb347 100%); color: #fff;">
+                    <h5 class="modal-title" id="blogModalLabel">FURsvp Blog Post</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="blogModalBody" style="background: #fff; color: #222;"></div>
             </div>
         </div>
-
-        <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var blogModal = document.getElementById('blogModal');
-            var blogModalBody = document.getElementById('blogModalBody');
-            var readMoreLinks = document.querySelectorAll('.read-more-link[data-index]');
-            readMoreLinks.forEach(function(link) {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    var idx = link.getAttribute('data-index');
-                    var content = document.getElementById('blog-full-' + idx);
-                    if (content && blogModalBody) {
-                        blogModalBody.innerHTML = content.innerHTML;
-                    }
-                });
+    </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var blogModal = document.getElementById('blogModal');
+        var blogModalBody = document.getElementById('blogModalBody');
+        var readMoreLinks = document.querySelectorAll('.read-more-link[data-index]');
+        readMoreLinks.forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                var idx = link.getAttribute('data-index');
+                var content = document.getElementById('blog-full-' + idx);
+                if (content && blogModalBody) {
+                    blogModalBody.innerHTML = content.innerHTML;
+                }
             });
         });
-        </script>
-    {% else %}
-        <div class="alert alert-info">No blog posts found.</div>
-    {% endif %}
+    });
+    </script>
 </div>
 {% endblock %} 
