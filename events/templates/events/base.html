@@ -2786,6 +2786,21 @@
                 <span class="footer-madeby">
                     Made with <i class="material-icons footer-heart">favorite</i> by the FURsvp Team
                 </span>
+                {% load git_extras %}
+                <div class="footer-version" style="margin-top: 0.5rem; font-size: 1.125rem;">
+                    <i class="material-icons" style="font-size: 1rem; vertical-align: middle;">code</i>
+                    {% get_git_version_link as git_data %}
+                    {% if git_data and git_data.commit_url %}
+                        <a href="{{ git_data.commit_url }}" target="_blank" rel="noopener noreferrer" style="text-decoration: none; transition: color 0.2s ease;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#355b8c'">
+                            {{ git_data.version_info.commit_hash }}{% if git_data.version_info.has_uncommitted %}+{% endif %}
+                        </a>
+                        {% if git_data.commit_date %}
+                            <span style="font-size: 0.9em;"> • {{ git_data.commit_date }}</span>
+                        {% endif %}
+                    {% else %}
+                        {% get_git_version_display %}
+                    {% endif %}
+                </div>
             </div>
         </div>
     </footer>
