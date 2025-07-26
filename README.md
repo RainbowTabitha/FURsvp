@@ -4,7 +4,7 @@ FURsvp is a Django-based event management platform for the furry fandom, providi
 
 ## Contributing
 
-Contributions are welcome! Please open an issue or submit a pull request for improvements or bug fixes.
+Contributions are welcome by everyone! Please open an issue or submit a pull request for improvements or bug fixes.
 
 ## License
 
