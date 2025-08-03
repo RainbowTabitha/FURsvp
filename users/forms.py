@@ -7,15 +7,15 @@ from two_factor.forms import TOTPDeviceForm as BaseTOTPDeviceForm
 import base64
 
 class UserRegisterForm(UserCreationForm):
-    eula_agreement = forms.BooleanField(
+    agree_to_terms = forms.BooleanField(
         required=True,
-        label="I agree to the End User License Agreement (EULA)",
+        label="I agree to the Terms of Service and Privacy Policy",
         widget=forms.CheckboxInput(attrs={
             'class': 'form-check-input',
-            'id': 'id_eula_agreement'
+            'id': 'id_agree_to_terms'
         }),
         error_messages={
-            'required': 'You must agree to the End User License Agreement to create an account.'
+            'required': 'You must agree to the Terms of Service and Privacy Policy to create an account.'
         }
     )
     
