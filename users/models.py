@@ -3,8 +3,90 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
 from events.models import Group
+from django.utils import timezone
 
 # Create your models here.
+
+class AuditLog(models.Model):
+    """Audit log for tracking administrative actions and group event activities"""
+    ACTION_CHOICES = [
+        # User management actions
+        ('user_promoted', 'User Promoted'),
+        ('user_demoted', 'User Demoted'),
+        ('user_banned', 'User Banned'),
+        ('user_unbanned', 'User Unbanned'),
+        ('user_profile_updated', 'User Profile Updated'),
+        ('admin_login', 'Admin Login'),
+        ('admin_logout', 'Admin Logout'),
+        
+        # Group management actions
+        ('group_created', 'Group Created'),
+        ('group_updated', 'Group Updated'),
+        ('group_deleted', 'Group Deleted'),
+        ('group_renamed', 'Group Renamed'),
+        
+        # Event management actions
+        ('event_created', 'Event Created'),
+        ('event_updated', 'Event Updated'),
+        ('event_deleted', 'Event Deleted'),
+        ('event_cancelled', 'Event Cancelled'),
+        ('event_activated', 'Event Activated'),
+        
+        # Notification actions
+        ('notification_sent', 'Notification Sent'),
+        ('bulk_notification_sent', 'Bulk Notification Sent'),
+        
+        # Site management actions
+        ('banner_updated', 'Site Banner Updated'),
+        ('banner_disabled', 'Site Banner Disabled'),
+        
+        # Blog actions
+        ('blog_post_created', 'Blog Post Created'),
+        ('blog_post_deleted', 'Blog Post Deleted'),
+        
+        # Other actions
+        ('other', 'Other'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='audit_logs', help_text="User who performed the action")
+    target_user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='targeted_audit_logs', help_text="User who was affected by the action")
+    action = models.CharField(max_length=50, choices=ACTION_CHOICES)
+    description = models.TextField(help_text="Detailed description of the action")
+    group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True, help_text="Group involved in the action")
+    event = models.ForeignKey('events.Event', on_delete=models.SET_NULL, null=True, blank=True, help_text="Event involved in the action")
+    ip_address = models.GenericIPAddressField(null=True, blank=True, help_text="IP address of the user who performed the action")
+    user_agent = models.TextField(blank=True, help_text="User agent string")
+    timestamp = models.DateTimeField(auto_now_add=True, help_text="When the action occurred")
+    additional_data = models.JSONField(default=dict, blank=True, help_text="Additional data related to the action")
+    
+    class Meta:
+        ordering = ['-timestamp']
+        verbose_name = 'Audit Log Entry'
+        verbose_name_plural = 'Audit Log Entries'
+        indexes = [
+            models.Index(fields=['user', 'timestamp']),
+            models.Index(fields=['action', 'timestamp']),
+            models.Index(fields=['group', 'timestamp']),
+            models.Index(fields=['target_user', 'timestamp']),
+        ]
+    
+    def __str__(self):
+        return f"{self.user.username if self.user else 'System'} - {self.get_action_display()} - {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
+    
+    @classmethod
+    def log_action(cls, user, action, description, target_user=None, group=None, event=None, ip_address=None, user_agent=None, additional_data=None):
+        """Convenience method to create an audit log entry"""
+        return cls.objects.create(
+            user=user,
+            action=action,
+            description=description,
+            target_user=target_user,
+            group=group,
+            event=event,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            additional_data=additional_data or {}
+        )
 
 class GroupRole(models.Model):
     """Custom hierarchy system for group leadership roles"""
@@ -36,6 +118,9 @@ class Profile(models.Model):
     telegram_username = models.CharField(max_length=50, blank=True, null=True)
     telegram_id = models.BigIntegerField(blank=True, null=True, unique=True, help_text="Telegram user ID for authentication")
     can_post_blog = models.BooleanField(default=False, help_text='Can post blog posts')
+    is_verified = models.BooleanField(default=False, help_text='Has the user verified their email?')
+    verification_token = models.CharField(max_length=64, blank=True, null=True, help_text='Email verification token')
+    email_notifications = models.BooleanField(default=True, help_text='Receive email notifications for new notifications')
 
     class Meta:
         permissions = [
@@ -98,7 +183,20 @@ class BannedUser(models.Model):
         verbose_name_plural = "Banned Users"
 
     def __str__(self):
-        return f'{self.user.username} banned from {self.group.name}'
+        if self.group:
+            return f'{self.user.username} banned from {self.group.name}'
+        else:
+            return f'{self.user.username} banned site-wide'
+    
+    @classmethod
+    def is_user_banned(cls, user, group=None):
+        """
+        Check if a user is banned (site-wide or from a specific group)
+        """
+        if group:
+            return cls.objects.filter(user=user, group=group).exists()
+        else:
+            return cls.objects.filter(user=user, group__isnull=True).exists()
 
 class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
@@ -124,3 +222,14 @@ def create_profile(sender, instance, created, **kwargs):
 @receiver(post_save, sender=User)
 def save_profile(sender, instance, **kwargs):
     instance.profile.save()
+
+# Add method to User model to check if banned
+def user_is_banned(self, group=None):
+    """
+    Check if this user is banned (site-wide or from a specific group)
+    """
+    from .models import BannedUser
+    return BannedUser.is_user_banned(self, group)
+
+# Add the method to User model
+User.add_to_class('is_banned', user_is_banned)

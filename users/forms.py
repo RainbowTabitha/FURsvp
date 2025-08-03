@@ -24,10 +24,13 @@ class UserRegisterForm(UserCreationForm):
         fields = ['username', 'email']
 
 class UserProfileForm(forms.ModelForm):
-    admin_groups = forms.ModelMultipleChoiceField(
-        queryset=Group.objects.all(),
+    admin_groups = forms.CharField(
         required=False,
-        label="Groups"
+        label="Groups",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Type group names separated by commas...'
+        })
     )
     clear_profile_picture = forms.BooleanField(required=False, label="Remove Profile Picture")
     can_post_blog = forms.BooleanField(required=False, label="Can post blog posts to Bluesky")
@@ -49,28 +52,112 @@ class UserProfileForm(forms.ModelForm):
                 'placeholder': 'Enter your Telegram username'
             }),
             'profile_picture_base64': forms.HiddenInput(),
+            'email_notifications': forms.CheckboxInput(attrs={
+                'class': 'form-check-input',
+                'id': 'id_email_notifications'
+            }),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.user:
-            self.fields['admin_groups'].initial = Group.objects.filter(group_roles__user=self.instance.user)
+            # Set initial value to comma-separated group names
+            user_groups = Group.objects.filter(group_roles__user=self.instance.user)
+            group_names = ', '.join([group.name for group in user_groups])
+            self.fields['admin_groups'].initial = group_names
         if self.instance and self.instance.profile_picture_base64:
             self.initial['profile_picture_base64'] = self.instance.profile_picture_base64
-        # Only show can_post_blog to superusers
         if not (self.instance and self.instance.user and self.instance.user.is_superuser):
             self.fields.pop('can_post_blog', None)
 
     def save(self, commit=True):
+        # Get the admin_groups data before calling super().save()
+        admin_groups_text = self.cleaned_data.get('admin_groups', '')
+        
+        # Save the profile first
         instance = super().save(commit=commit)
+        
+        # Then handle the group assignments
         if self.instance and self.instance.user:
-            selected_groups = self.cleaned_data.get('admin_groups', Group.objects.none())
+            # Parse comma-separated group names
+            group_names = [name.strip() for name in admin_groups_text.split(',') if name.strip()]
+            
+            # Find groups by name
+            groups = Group.objects.filter(name__in=group_names)
+            
+            # Clear existing group roles
+            GroupRole.objects.filter(user=self.instance.user).delete()
+            
             # Add new GroupRoles
-            for group in selected_groups:
-                GroupRole.objects.get_or_create(user=self.instance.user, group=group)
-            # Remove GroupRoles for groups not selected
-            GroupRole.objects.filter(user=self.instance.user).exclude(group__in=selected_groups).delete()
+            for group in groups:
+                GroupRole.objects.create(user=self.instance.user, group=group)
+        
         return instance
+
+class UserGroupManagementForm(forms.Form):
+    """Form specifically for managing user groups in the administration panel"""
+    admin_groups = forms.ModelMultipleChoiceField(
+        queryset=Group.objects.all(),
+        required=False,
+        label="Groups",
+        widget=forms.SelectMultiple(attrs={
+            'class': 'tom-select-groups tom-select-custom',
+            'multiple': True
+        })
+    )
+
+    def __init__(self, user, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+        # Set initial value to user's groups
+        user_groups = Group.objects.filter(group_roles__user=user)
+        self.fields['admin_groups'].initial = user_groups
+
+    def save(self):
+        """Only handle group assignments, don't touch profile data"""
+        groups = self.cleaned_data.get('admin_groups', Group.objects.none())
+        
+        # Clear existing group roles
+        GroupRole.objects.filter(user=self.user).delete()
+        
+        # Add new GroupRoles
+        for group in groups:
+            GroupRole.objects.create(user=self.user, group=group)
+
+class UserPermissionForm(forms.Form):
+    """Form for assigning permissions to users"""
+    is_superuser = forms.BooleanField(
+        required=False,
+        label="Admin/Staff",
+        help_text="Full administrative access"
+    )
+    can_post_blog = forms.BooleanField(
+        required=False,
+        label="Can Post Blog",
+        help_text="Can create blog posts on Bluesky"
+    )
+
+    def __init__(self, user, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+        # Set initial values
+        self.fields['is_superuser'].initial = user.is_superuser
+        self.fields['can_post_blog'].initial = user.profile.can_post_blog if hasattr(user, 'profile') else False
+
+    def save(self):
+        """Save permission changes"""
+        is_superuser = self.cleaned_data.get('is_superuser', False)
+        can_post_blog = self.cleaned_data.get('can_post_blog', False)
+        
+        # Update user permissions
+        if self.user.is_superuser != is_superuser:
+            self.user.is_superuser = is_superuser
+            self.user.save()
+        
+        # Update profile permissions
+        if hasattr(self.user, 'profile') and self.user.profile.can_post_blog != can_post_blog:
+            self.user.profile.can_post_blog = can_post_blog
+            self.user.profile.save()
 
 class UserPublicProfileForm(forms.ModelForm):
     clear_profile_picture = forms.BooleanField(required=False, label="Remove Profile Picture")
@@ -81,7 +168,7 @@ class UserPublicProfileForm(forms.ModelForm):
 
     class Meta:
         model = Profile
-        fields = ['display_name', 'discord_username', 'telegram_username', 'profile_picture_base64']
+        fields = ['display_name', 'discord_username', 'telegram_username', 'profile_picture_base64', 'email_notifications']
         widgets = {
             'display_name': forms.TextInput(attrs={
                 'class': 'form-control',

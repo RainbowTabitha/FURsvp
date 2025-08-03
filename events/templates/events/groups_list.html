@@ -2,207 +2,453 @@
 {% block title %}Groups - FURsvp{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <h1 class="mb-4 fw-bold text-primary">All Groups</h1>
-    <!-- Group Search Form -->
-    <form method="get" class="mb-4" id="groupSearchForm">
-        <div class="material-search-bar">
-            <span class="material-icons search-icon">search</span>
-            <input type="text" name="search" class="form-control material-search-input" placeholder="Search groups by name or description..." value="{{ search_query|default:''|escapejs }}" autocomplete="off">
-            <button type="submit" class="material-search-btn" aria-label="Search">
-                <span class="material-icons">search</span>
-            </button>
-        </div>
-    </form>
-    <!-- End Group Search Form -->
-    <div class="row">
-        {% for group in groups %}
-        <div class="col-md-6 col-lg-4 mb-4">
-            <a href="{{ group.get_absolute_url }}" class="card event-card-modern shadow-sm h-100 text-decoration-none d-flex flex-column align-items-center justify-content-center p-4">
-                {% if group.logo_base64 %}
-                    <img src="data:image/png;base64,{{ group.logo_base64 }}" alt="{{ group.name }} Logo" class="rounded-circle shadow mb-3" style="width: 90px; height: 90px; object-fit: cover; border: 3px solid #6366f1;">
-                {% else %}
-                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center shadow mb-3" style="width: 90px; height: 90px; background: #6366f1; color: #fff; font-weight: bold; font-size: 2rem;">
-                        <i class="material-icons" style="font-size: 48px;">group</i>
+<!-- Breadcrumbs -->
+<div class="container py-3">
+    <nav class="modern-breadcrumbs">
+        <a href="{% url 'home' %}">
+            <span class="material-icons">home</span>
+            Home
+        </a>
+        <span class="breadcrumb-chevron">›</span>
+        <span class="breadcrumb-current">
+            <span class="material-icons">group</span>
+            Groups
+        </span>
+    </nav>
+</div>
+
+<style>
+    /* Modern Groups Page Styling */
+    .groups-page {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+
+    .page-header-modern {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+
+    .page-title-modern {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #ec4899 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .page-subtitle {
+        color: #64748b;
+        font-size: 1.1rem;
+        margin: 0.5rem 0 0 0;
+    }
+
+    .stats-container {
+        display: flex;
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .stat-card {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #ec4899 100%);
+        color: white;
+        padding: 0.9rem 1.3rem;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        box-shadow: 0 3px 12px rgba(79, 70, 229, 0.25);
+        transition: all 0.3s ease;
+        width: 100%;
+        min-height: 70px;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
+    }
+
+    .stat-card .material-icons {
+        font-size: 2rem;
+        opacity: 0.9;
+    }
+
+    .stat-number {
+        font-size: 1.7rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+        opacity: 0.9;
+        font-weight: 500;
+    }
+
+    .search-section-modern {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+
+    .search-input-modern {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: #f8fafc;
+        color: #2d3748;
+        width: 100%;
+    }
+
+    .search-input-modern:focus {
+        outline: none;
+        border-color: #4f46e5;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    .search-btn-modern {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #ec4899 100%);
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        color: white;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .search-btn-modern:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+        color: white;
+    }
+
+    .groups-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .group-card-modern {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .group-card-modern:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .group-logo-modern {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+        border: 3px solid #e2e8f0;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .group-card-modern:hover .group-logo-modern {
+        border-color: #4f46e5;
+        transform: scale(1.05);
+    }
+
+    .group-logo-img-modern {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+    .group-logo-placeholder-modern {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #ec4899 100%);
+        color: white;
+        border-radius: 50%;
+    }
+
+    .group-logo-placeholder-modern .material-icons {
+        font-size: 2.5rem;
+        opacity: 0.9;
+    }
+
+    .group-name-modern {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 1rem;
+        line-height: 1.3;
+    }
+
+    .group-description-modern {
+        color: #64748b;
+        line-height: 1.6;
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+        flex-grow: 1;
+    }
+
+    .empty-state-modern {
+        background: white;
+        border-radius: 20px;
+        padding: 4rem 2rem;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        color: #cbd5e1;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #64748b;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state-subtitle {
+        color: #94a3b8;
+        font-size: 1rem;
+    }
+
+    .pagination-modern {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+    }
+
+    .page-link-modern {
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        color: #64748b;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .page-link-modern:hover {
+        border-color: #4f46e5;
+        color: #4f46e5;
+        text-decoration: none;
+        transform: translateY(-1px);
+    }
+
+    .page-link-modern.active {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #ec4899 100%);
+        border-color: transparent;
+        color: white;
+    }
+
+    .page-link-modern.active:hover {
+        color: white;
+    }
+
+    .page-link-modern.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    @media (max-width: 768px) {
+        .groups-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .page-title-modern {
+            font-size: 2rem;
+        }
+    }
+</style>
+
+<div class="groups-page">
+    <div class="container">
+        <!-- Modern Page Header -->
+        <div class="page-header-modern">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="page-title-modern">
+                        <span class="material-icons">group</span>
+                        Groups
+                    </h1>
+                    <p class="page-subtitle">Discover and join amazing furry communities</p>
+                </div>
+                <div class="col-lg-4">
+                    <div class="stats-container">
+                        <div class="stat-card">
+                            <span class="material-icons">group</span>
+                            <div>
+                                <div class="stat-number">{{ groups|length }}</div>
+                                <div class="stat-label">Groups</div>
+                            </div>
+                        </div>
                     </div>
-                {% endif %}
-                <div class="fw-bold text-center mb-2" style="font-size: 1.25rem; color: #2563eb;">{{ group.name }}</div>
-                <div class="text-muted text-center mb-2" style="font-size: 1.05rem; min-height: 48px;">{{ group.description|truncatechars:240|striptags }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modern Search Section -->
+        <div class="search-section-modern">
+            <form method="get" id="groupSearchForm">
+                <div class="row align-items-end">
+                    <div class="col-md-10">
+                        <label class="form-label fw-bold mb-2">
+                            <span class="material-icons me-2">search</span>
+                            Search Groups
+                        </label>
+                        <input type="text" name="search" class="form-control search-input-modern" 
+                               placeholder="Search groups by name or description..." 
+                               value="{{ search_query|default:''|escapejs }}" autocomplete="off">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn search-btn-modern w-100">
+                            <span class="material-icons">search</span>
+                            Search
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Groups Grid -->
+        {% if groups %}
+        <div class="groups-grid">
+            {% for group in groups %}
+            <a href="{{ group.get_absolute_url }}" class="group-card-modern">
+                <div class="group-logo-modern">
+                    {% if group.logo_base64 %}
+                        <img src="data:image/png;base64,{{ group.logo_base64 }}" 
+                             alt="{{ group.name }} Logo" 
+                             class="group-logo-img-modern">
+                    {% else %}
+                        <div class="group-logo-placeholder-modern">
+                            <span class="material-icons">group</span>
+                        </div>
+                    {% endif %}
+                </div>
+                <h3 class="group-name-modern">{{ group.name }}</h3>
+                <p class="group-description-modern">
+                    {{ group.description|truncatechars:200|striptags }}
+                </p>
             </a>
+            {% endfor %}
         </div>
-        {% empty %}
-        <div class="col-12 text-muted text-center py-5">
-            <span class="material-icons" style="font-size: 2.5rem; color: #b3b3b3;">search_off</span>
-            <span style="font-size: 1.35rem; font-weight: 600; display: block; margin-top: 0.5rem;">No groups found.</span>
-        </div>
-        {% endfor %}
-    </div>
-    {% if groups.paginator.num_pages > 1 %}
-    <nav aria-label="Group list pagination" class="mt-4">
-        <ul class="pagination justify-content-center material-circular-pagination">
+
+        <!-- Modern Pagination -->
+        {% if groups.paginator.num_pages > 1 %}
+        <nav aria-label="Group list pagination" class="pagination-modern">
             {% if groups.has_previous %}
-                <li class="page-item">
-                    <a class="page-link material-page-link" href="?page=1{% if search_query %}&search={{ search_query|urlencode }}{% endif %}" aria-label="First">
-                        <i class="material-icons" style="font-size: 24px;">first_page</i>
-                    </a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link material-page-link" href="?page={{ groups.previous_page_number }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}" aria-label="Previous">
-                        <i class="material-icons" style="font-size: 24px;">chevron_left</i>
-                    </a>
-                </li>
+                <a href="?page=1{% if search_query %}&search={{ search_query|urlencode }}{% endif %}" 
+                   class="page-link-modern" aria-label="First">
+                    <span class="material-icons">first_page</span>
+                </a>
+                <a href="?page={{ groups.previous_page_number }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}" 
+                   class="page-link-modern" aria-label="Previous">
+                    <span class="material-icons">chevron_left</span>
+                </a>
+            {% else %}
+                <span class="page-link-modern disabled">
+                    <span class="material-icons">first_page</span>
+                </span>
+                <span class="page-link-modern disabled">
+                    <span class="material-icons">chevron_left</span>
+                </span>
             {% endif %}
+
             {% for num in groups.paginator.page_range %}
                 {% if groups.number == num %}
-                    <li class="page-item active"><span class="page-link material-page-link active">{{ num }}</span></li>
+                    <span class="page-link-modern active">{{ num }}</span>
                 {% elif num > groups.number|add:'-3' and num < groups.number|add:'3' %}
-                    <li class="page-item"><a class="page-link material-page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}">{{ num }}</a></li>
+                    <a href="?page={{ num }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}" 
+                       class="page-link-modern">{{ num }}</a>
                 {% endif %}
             {% endfor %}
+
             {% if groups.has_next %}
-                <li class="page-item">
-                    <a class="page-link material-page-link" href="?page={{ groups.next_page_number }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}" aria-label="Next">
-                        <i class="material-icons" style="font-size: 24px;">chevron_right</i>
-                    </a>
-                </li>
-                <li class="page-item">
-                    <a class="page-link material-page-link" href="?page={{ groups.paginator.num_pages }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}" aria-label="Last">
-                        <i class="material-icons" style="font-size: 24px;">last_page</i>
-                    </a>
-                </li>
+                <a href="?page={{ groups.next_page_number }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}" 
+                   class="page-link-modern" aria-label="Next">
+                    <span class="material-icons">chevron_right</span>
+                </a>
+                <a href="?page={{ groups.paginator.num_pages }}{% if search_query %}&search={{ search_query|urlencode }}{% endif %}" 
+                   class="page-link-modern" aria-label="Last">
+                    <span class="material-icons">last_page</span>
+                </a>
+            {% else %}
+                <span class="page-link-modern disabled">
+                    <span class="material-icons">chevron_right</span>
+                </span>
+                <span class="page-link-modern disabled">
+                    <span class="material-icons">last_page</span>
+                </span>
             {% endif %}
-        </ul>
-    </nav>
-    {% endif %}
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <!-- Empty State -->
+        <div class="empty-state-modern">
+            <div class="empty-state-icon">
+                <span class="material-icons">search_off</span>
+            </div>
+            <h3 class="empty-state-title">No groups found</h3>
+            <p class="empty-state-subtitle">
+                {% if search_query %}
+                    No groups match your search criteria. Try adjusting your search terms.
+                {% else %}
+                    No groups are available at the moment. Check back later!
+                {% endif %}
+            </p>
+        </div>
+        {% endif %}
+    </div>
 </div>
-<style>
-.material-search-bar {
-    display: flex;
-    align-items: center;
-    background: #fff;
-    border-radius: 1.5rem;
-    box-shadow: 0 2px 8px rgba(59,130,246,0.07);
-    padding: 0.18rem 1.2rem 0.18rem 0.7rem;
-    position: relative;
-    transition: box-shadow 0.18s, border 0.18s;
-    border: 1.5px solid transparent;
-}
-.material-search-bar:focus-within {
-    box-shadow: 0 4px 18px rgba(59,130,246,0.18);
-    border: 1.5px solid #2563eb;
-}
-.material-search-input {
-    border: none !important;
-    background: #fff !important;
-    font-size: 1.1rem;
-    padding: 0.85rem 0.5rem 0.85rem 2.2rem;
-    font-weight: 500;
-    box-shadow: none !important;
-    outline: none !important;
-    flex: 1 1 auto;
-}
-.material-search-input:focus {
-    background: #fff !important;
-    outline: none !important;
-    box-shadow: none !important;
-}
-.material-search-btn {
-    background: none;
-    border: none;
-    outline: none;
-    color: #2563eb;
-    font-size: 1.5rem;
-    margin-left: 0.2rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    padding: 0 0.5rem;
-    border-radius: 50%;
-    transition: background 0.15s;
-}
-.material-search-btn:hover, .material-search-btn:focus {
-    background: #e0e7ef;
-}
-.search-icon {
-    position: absolute;
-    left: 1.1rem;
-    color: #b3b3b3;
-    font-size: 1.4rem;
-    pointer-events: none;
-    z-index: 2;
-    transition: opacity 0.15s;
-}
-@media (max-width: 768px) {
-    .material-search-bar {
-        flex-direction: column;
-        border-radius: 1.5rem !important;
-        padding: 0.18rem 0.7rem;
-    }
-    .material-search-input {
-        width: 100%;
-        border-radius: 1.5rem !important;
-        margin-bottom: 0.5rem;
-        padding-left: 2.2rem;
-    }
-    .material-search-btn {
-        width: 100%;
-        border-radius: 1.5rem;
-        justify-content: center;
-        margin-left: 0;
-    }
-    .search-icon {
-        left: 1.1rem;
-        top: 1.1rem;
-    }
-}
-.material-circular-pagination .material-page-link {
-    border-radius: 50% !important;
-    width: 44px;
-    height: 44px;
-    min-width: 44px;
-    min-height: 44px;
-    max-width: 44px;
-    max-height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #2563eb;
-    background: #fff;
-    border: 2px solid #2563eb;
-    margin: 0 0.18em;
-    box-shadow: 0 2px 8px rgba(59,130,246,0.07);
-    transition: background 0.18s, color 0.18s, border 0.18s;
-}
-.material-circular-pagination .material-page-link.active,
-.material-circular-pagination .material-page-link:focus,
-.material-circular-pagination .material-page-link:hover {
-    background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
-    color: #fff;
-    border-color: #2563eb;
-    box-shadow: 0 4px 16px rgba(59,130,246,0.18);
-}
-.material-circular-pagination .page-item.active .material-page-link {
-    background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
-    color: #fff;
-    border-color: #2563eb;
-    box-shadow: 0 4px 16px rgba(59,130,246,0.18);
-}
-.material-circular-pagination .material-page-link i.material-icons {
-    font-size: 24px;
-    vertical-align: middle;
-}
-.material-circular-pagination .page-link {
-    border: none;
-    outline: none;
-}
-.material-circular-pagination .page-item.disabled .material-page-link {
-    background: #f1f5f9;
-    color: #b3b3b3;
-    border-color: #e0e7ef;
-    box-shadow: none;
-    cursor: not-allowed;
-}
-</style>
 {% endblock %} 

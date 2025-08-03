@@ -3,70 +3,163 @@
 {% block title %}{{ event.title }} - FURsvp{% endblock %}
 {% load widget_tweaks %}
 
+{% block extra_css %}
+{{ block.super }}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
-<div class="container">
+<div class="container py-4">
     <!-- Status Alerts -->
     {% if event.status == 'cancelled' %}
-    <div class="alert alert-danger mb-4">
-        <span class="material-icons me-2">event_busy</span>
-        This event has been cancelled.
+    <div class="modern-alert alert-danger mb-4">
+        <div class="alert-content">
+            <i class="material-icons me-2">event_busy</i>
+            <span>This event has been cancelled.</span>
+        </div>
     </div>
     {% elif user_rsvp and event.status != 'cancelled' %}
         {% if user_rsvp.status == 'confirmed' %}
-        <div class="alert alert-success mb-4">
-            <span class="material-icons me-2">check_circle</span>
-            You are currently Confirmed for this event.
+        <div class="modern-alert alert-success mb-4">
+            <div class="alert-content">
+                <i class="material-icons me-2">check_circle</i>
+                <span>You are currently <strong>Confirmed</strong> for this event.</span>
+            </div>
         </div>
         {% elif user_rsvp.status == 'maybe' %}
-        <div class="alert alert-warning mb-4">
-            <span class="material-icons me-2">help</span>
-            You are currently a Maybe for this event.
+        <div class="modern-alert alert-warning mb-4">
+            <div class="alert-content">
+                <i class="material-icons me-2">help</i>
+                <span>You are currently a <strong>Maybe</strong> for this event.</span>
+            </div>
         </div>
         {% elif user_rsvp.status == 'not_attending' %}
-        <div class="alert alert-danger mb-4">
-            <span class="material-icons me-2">cancel</span>
-            You are Not Going to this event.
+        <div class="modern-alert alert-danger mb-4">
+            <div class="alert-content">
+                <i class="material-icons me-2">cancel</i>
+                <span>You are <strong>Not Going</strong> to this event.</span>
+            </div>
         </div>
         {% elif user_rsvp.status == 'waitlisted' %}
-        <div class="alert alert-warning mb-4">
-            <span class="material-icons me-2">hourglass_empty</span>
-            You are currently Waitlisted for this event. You will be notified if a spot opens up.
+        <div class="modern-alert alert-warning mb-4">
+            <div class="alert-content">
+                <i class="material-icons me-2">hourglass_empty</i>
+                <span>You are currently <strong>Waitlisted</strong> for this event. You will be notified if a spot opens up.</span>
+            </div>
         </div>
         {% endif %}
     {% endif %}
 
     <!-- Breadcrumbs -->
     <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-                <a href="/" class="d-flex align-items-center">
-                    <span class="material-icons me-1">home</span> Events
-                </a>
-            </li>
-            <li class="breadcrumb-item active">{{ event.title }}</li>
-        </ol>
+        <div class="modern-breadcrumbs">
+            <a href="{% url 'home' %}" class="d-flex align-items-center">
+                <i class="material-icons me-1">home</i> Home
+            </a>
+            <span class="breadcrumb-chevron">›</span>
+            <a href="{% url 'event_index' %}" class="d-flex align-items-center">
+                <i class="material-icons me-1">event</i> Events
+            </a>
+            <span class="breadcrumb-chevron">›</span>
+            <span class="breadcrumb-current">{{ event.title }}</span>
+        </div>
     </nav>
 
-    <!-- Event Header -->
-    <div class="card bg-gradient-primary text-white mb-4">
-        <div class="card-body p-4">
-            <h1 class="display-5 mb-2 fw-bold">{{ event.title }}</h1>
-            {% if event.age_restriction == 'mature' %}
-            <span class="badge bg-warning text-dark">
-                <span class="material-icons me-1">warning</span> 21+
-            </span>
-            {% elif event.age_restriction == 'adult' %}
-            <span class="badge bg-warning text-dark">
-                <span class="material-icons me-1">warning</span> 18+
-            </span>
-            {% endif %}
+    <!-- Event Hero Section -->
+    <div class="event-hero-section mb-5">
+        <div class="event-hero-card">
+            <div class="event-hero-content">
+                <div class="event-main-info">
+                    <div class="event-title-section">
+                        <h1 class="event-title">{{ event.title }}</h1>
+                        <div class="event-badges">
+                            {% if event.age_restriction == 'mature' %}
+                            <span class="event-badge age-badge">
+                                <i class="material-icons me-1">warning</i> 21+
+                            </span>
+                            {% elif event.age_restriction == 'adult' %}
+                            <span class="event-badge age-badge">
+                                <i class="material-icons me-1">warning</i> 18+
+                            </span>
+                            {% endif %}
+                            {% if event_has_passed %}
+                            <span class="event-badge past-badge">
+                                <i class="material-icons me-1">schedule</i> Past Event
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                                            <div class="event-details">
+                            <div class="event-detail-item">
+                                <i class="material-icons">calendar_today</i>
+                                <span>{{ event.date }}</span>
+                            </div>
+                            <div class="event-detail-item">
+                                <i class="material-icons">schedule</i>
+                                <span>{{ event.start_time|time:"g:i A" }}{% if event.end_time %} - {{ event.end_time|time:"g:i A" }}{% endif %}</span>
+                            </div>
+                        </div>
+                </div>
+                <div class="event-organizer-section">
+                    <div class="organizer-card">
+                        <h3 class="organizer-title">
+                            <i class="material-icons me-2">group</i>
+                            Meet Your Organizer
+                        </h3>
+                        <div class="organizer-info">
+                            <div class="organizer-group">
+                                {% if event.group.logo_base64 %}
+                                <div class="group-logo">
+                                    <img src="data:image/png;base64,{{ event.group.logo_base64 }}" alt="{{ event.group.name }} logo" class="group-logo-img">
+                                </div>
+                                {% endif %}
+                                <div class="organizer-name">{{ event.group.name }}</div>
+                            </div>
+                            <a href="{% url 'group_detail' event.group.id %}" class="organizer-link">
+                                <i class="material-icons me-1">arrow_forward</i>
+                                View Group
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    {% if event_has_passed %}
-    <div class="alert alert-secondary mb-4">
-        <span class="material-icons me-2">info</span>
-        This event has passed.
+    <!-- Map Section -->
+    {% if event.address %}
+    <div class="map-section mb-5">
+        <div class="modern-card">
+            <div class="modern-card-header map-header">
+                <h2 class="mb-0 d-flex align-items-center">
+                    <i class="material-icons me-2">map</i> Event Location
+                </h2>
+            </div>
+            <div class="modern-card-body">
+                <div class="map-container">
+                    <div id="event-map" class="event-map"></div>
+                    <div class="map-info">
+                        <div class="location-details">
+                            <h3 class="location-title">
+                                <i class="material-icons me-2">location_on</i>
+                                Event Venue
+                            </h3>
+                            <p class="location-address">{{ event.address }}</p>
+                            {% if event.city %}
+                            <p class="location-city">{{ event.city }}{% if event.state %}, {{ event.state }}{% endif %}{% if event.zip_code %} {{ event.zip_code }}{% endif %}</p>
+                            {% endif %}
+                        </div>
+                        <div class="map-actions">
+                            <a href="https://maps.google.com/maps?q={{ event.address|urlencode }}{% if event.city %}, {{ event.city|urlencode }}{% endif %}{% if event.state %}, {{ event.state|urlencode }}{% endif %}{% if event.zip_code %} {{ event.zip_code|urlencode }}{% endif %}" target="_blank" class="map-action-btn">
+                                <i class="material-icons me-2">open_in_new</i>
+                                Open in Google Maps
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     {% endif %}
 
@@ -75,261 +168,50 @@
         <!-- Event Details (Left) -->
         <div class="col-lg-8">
             <!-- Event Information -->
-            <div class="card shadow-custom mb-4">
-                <div class="card-header bg-gradient-primary text-white">
+            <div class="modern-card mb-4">
+                <div class="modern-card-header event-info">
                     <h2 class="mb-0 d-flex align-items-center">
-                        <span class="material-icons me-2">info</span> Event Information
+                        <i class="material-icons me-2">info</i> Event Information
                     </h2>
                 </div>
-                <div class="card-body p-4">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <div class="d-flex align-items-center mb-3">
-                                <span class="material-icons text-primary me-2">group</span>
-                                <strong class="text-primary">Group:</strong>
-                                <span class="ms-2">
-                                    <a href="{% url 'group_detail' event.group.id %}" class="text-decoration-none">
-                                        {{ event.group.name }}
-                                    </a>
-                                </span>
-                            </div>
+                <div class="modern-card-body">
+                    {% if event.capacity %}
+                    <div class="capacity-info mb-4">
+                        <div class="capacity-bar">
+                            <div class="capacity-fill" style="width: {% widthratio confirmed_rsvps_count event.capacity 100 %}%"></div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="d-flex align-items-center mb-3">
-                                <span class="material-icons text-primary me-2">calendar_today</span>
-                                <strong class="text-primary">Date:</strong>
-                                <span class="ms-2">{{ event.date }}</span>
-                            </div>
-                        </div>
-                        <div class="col-md-{% if event.capacity %}6{% else %}12{% endif %}">
-                            <div class="d-flex align-items-center mb-3">
-                                <span class="material-icons text-primary me-2">schedule</span>
-                                <strong class="text-primary">Time:</strong>
-                                <span class="ms-2">
-                                    {{ event.start_time|time:"g:i A" }}
-                                    {% if event.end_time %}
-                                    - {{ event.end_time|time:"g:i A" }}
-                                    {% endif %}
-                                </span>
-                            </div>
-                        </div>
-                        {% if event.capacity %}
-                        <div class="col-md-6">
-                            <div class="d-flex align-items-center mb-3">
-                                <span class="material-icons text-primary me-2">group</span>
-                                <strong class="text-primary">Capacity:</strong>
-                                <span class="ms-2">{{ confirmed_rsvps_count }} / {{ event.capacity }} Confirmed</span>
-                                {% if waitlisted_rsvps_count %}
-                                <span class="ms-2 text-warning">
-                                    <span class="material-icons align-middle">queue</span> {{ waitlisted_rsvps_count }} Waitlisted
-                                </span>
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% endif %}
-                        <div class="col-12">
-                            <div class="d-flex align-items-center mb-3">
-                                <span class="material-icons text-primary me-2">location_on</span>
-                                <strong class="text-primary">Location:</strong>
-                                <span class="ms-2">{{ location_display_string }}</span>
-                            </div>
-                        </div>
-                        <div class="col-12 mt-4">
-                            <div class="mb-3">
-                                <strong class="text-primary d-flex align-items-center">
-                                    <span class="material-icons me-2">info</span> Description:
-                                </strong>
-                            </div>
-                            <div>{{ event.description|safe }}</div>
-                            {% if event.accessibility_details %}
-                            <div class="mt-3">
-                                <strong class="text-primary d-flex align-items-center">
-                                    <span class="material-icons me-2">accessible</span> Accessibility:
-                                </strong>
-                                <span>{{ event.accessibility_details|linebreaksbr }}</span>
-                            </div>
+                        <div class="capacity-text">
+                            <span class="capacity-current">{{ confirmed_rsvps_count }}</span>
+                            <span class="capacity-separator">/</span>
+                            <span class="capacity-total">{{ event.capacity }}</span>
+                            <span class="capacity-label">Confirmed</span>
+                            {% if waitlisted_rsvps_count %}
+                            <span class="waitlist-count">
+                                <i class="material-icons">queue</i> {{ waitlisted_rsvps_count }} Waitlisted
+                            </span>
                             {% endif %}
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Attendees Section -->
-            {% if can_view_attendee_list or rsvp_groups.confirmed|length > 0 or rsvp_groups.waitlisted|length > 0 or rsvp_groups.maybe|length > 0 or rsvp_groups.not_attending|length > 0 %}
-            <div class="card shadow-custom mb-4">
-                <div class="card-header bg-gradient-success text-white">
-                    <h2 class="mb-0 d-flex align-items-center">
-                        <span class="material-icons me-2">groups</span> Attendees
-                        <span class="badge bg-light text-dark ms-2">{{ confirmed_rsvps_count }}</span>
-                    </h2>
-                </div>
-                <div class="card-body p-4">
-                    {% if not can_view_attendee_list %}
-                    <div class="alert alert-info mb-3">
-                        The attendee list is hidden. You can only see your own RSVP.
                     </div>
                     {% endif %}
-
-                    <!-- Confirmed RSVPs -->
-                    <div class="mb-4">
-                        <h4 class="h6 text-success mb-3 d-flex align-items-center">
-                            <span class="material-icons me-1">check_circle</span> Confirmed ({{ confirmed_rsvps_count }})
-                        </h4>
-                        <div class="list-group">
-                            {% for rsvp_data in rsvp_groups.confirmed %}
-                            {% with rsvp=rsvp_data.rsvp %}
-                            <div class="list-group-item d-flex align-items-center">
-                                {% if rsvp.user %}
-                                <div class="me-3">{{ rsvp.user.profile|get_avatar_sized_html:32|safe }}</div>
-                                {% if can_view_contact_info %}
-                                <a href="#" class="text-body js-open-contact-modal" data-bs-toggle="modal"
-                                    data-bs-target="#contactInfoModal"
-                                    data-display-name="{{ rsvp.user.profile.get_display_name }}"
-                                    data-discord="{{ rsvp.user.profile.discord_username|default_if_none:'' }}"
-                                    data-telegram="{{ rsvp.user.profile.telegram_username|default_if_none:'' }}"
-                                    data-user-id="{{ rsvp.user.id }}">
-                                    {{ rsvp.user.profile.get_display_name }}
-                                </a>
-                                {% else %}
-                                {{ rsvp.user.profile.get_display_name }}
-                                {% endif %}
-                                {% else %}
-                                <span class="material-icons text-muted me-3">person</span>
-                                <span class="text-body">{{ rsvp.name }}</span>
-                                {% endif %}
-                            </div>
-                            {% endwith %}
-                            {% empty %}
-                            <div class="list-group-item text-muted">No confirmed RSVPs yet</div>
-                            {% endfor %}
-                        </div>
+                    
+                    <div class="event-description mb-4">
+                        <h3 class="description-title">
+                            <i class="material-icons me-2">description</i> Description
+                        </h3>
+                        <div class="description-content">{{ event.description|safe }}</div>
                     </div>
-
-                    <!-- Maybe RSVPs -->
-                    <div class="mb-4">
-                        <h4 class="h6 text-warning mb-3 d-flex align-items-center">
-                            <span class="material-icons me-1">help</span> Maybe ({{ rsvp_groups.maybe|length }})
-                        </h4>
-                        <div class="list-group">
-                            {% for rsvp_data in rsvp_groups.maybe %}
-                            {% with rsvp=rsvp_data.rsvp %}
-                            <div class="list-group-item d-flex align-items-center">
-                                {% if rsvp.user %}
-                                <div class="me-3">{{ rsvp.user.profile|get_avatar_sized_html:32|safe }}</div>
-                                {% if can_view_contact_info %}
-                                <a href="#" class="text-body js-open-contact-modal" data-bs-toggle="modal"
-                                    data-bs-target="#contactInfoModal"
-                                    data-display-name="{{ rsvp.user.profile.get_display_name }}"
-                                    data-discord="{{ rsvp.user.profile.discord_username|default_if_none:'' }}"
-                                    data-telegram="{{ rsvp.user.profile.telegram_username|default_if_none:'' }}"
-                                    data-user-id="{{ rsvp.user.id }}">
-                                    {{ rsvp.user.profile.get_display_name }}
-                                </a>
-                                {% else %}
-                                {{ rsvp.user.profile.get_display_name }}
-                                {% endif %}
-                                {% else %}
-                                <span class="material-icons text-muted me-3">person</span>
-                                <span class="text-body">{{ rsvp.name }}</span>
-                                {% endif %}
-                            </div>
-                            {% endwith %}
-                            {% empty %}
-                            <div class="list-group-item text-muted">No maybes yet</div>
-                            {% endfor %}
-                        </div>
-                    </div>
-
-                    <!-- Not Attending -->
-                    <div class="mb-4">
-                        <h4 class="h6 text-danger mb-3 d-flex align-items-center">
-                            <span class="material-icons me-1">cancel</span> Not Attending ({{ rsvp_groups.not_attending|length }})
-                        </h4>
-                        <div class="list-group">
-                            {% for rsvp_data in rsvp_groups.not_attending %}
-                            {% with rsvp=rsvp_data.rsvp %}
-                            <div class="list-group-item d-flex align-items-center">
-                                {% if rsvp.user %}
-                                <div class="me-3">{{ rsvp.user.profile|get_avatar_sized_html:32|safe }}</div>
-                                {% if can_view_contact_info %}
-                                <a href="#" class="text-body js-open-contact-modal" data-bs-toggle="modal"
-                                    data-bs-target="#contactInfoModal"
-                                    data-display-name="{{ rsvp.user.profile.get_display_name }}"
-                                    data-discord="{{ rsvp.user.profile.discord_username|default_if_none:'' }}"
-                                    data-telegram="{{ rsvp.user.profile.telegram_username|default_if_none:'' }}"
-                                    data-user-id="{{ rsvp.user.id }}">
-                                    {{ rsvp.user.profile.get_display_name }}
-                                </a>
-                                {% else %}
-                                {{ rsvp.user.profile.get_display_name }}
-                                {% endif %}
-                                {% else %}
-                                <span class="material-icons text-muted me-3">person</span>
-                                <span class="text-body">{{ rsvp.name }}</span>
-                                {% endif %}
-                            </div>
-                            {% endwith %}
-                            {% empty %}
-                            <div class="list-group-item text-muted">No one has declined yet</div>
-                            {% endfor %}
-                        </div>
-                    </div>
-
-                    <!-- Waitlisted -->
-                    {% if event.waitlist_enabled %}
-                    <div class="mb-4">
-                        <h4 class="h6 text-warning mb-3 d-flex align-items-center">
-                            <span class="material-icons me-1">queue</span> Waitlisted ({{ waitlisted_rsvps_count }})
-                        </h4>
-                        <div class="list-group">
-                            {% for rsvp_data in rsvp_groups.waitlisted %}
-                            {% with rsvp=rsvp_data.rsvp %}
-                            {% if rsvp.status == 'waitlisted' %}
-                            <div class="list-group-item d-flex align-items-center">
-                                {% if rsvp.user %}
-                                <div class="me-3">{{ rsvp.user.profile|get_avatar_sized_html:32|safe }}</div>
-                                {% if can_view_contact_info %}
-                                <a href="#" class="text-body js-open-contact-modal" data-bs-toggle="modal"
-                                    data-bs-target="#contactInfoModal"
-                                    data-display-name="{{ rsvp.user.profile.get_display_name }}"
-                                    data-discord="{{ rsvp.user.profile.discord_username|default_if_none:'' }}"
-                                    data-telegram="{{ rsvp.user.profile.telegram_username|default_if_none:'' }}"
-                                    data-user-id="{{ rsvp.user.id }}">
-                                    {{ rsvp.user.profile.get_display_name }}
-                                </a>
-                                {% else %}
-                                {{ rsvp.user.profile.get_display_name }}
-                                {% endif %}
-                                {% else %}
-                                <span class="material-icons text-muted me-3">person</span>
-                                <span class="text-body">{{ rsvp.name }}</span>
-                                {% endif %}
-                            </div>
-                            {% endif %}
-                            {% endwith %}
-                            {% empty %}
-                            <div class="list-group-item text-muted">No one on waitlist yet</div>
-                            {% endfor %}
-                        </div>
+                    
+                    {% if event.accessibility_details %}
+                    <div class="accessibility-section">
+                        <h3 class="accessibility-title">
+                            <i class="material-icons me-2">accessible</i> Accessibility
+                        </h3>
+                        <div class="accessibility-content">{{ event.accessibility_details|linebreaksbr }}</div>
                     </div>
                     {% endif %}
                 </div>
             </div>
-            {% else %}
-            <div class="card shadow-custom mb-4">
-                <div class="card-header bg-gradient-success text-white">
-                    <h2 class="mb-0 d-flex align-items-center">
-                        <span class="material-icons me-2">groups</span> Attendees
-                    </h2>
-                </div>
-                <div class="card-body p-4">
-                    <div class="alert alert-info mb-0">
-                        <span class="material-icons me-2">lock</span>
-                        The attendee list is only visible to group leaders for this event.
-                    </div>
-                </div>
-            </div>
-            {% endif %}
+
         </div>
 
         <!-- RSVP/Organizer Tools (Right) -->
@@ -472,7 +354,7 @@
 <!-- Edit Event Modal -->
 {% if is_organizer or is_site_admin or is_delegated_assistant %}
 <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header bg-gradient-primary text-white">
                 <h5 class="modal-title d-flex align-items-center" id="editEventModalLabel">
@@ -482,7 +364,7 @@
             </div>
             <form method="post" action="{% url 'edit_event' event.id %}" enctype="multipart/form-data" id="editEventForm">
                 {% csrf_token %}
-                <div class="modal-body">
+                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
                     <!-- Title Field -->
                     <div class="mb-3">
                         <label for="{{ event_form.title.id_for_label }}" class="form-label">
@@ -540,8 +422,8 @@
                             <span class="material-icons me-2">location_on</span> Street Address
                         </label>
                         <div class="input-group mb-2">
-                            {% render_field event_form.address class="form-control" placeholder="Enter street address" %}
-                            <button type="button" class="btn btn-outline-primary" id="useLocationBtn" title="Use My Location">
+                            {% render_field event_form.address class="form-control" placeholder="Enter street address" style="max-width: calc(100% - 50px);" %}
+                            <button type="button" class="btn btn-outline-primary" id="useLocationBtn" title="Use My Location" style="min-width: 50px;">
                                 <span class="material-icons">my_location</span>
                             </button>
                         </div>
@@ -606,8 +488,8 @@
                     <!-- Checkboxes -->
                     <div class="mb-3">
                         <div class="form-check">
-                            {% render_field event_form.waitlist_enabled class="form-check-input" %}
-                            <label class="form-check-label d-flex align-items-center" for="{{ event_form.waitlist_enabled.id_for_label }}">
+                            {% render_field event_form.waitlist_enabled class="form-check-input" id="waitlist_checkbox" %}
+                            <label class="form-check-label d-flex align-items-center" for="waitlist_checkbox">
                                 <span class="material-icons me-2">hourglass_empty</span> Enable Waitlist
                             </label>
                         </div>
@@ -618,8 +500,8 @@
 
                     <div class="mb-3">
                         <div class="form-check">
-                            {% render_field event_form.attendee_list_public class="form-check-input" %}
-                            <label class="form-check-label d-flex align-items-center" for="{{ event_form.attendee_list_public.id_for_label }}">
+                            {% render_field event_form.attendee_list_public class="form-check-input" id="attendee_list_checkbox" %}
+                            <label class="form-check-label d-flex align-items-center" for="attendee_list_checkbox">
                                 <span class="material-icons me-2">visibility</span> Make attendee list public
                             </label>
                         </div>
@@ -675,6 +557,310 @@
 </div>
 {% endif %}
 
+<!-- Attendees Section - Full Width -->
+{% if can_view_attendee_list or rsvp_groups.confirmed|length > 0 or rsvp_groups.waitlisted|length > 0 or rsvp_groups.maybe|length > 0 or rsvp_groups.not_attending|length > 0 %}
+<div class="modern-card mb-4">
+    <div class="modern-card-header attendees">
+        <h2 class="mb-0 d-flex align-items-center">
+            <i class="material-icons me-2">groups</i> Attendees
+            <span class="attendee-count">{{ confirmed_rsvps_count }}</span>
+        </h2>
+    </div>
+    <div class="modern-card-body">
+        {% if not can_view_attendee_list %}
+        <div class="modern-alert alert-info mb-4">
+            <div class="alert-content">
+                <i class="material-icons me-2">visibility_off</i>
+                <span>The attendee list is hidden. You can only see your own RSVP.</span>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Attendee List - Only show if public or user is organizer -->
+        {% if event.attendee_list_public or is_organizer or is_site_admin %}
+        <!-- Attendee Filters -->
+        <div class="attendee-filters mb-4">
+            <div class="row">
+                <div class="col-md-8 mb-3">
+                    <label class="filter-label-modern">
+                        <span class="material-icons">search</span>
+                        Search Attendees
+                    </label>
+                    <input type="text" id="attendeeSearch" class="form-control search-input-modern" 
+                           placeholder="Search by name..." 
+                           onkeyup="filterAttendees()">
+                </div>
+
+            </div>
+            <div class="row">
+                <div class="col-md-8 mb-3">
+                    <label class="filter-label-modern">
+                        <span class="material-icons">filter_list</span>
+                        Filter Status
+                    </label>
+                    <div class="d-flex gap-2" style="flex-wrap: nowrap; overflow-x: auto;">
+                        <button type="button" class="filter-btn-modern active" data-status="confirmed"
+                                onclick="toggleStatusFilter('confirmed', event)">
+                            <span class="material-icons">check_circle</span>
+                            Confirmed
+                        </button>
+                        <button type="button" class="filter-btn-modern active" data-status="maybe"
+                                onclick="toggleStatusFilter('maybe', event)">
+                            <span class="material-icons">help</span>
+                            Maybe
+                        </button>
+                        {% if event.waitlist_enabled %}
+                        <button type="button" class="filter-btn-modern active" data-status="waitlisted"
+                                onclick="toggleStatusFilter('waitlisted', event)">
+                            <span class="material-icons">queue</span>
+                            Waitlisted
+                        </button>
+                        {% endif %}
+                        <button type="button" class="filter-btn-modern active" data-status="not_attending"
+                                onclick="toggleStatusFilter('not_attending', event)">
+                            <span class="material-icons">cancel</span>
+                            Not Attending
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="filter-label-modern">
+                        <span class="material-icons">view_module</span>
+                        View Options
+                    </label>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button type="button" class="filter-btn-modern active" 
+                                onclick="setViewMode('list', event)">
+                            <span class="material-icons">view_list</span>
+                            List
+                        </button>
+                        <button type="button" class="filter-btn-modern" 
+                                onclick="setViewMode('grid', event)">
+                            <span class="material-icons">grid_view</span>
+                            Grid
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confirmed RSVPs -->
+        <div class="attendee-section mb-4" data-status="confirmed">
+            <h3 class="attendee-section-title confirmed">
+                <i class="material-icons me-2">check_circle</i> Confirmed
+                <span class="attendee-count">({{ confirmed_rsvps_count }})</span>
+            </h3>
+            <div class="attendee-list">
+                {% for rsvp_data in rsvp_groups.confirmed %}
+                {% with rsvp=rsvp_data.rsvp %}
+                <div class="attendee-item" data-status="confirmed" data-name="{{ rsvp.user.profile.get_display_name|lower }}" data-date="{{ rsvp.created_at|date:'Y-m-d' }}">
+                    {% if rsvp.user %}
+                    <div class="attendee-avatar">{{ rsvp.user.id|get_avatar_from_data:avatar_data|safe }}</div>
+                    <div class="attendee-info">
+                        <div class="d-flex align-items-center">
+                            {% if can_view_contact_info %}
+                            <a href="#" class="attendee-name js-open-contact-modal" data-bs-toggle="modal"
+                                data-bs-target="#contactInfoModal"
+                                data-display-name="{{ rsvp.user.profile.get_display_name }}"
+                                data-discord="{{ rsvp.user.profile.discord_username|default_if_none:'' }}"
+                                data-telegram="{{ rsvp.user.profile.telegram_username|default_if_none:'' }}"
+                                data-user-id="{{ rsvp.user.id }}">
+                                {{ rsvp.user.profile.get_display_name }}{% verified_checkmark rsvp.user %}
+                            </a>
+                            {% if rsvp.user.profile.discord_username %}
+                            {% endif %}
+                            {% else %}
+                            <span class="attendee-name">{{ rsvp.user.profile.get_display_name }}{% verified_checkmark rsvp.user %}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="attendee-avatar">
+                        <i class="material-icons">person</i>
+                    </div>
+                    <div class="attendee-info">
+                        <span class="attendee-name">{{ rsvp.name }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endwith %}
+                {% empty %}
+                <div class="empty-attendees">
+                    <i class="material-icons">group_off</i>
+                    <span>No confirmed RSVPs yet</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Maybe RSVPs -->
+        <div class="attendee-section mb-4" data-status="maybe">
+            <h3 class="attendee-section-title maybe">
+                <i class="material-icons me-2">help</i> Maybe
+                <span class="attendee-count">({{ rsvp_groups.maybe|length }})</span>
+            </h3>
+            <div class="attendee-list">
+                {% for rsvp_data in rsvp_groups.maybe %}
+                {% with rsvp=rsvp_data.rsvp %}
+                <div class="attendee-item" data-status="maybe" data-name="{{ rsvp.user.profile.get_display_name|lower }}" data-date="{{ rsvp.created_at|date:'Y-m-d' }}">
+                    {% if rsvp.user %}
+                    <div class="attendee-avatar">{{ rsvp.user.id|get_avatar_from_data:avatar_data|safe }}</div>
+                    <div class="attendee-info">
+                        <div class="d-flex align-items-center">
+                            {% if can_view_contact_info %}
+                            <a href="#" class="attendee-name js-open-contact-modal" data-bs-toggle="modal"
+                                data-bs-target="#contactInfoModal"
+                                data-display-name="{{ rsvp.user.profile.get_display_name }}"
+                                data-discord="{{ rsvp.user.profile.discord_username|default_if_none:'' }}"
+                                data-telegram="{{ rsvp.user.profile.telegram_username|default_if_none:'' }}"
+                                data-user-id="{{ rsvp.user.id }}">
+                                {{ rsvp.user.profile.get_display_name }}{% verified_checkmark rsvp.user %}
+                            </a>
+                            {% if rsvp.user.profile.discord_username %}
+                            {% endif %}
+                            {% else %}
+                            <span class="attendee-name">{{ rsvp.user.profile.get_display_name }}{% verified_checkmark rsvp.user %}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="attendee-avatar">
+                        <i class="material-icons">person</i>
+                    </div>
+                    <div class="attendee-info">
+                        <span class="attendee-name">{{ rsvp.name }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endwith %}
+                {% empty %}
+                <div class="empty-attendees">
+                    <i class="material-icons">help_outline</i>
+                    <span>No maybes yet</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Not Attending -->
+        <div class="attendee-section mb-4" data-status="not_attending">
+            <h3 class="attendee-section-title not-attending">
+                <i class="material-icons me-2">cancel</i> Not Attending
+                <span class="attendee-count">({{ rsvp_groups.not_attending|length }})</span>
+            </h3>
+            <div class="attendee-list">
+                {% for rsvp_data in rsvp_groups.not_attending %}
+                {% with rsvp=rsvp_data.rsvp %}
+                <div class="attendee-item" data-status="not_attending" data-name="{{ rsvp.user.profile.get_display_name|lower }}" data-date="{{ rsvp.created_at|date:'Y-m-d' }}">
+                    {% if rsvp.user %}
+                    <div class="attendee-avatar">{{ rsvp.user.id|get_avatar_from_data:avatar_data|safe }}</div>
+                    <div class="attendee-info">
+                        <div class="d-flex align-items-center">
+                            {% if can_view_contact_info %}
+                            <a href="#" class="attendee-name js-open-contact-modal" data-bs-toggle="modal"
+                                data-bs-target="#contactInfoModal"
+                                data-display-name="{{ rsvp.user.profile.get_display_name }}"
+                                data-discord="{{ rsvp.user.profile.discord_username|default_if_none:'' }}"
+                                data-telegram="{{ rsvp.user.profile.telegram_username|default_if_none:'' }}"
+                                data-user-id="{{ rsvp.user.id }}">
+                                {{ rsvp.user.profile.get_display_name }}{% verified_checkmark rsvp.user %}
+                            </a>
+                            {% if rsvp.user.profile.discord_username %}
+                            {% endif %}
+                            {% else %}
+                            <span class="attendee-name">{{ rsvp.user.profile.get_display_name }}{% verified_checkmark rsvp.user %}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="attendee-avatar">
+                        <i class="material-icons">person</i>
+                    </div>
+                    <div class="attendee-info">
+                        <span class="attendee-name">{{ rsvp.name }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endwith %}
+                {% empty %}
+                <div class="empty-attendees">
+                    <i class="material-icons">sentiment_satisfied</i>
+                    <span>No one has declined yet</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Waitlisted -->
+        {% if event.waitlist_enabled %}
+        <div class="attendee-section mb-4" data-status="waitlisted">
+            <h3 class="attendee-section-title waitlisted">
+                <i class="material-icons me-2">queue</i> Waitlisted
+                <span class="attendee-count">({{ waitlisted_rsvps_count }})</span>
+            </h3>
+            <div class="attendee-list">
+                {% for rsvp_data in rsvp_groups.waitlisted %}
+                {% with rsvp=rsvp_data.rsvp %}
+                {% if rsvp.status == 'waitlisted' %}
+                <div class="attendee-item" data-status="waitlisted" data-name="{{ rsvp.user.profile.get_display_name|lower }}" data-date="{{ rsvp.created_at|date:'Y-m-d' }}">
+                    {% if rsvp.user %}
+                    <div class="attendee-avatar">{{ rsvp.user.id|get_avatar_from_data:avatar_data|safe }}</div>
+                    <div class="attendee-info">
+                        <div class="d-flex align-items-center">
+                            {% if can_view_contact_info %}
+                            <a href="#" class="attendee-name js-open-contact-modal" data-bs-toggle="modal"
+                                data-bs-target="#contactInfoModal"
+                                data-display-name="{{ rsvp.user.profile.get_display_name }}"
+                                data-discord="{{ rsvp.user.profile.discord_username|default_if_none:'' }}"
+                                data-telegram="{{ rsvp.user.profile.telegram_username|default_if_none:'' }}"
+                                data-user-id="{{ rsvp.user.id }}">
+                                {{ rsvp.user.profile.get_display_name }}{% verified_checkmark rsvp.user %}
+                            </a>
+
+                            {% else %}
+                            <span class="attendee-name">{{ rsvp.user.profile.get_display_name }}{% verified_checkmark rsvp.user %}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="attendee-avatar">
+                        <i class="material-icons">person</i>
+                    </div>
+                    <div class="attendee-info">
+                        <span class="attendee-name">{{ rsvp.name }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% endwith %}
+                {% empty %}
+                <div class="empty-attendees">
+                    <i class="material-icons">queue</i>
+                    <span>No one on waitlist yet</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% else %}
+<div class="card shadow-custom mb-4">
+    <div class="card-header bg-gradient-success text-white">
+        <h2 class="mb-0 d-flex align-items-center">
+            <span class="material-icons me-2">groups</span> Attendees
+        </h2>
+    </div>
+    <div class="card-body p-4">
+        <div class="alert alert-info mb-0">
+            <span class="material-icons me-2">lock</span>
+            The attendee list is only visible to group leaders for this event.
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endif %}
+
 <!-- Contact Info Modal -->
 <div class="modal fade" id="contactInfoModal" tabindex="-1" aria-labelledby="contactInfoModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -718,16 +904,24 @@
     </div>
 </div>
 
-{% endblock %}
-
 {% block extra_js %}
 {{ block.super }}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        console.log('DOM loaded, initializing JavaScript...');
+        
+        // Test if basic JavaScript is working
+        console.log('JavaScript is loading properly');
+        
         // Contact Info Modal
+        console.log('Setting up contact modal...');
         var contactInfoModal = document.getElementById('contactInfoModal');
         if (contactInfoModal) {
+            console.log('Contact modal found, adding event listener...');
             contactInfoModal.addEventListener('show.bs.modal', function (event) {
+                console.log('Modal show event triggered');
                 var button = event.relatedTarget;
                 var displayName = button.getAttribute('data-display-name');
                 var discord = button.getAttribute('data-discord');
@@ -756,9 +950,10 @@
 
                             function escapeHtml(text) {
                                 if (!text) return '';
-                                return text.replace(/[&<>"']/g, function (m) {
+                                // Remove &nbsp; entities and replace with regular spaces
+                                text = text.replace(/&nbsp;/g, ' ');
+                                return text.replace(/[<>"']/g, function (m) {
                                     return ({
-                                        '&': '&amp;',
                                         '<': '&lt;',
                                         '>': '&gt;',
                                         '"': '&quot;',
@@ -803,11 +998,143 @@
             return url.searchParams.get(name);
         }
         if (getUrlParam('edit') === '1') {
-            var editEventModal = new bootstrap.Modal(document.getElementById('editEventModal'));
+            const editEventModal = new bootstrap.Modal(document.getElementById('editEventModal'));
             setTimeout(function () {
                 editEventModal.show();
             }, 400);
         }
+
+        // Initialize Leaflet Map
+        function initializeMap() {
+            const mapElement = document.getElementById('event-map');
+            if (!mapElement) return;
+
+            const address = '{{ event.address|escapejs }}';
+            if (!address) return;
+
+            // Check if map is already initialized
+            if (mapElement._mapInstance) {
+                console.log('Map already initialized, skipping...');
+                return;
+            }
+
+            // Clear any existing content
+            mapElement.innerHTML = '';
+
+            // Try to get coordinates using Nominatim (OpenStreetMap's geocoding service)
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`, {
+                headers: {
+                    'Accept': 'application/json',
+                    'User-Agent': 'FURsvp/1.0 (https://fursvp.org)',
+                    'Referer': window.location.origin
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.length > 0) {
+                        const lat = parseFloat(data[0].lat);
+                        const lon = parseFloat(data[0].lon);
+                        
+                        // Check again if map was initialized while fetching
+                        if (mapElement._mapInstance) {
+                            console.log('Map was initialized while fetching, skipping...');
+                            return;
+                        }
+                        
+                        // Initialize Leaflet map
+                        const map = L.map('event-map').setView([lat, lon], 17);
+                        
+                        // Store map instance for resize handling
+                        mapElement._mapInstance = map;
+                        
+                        // Add custom styled tile layer with themed appearance
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            maxZoom: 19,
+                            className: 'themed-tiles'
+                        }).addTo(map);
+                        
+                        // Add custom marker
+                        const customIcon = L.divIcon({
+                            className: 'custom-marker',
+                            html: '<div class="marker-pin"><i class="material-icons">location_on</i></div>',
+                            iconSize: [40, 40],
+                            iconAnchor: [20, 40],
+                            popupAnchor: [0, -40]
+                        });
+                        
+                        L.marker([lat, lon], {icon: customIcon})
+                            .addTo(map)
+                            .bindPopup('<div class="marker-popup"><strong>Event Location</strong><br>' + address + '</div>');
+                        
+                        // Ensure map is properly sized after initialization
+                        setTimeout(() => {
+                            map.invalidateSize();
+                        }, 200);
+                        
+                    } else {
+                        // Fallback: show a message if geocoding fails
+                        console.log('Geocoding failed: No results found for address:', address);
+                        mapElement.innerHTML = `
+                            <div class="map-error">
+                                <i class="material-icons">location_off</i>
+                                <p>Unable to display map for this location</p>
+                                <small>Address: ${address}</small>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Geocoding error:', error);
+                    console.log('Could not geocode address, showing error message');
+                    console.log('Address that failed:', address);
+                    mapElement.innerHTML = `
+                        <div class="map-error">
+                            <i class="material-icons">location_off</i>
+                            <p>Unable to display map for this location</p>
+                            <small>Address: ${address}</small>
+                            <small>Error: ${error.message}</small>
+                        </div>
+                    `;
+                });
+        }
+
+        // Initialize map when page loads
+        if (document.getElementById('event-map')) {
+            // Clean up any existing map first
+            cleanupMap();
+            // Add a small delay to ensure the container is fully rendered
+            setTimeout(() => {
+                initializeMap();
+            }, 100);
+        }
+
+        // Cleanup function to remove existing map instances
+        function cleanupMap() {
+            const mapElement = document.getElementById('event-map');
+            if (mapElement && mapElement._mapInstance) {
+                mapElement._mapInstance.remove();
+                mapElement._mapInstance = null;
+            }
+        }
+
+        // Handle map resize when window is resized
+        window.addEventListener('resize', function() {
+            const mapElement = document.getElementById('event-map');
+            if (mapElement && mapElement._mapInstance) {
+                // Trigger map resize to ensure it stays visible
+                setTimeout(() => {
+                    const map = mapElement._mapInstance;
+                    if (map && typeof map.invalidateSize === 'function') {
+                        map.invalidateSize();
+                    }
+                }, 100);
+            }
+        });
 
         // Geolocation and address autocomplete
         var useLocationBtn = document.getElementById('useLocationBtn');
@@ -831,6 +1158,1245 @@
                 }
             });
         }
+
+        // Initialize Quill.js for edit event modal
+        function initQuill() {
+            const isDark = document.body.classList.contains('dark-mode');
+            const descriptionField = document.querySelector('#editEventModal textarea[name="description"]');
+            
+            if (!descriptionField) return;
+            
+            // Create Quill container
+            const quillContainer = document.createElement('div');
+            quillContainer.id = 'quill-editor-event';
+            quillContainer.style.height = '300px';
+            descriptionField.parentNode.insertBefore(quillContainer, descriptionField);
+            descriptionField.style.display = 'none';
+            
+            // Initialize Quill
+            const quill = new Quill('#quill-editor-event', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'color': [] }, { 'background': [] }],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        [{ 'align': [] }],
+                        ['link', 'image'],
+                        ['clean']
+                    ]
+                },
+                placeholder: 'Describe your event...',
+                readOnly: false
+            });
+            
+            // Set initial content if any
+            if (descriptionField.value) {
+                quill.root.innerHTML = descriptionField.value;
+            }
+            
+            // Sync Quill content with hidden textarea
+            quill.on('text-change', function() {
+                descriptionField.value = quill.root.innerHTML;
+            });
+            
+            // Dark mode support
+            if (isDark) {
+                quillContainer.querySelector('.ql-toolbar').style.backgroundColor = '#2d3748';
+                quillContainer.querySelector('.ql-toolbar').style.borderColor = '#4a5568';
+                quillContainer.querySelector('.ql-container').style.backgroundColor = '#2d3748';
+                quillContainer.querySelector('.ql-container').style.borderColor = '#4a5568';
+                quillContainer.querySelector('.ql-editor').style.color = '#e2e8f0';
+            }
+        }
+
+        // Initialize Quill when edit event modal is shown
+        const editEventModal = document.getElementById('editEventModal');
+        if (editEventModal) {
+            editEventModal.addEventListener('shown.bs.modal', function () {
+                setTimeout(initQuill, 100);
+            });
+        }
     });
 </script>
+
+
+
+<script>
+
+
+function fallbackCopyTextToClipboard(input) {
+    input.select();
+    input.setSelectionRange(0, 99999);
+    try {
+        document.execCommand('copy');
+    } catch (err) {
+        console.error('Failed to copy: ', err);
+    }
+}
+
+function showCopyFeedback(button) {
+    const originalContent = button.innerHTML;
+    button.innerHTML = '<span class="material-icons">check</span><span>Copied!</span>';
+    button.classList.add('copied');
+    
+    setTimeout(() => {
+        button.innerHTML = originalContent;
+        button.classList.remove('copied');
+    }, 2000);
+}
+
+// Attendee filtering and sorting functions
+let selectedStatusFilters = new Set(['confirmed', 'maybe', 'waitlisted', 'not_attending']);
+let currentViewMode = 'list';
+
+function filterAttendees() {
+    const searchTerm = document.getElementById('attendeeSearch').value.toLowerCase();
+    const attendeeItems = document.querySelectorAll('.attendee-item');
+    
+    // Track visible items per status
+    const visibleItemsByStatus = {
+        'confirmed': 0,
+        'maybe': 0,
+        'waitlisted': 0,
+        'not_attending': 0
+    };
+    
+    attendeeItems.forEach(item => {
+        const name = item.getAttribute('data-name') || '';
+        const status = item.getAttribute('data-status') || '';
+        const matchesSearch = name.includes(searchTerm);
+        const matchesStatus = selectedStatusFilters.has(status);
+        
+        if (matchesSearch && matchesStatus) {
+            item.classList.remove('hidden');
+            if (status && visibleItemsByStatus.hasOwnProperty(status)) {
+                visibleItemsByStatus[status]++;
+            }
+        } else {
+            item.classList.add('hidden');
+        }
+    });
+    
+    // Hide empty sections when filtering
+    const attendeeSections = document.querySelectorAll('.attendee-section');
+    attendeeSections.forEach(section => {
+        const status = section.getAttribute('data-status');
+        if (status && visibleItemsByStatus.hasOwnProperty(status)) {
+            const hasVisibleItems = visibleItemsByStatus[status] > 0;
+            const emptyMessage = section.querySelector('.empty-attendees');
+            
+            if (emptyMessage) {
+                if (hasVisibleItems || (selectedStatusFilters.size === 4 && searchTerm === '')) {
+                    // Show empty message only when no filtering is active
+                    emptyMessage.style.display = 'block';
+                } else {
+                    // Hide empty message when filtering and no items match
+                    emptyMessage.style.display = 'none';
+                }
+            }
+        }
+    });
+}
+
+function toggleStatusFilter(status, event) {
+    if (selectedStatusFilters.has(status)) {
+        selectedStatusFilters.delete(status);
+        event.target.classList.remove('active');
+    } else {
+        selectedStatusFilters.add(status);
+        event.target.classList.add('active');
+    }
+    
+    filterAttendees();
+}
+
+
+
+function setViewMode(mode, event) {
+    currentViewMode = mode;
+    
+    // Update button states
+    document.querySelectorAll('[onclick^="setViewMode"]').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    const attendeeLists = document.querySelectorAll('.attendee-list');
+    
+    attendeeLists.forEach(list => {
+        if (mode === 'grid') {
+            list.classList.add('grid-view');
+        } else {
+            list.classList.remove('grid-view');
+        }
+    });
+}
+</script>
+
+<style>
+/* Modern Event Detail Page Styling */
+
+/* Modern Alerts */
+.modern-alert {
+    border-radius: var(--border-radius-lg);
+    border: none;
+    padding: 1rem 1.5rem;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+}
+
+.modern-alert::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: inherit;
+    opacity: 0.1;
+}
+
+.modern-alert.alert-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+}
+
+.modern-alert.alert-warning {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+}
+
+.modern-alert.alert-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+}
+
+.modern-alert.alert-info {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+}
+
+.alert-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+}
+
+/* Event Hero Section */
+.event-hero-section {
+    margin-bottom: 1rem;
+    padding: 0.5rem 0;
+}
+
+.event-hero-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: var(--border-radius-xl);
+    padding: 1.5rem;
+    margin: 0.5rem 0;
+}
+
+/* Discord Modal Styling */
+.discord-input-group {
+    display: flex;
+    gap: 0.5rem;
+    align-items: stretch;
+}
+
+.discord-input {
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    background: #f8fafc;
+    color: #2d3748;
+    flex: 1;
+}
+
+.discord-input:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.discord-copy-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.discord-copy-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    color: white;
+}
+
+.discord-copy-btn.copied {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.event-hero-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.2;
+}
+
+.event-hero-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    pointer-events: none;
+}
+
+    .event-hero-content {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 3rem;
+        align-items: start;
+    }
+
+    .event-main-info {
+        flex: 1;
+    }
+
+    .event-title-section {
+        margin-bottom: 2rem;
+    }
+
+    .event-title {
+        font-size: 3rem;
+        font-weight: 900;
+        margin-bottom: 1.5rem;
+        line-height: 1.1;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        letter-spacing: -0.02em;
+        color: white;
+    }
+
+    .event-badges {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .event-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        border-radius: var(--border-radius-lg);
+        font-size: 0.875rem;
+        font-weight: 600;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .age-badge {
+        background: rgba(245, 158, 11, 0.9);
+        color: white;
+    }
+
+    .past-badge {
+        background: rgba(107, 114, 128, 0.9);
+        color: white;
+    }
+
+    .event-details {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .event-detail-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 1.1rem;
+        font-weight: 500;
+        padding: 0.75rem 1rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: var(--border-radius-lg);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.2s ease;
+        color: white;
+    }
+
+    .event-detail-item:hover {
+        background: rgba(255, 255, 255, 0.15);
+        transform: translateX(4px);
+    }
+
+    .event-detail-item i {
+        font-size: 1.25rem;
+        opacity: 0.9;
+        color: #fbbf24;
+    }
+
+    /* Organizer Section */
+    .event-organizer-section {
+        min-width: 280px;
+    }
+
+    .organizer-card {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: var(--border-radius-xl);
+        padding: 1.5rem;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .organizer-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .organizer-info {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .organizer-group {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem 1rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: var(--border-radius-lg);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .group-logo {
+        flex-shrink: 0;
+    }
+
+    .group-logo-img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .organizer-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: white;
+        flex: 1;
+    }
+
+    .organizer-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.75rem 1rem;
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        color: white;
+        text-decoration: none;
+        border-radius: var(--border-radius-lg);
+        font-weight: 600;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+    }
+
+    .organizer-link:hover {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        text-decoration: none;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(251, 191, 36, 0.4);
+    }
+
+/* Modern Cards */
+.modern-card {
+    border-radius: var(--border-radius-xl);
+    box-shadow: var(--shadow-lg);
+    background: white;
+    overflow: hidden;
+    margin-bottom: 2rem;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modern-card:hover {
+    box-shadow: var(--shadow-xl);
+    transform: translateY(-2px);
+}
+
+.modern-card-header {
+    padding: 1.5rem 2rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    border-bottom: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.modern-card-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: inherit;
+    opacity: 0.9;
+}
+
+.modern-card-header > * {
+    position: relative;
+    z-index: 1;
+}
+
+.modern-card-header.event-info {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.modern-card-header.attendees {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.modern-card-body {
+    padding: 2rem 2.5rem 1.5rem 2.5rem;
+    background: white;
+    color: #374151;
+    font-size: 1.08rem;
+    line-height: 1.6;
+}
+
+/* Capacity Bar */
+.capacity-info {
+    background: #f8fafc;
+    border-radius: var(--border-radius-lg);
+    padding: 1.5rem;
+    border: 1px solid #e2e8f0;
+}
+
+.capacity-bar {
+    width: 100%;
+    height: 12px;
+    background: #e2e8f0;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.capacity-fill {
+    height: 100%;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-radius: 6px;
+    transition: width 0.3s ease;
+}
+
+.capacity-text {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+}
+
+.capacity-current {
+    color: #10b981;
+    font-size: 1.25rem;
+}
+
+.capacity-separator {
+    color: #6b7280;
+}
+
+.capacity-total {
+    color: #374151;
+    font-size: 1.25rem;
+}
+
+.capacity-label {
+    color: #6b7280;
+    margin-left: 0.5rem;
+}
+
+.waitlist-count {
+    margin-left: auto;
+    color: #f59e0b;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* Event Description */
+.event-description {
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 2rem;
+}
+
+.description-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.description-content {
+    color: #4b5563;
+    line-height: 1.7;
+}
+
+.accessibility-section {
+    padding-top: 2rem;
+}
+
+.accessibility-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.accessibility-content {
+    color: #4b5563;
+    line-height: 1.7;
+}
+
+/* Attendee Sections */
+.attendee-count {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--border-radius-lg);
+    font-size: 0.875rem;
+    margin-left: 1rem;
+}
+
+.attendee-section-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+    .attendee-section-title.confirmed {
+        color: #10b981;
+    }
+
+    .attendee-section-title.maybe {
+        color: #f59e0b;
+    }
+
+    .attendee-section-title.not-attending {
+        color: #ef4444;
+    }
+
+    .attendee-section-title.waitlisted {
+        color: #f59e0b;
+    }
+
+    /* Enhanced empty state styling */
+    .empty-attendees {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        padding: 2rem;
+        color: #9ca3af;
+        font-style: italic;
+        background: #f8fafc;
+        border-radius: var(--border-radius-lg);
+        border: 1px solid #e2e8f0;
+        transition: all 0.2s ease;
+    }
+
+    .empty-attendees:hover {
+        background: #f1f5f9;
+        transform: translateY(-1px);
+    }
+
+    .empty-attendees i {
+        font-size: 1.5rem;
+        opacity: 0.7;
+    }
+
+.attendee-list {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.attendee-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: var(--border-radius-lg);
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+.attendee-item:hover {
+    background: #f1f5f9;
+    transform: translateX(4px);
+}
+
+.attendee-avatar {
+    flex-shrink: 0;
+}
+
+.attendee-avatar i {
+    font-size: 2rem;
+    color: #9ca3af;
+}
+
+.attendee-info {
+    flex: 1;
+}
+
+.attendee-name {
+    font-weight: 600;
+    color: #1f2937;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.attendee-name:hover {
+    color: #667eea;
+}
+
+.empty-attendees {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 2rem;
+    color: #9ca3af;
+    font-style: italic;
+}
+
+.empty-attendees i {
+    font-size: 1.5rem;
+}
+
+/* Map Section */
+.map-section {
+    margin-bottom: 3rem;
+}
+
+.modern-card-header.map-header {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.map-container {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+    .event-map {
+        height: 400px;
+        border-radius: var(--border-radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-md);
+        border: 1px solid #e2e8f0;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Custom Leaflet Map Styling */
+    .leaflet-container {
+        font-family: "Baloo 2", sans-serif;
+        border-radius: var(--border-radius-lg);
+        overflow: hidden;
+        position: relative !important;
+        z-index: 1 !important;
+    }
+
+    /* Themed Map Tiles - Apply filters to make them match site theme */
+    .themed-tiles {
+        filter: hue-rotate(220deg) saturate(0.8) brightness(0.9) contrast(1.1);
+    }
+
+
+    /* Custom Zoom Controls */
+    .leaflet-control-zoom {
+        border: none !important;
+        box-shadow: var(--shadow-lg) !important;
+        border-radius: var(--border-radius-lg) !important;
+        overflow: hidden;
+    }
+
+    .leaflet-control-zoom a {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        color: white !important;
+        border: none !important;
+        font-weight: 700 !important;
+        font-size: 1.2rem !important;
+        width: 40px !important;
+        height: 40px !important;
+        line-height: 40px !important;
+        text-align: center !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    .leaflet-control-zoom a:hover {
+        background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: var(--shadow-xl) !important;
+    }
+
+    .leaflet-control-zoom a:first-child {
+        border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0 !important;
+    }
+
+    .leaflet-control-zoom a:last-child {
+        border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg) !important;
+    }
+
+    .leaflet-bottom.leaflet-right {
+        display: none !important;
+    }
+
+
+    .leaflet-control-attribution a {
+        color: white !important;
+        text-decoration: none !important;
+        font-weight: 600 !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .leaflet-control-attribution a:hover {
+        color: #fbbf24 !important;
+        text-decoration: underline !important;
+        transform: scale(1.05) !important;
+    }
+
+    /* Custom Popup Styling */
+    .leaflet-popup-content-wrapper {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        color: white !important;
+        border-radius: var(--border-radius-lg) !important;
+        box-shadow: var(--shadow-xl) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        backdrop-filter: blur(10px) !important;
+    }
+
+    .leaflet-popup-content {
+        color: white !important;
+        font-family: "Baloo 2", sans-serif !important;
+        font-weight: 500 !important;
+        margin: 1rem !important;
+    }
+
+    .leaflet-popup-tip {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    }
+
+    .leaflet-popup-close-button {
+        color: white !important;
+        font-size: 1.5rem !important;
+        font-weight: 700 !important;
+        transition: all 0.2s ease !important;
+    }
+
+    .leaflet-popup-close-button:hover {
+        color: #fbbf24 !important;
+        transform: scale(1.2) !important;
+    }
+
+    /* Custom Marker Styling */
+    .custom-marker {
+        background: transparent;
+        border: none;
+    }
+
+    .marker-pin {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.5), 0 4px 12px rgba(0, 0, 0, 0.15);
+        border: 4px solid white;
+        animation: marker-pulse 2s infinite;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .marker-pin::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.05) 100%);
+        border-radius: 50%;
+    }
+
+    .marker-pin i {
+        color: white;
+        font-size: 20px;
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+    }
+
+    @keyframes marker-pulse {
+        0% {
+            transform: scale(1);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        50% {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        100% {
+            transform: scale(1);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+    }
+
+    /* Custom Popup Styling */
+    .marker-popup {
+        font-family: "Baloo 2", sans-serif;
+        text-align: center;
+        padding: 0.5rem;
+    }
+
+    .marker-popup strong {
+        color: #667eea;
+        font-weight: 700;
+    }
+
+    /* Map Error State */
+    .map-error {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: #9ca3af;
+        text-align: center;
+        padding: 2rem;
+    }
+
+    .map-error i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .map-error p {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+
+.map-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.location-details {
+    background: #f8fafc;
+    padding: 1.5rem;
+    border-radius: var(--border-radius-lg);
+    border: 1px solid #e2e8f0;
+}
+
+.location-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.location-address {
+    font-size: 1.1rem;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+}
+
+.location-city {
+    font-size: 1rem;
+    color: #6b7280;
+    margin-bottom: 0;
+}
+
+.map-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.map-action-btn {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: var(--border-radius-lg);
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-sm);
+}
+
+.map-action-btn:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .event-hero-content {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .event-title {
+        font-size: 2rem;
+    }
+    
+    .event-organizer-section {
+        min-width: auto;
+    }
+    
+    .event-badges {
+        justify-content: center;
+    }
+    
+    .modern-card-body {
+        padding: 1.5rem;
+    }
+    
+    .attendee-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.5rem;
+    }
+    
+    .map-container {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .event-map {
+        height: 300px;
+    }
+}
+
+/* Quill.js Editor Styling */
+.ql-editor {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #2d3748;
+}
+
+.ql-toolbar {
+    border-radius: 8px 8px 0 0;
+    border-color: #e2e8f0;
+    background: #f8fafc;
+}
+
+.ql-container {
+    border-radius: 0 0 8px 8px;
+    border-color: #e2e8f0;
+    min-height: 200px;
+}
+
+.ql-editor:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.ql-editor p {
+    margin-bottom: 0.5rem;
+}
+
+.ql-editor img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0.5rem auto;
+}
+
+/* Dark mode support for Quill */
+.dark-mode .ql-toolbar {
+    background: #2d3748;
+    border-color: #4a5568;
+}
+
+.dark-mode .ql-container {
+    background: #2d3748;
+    border-color: #4a5568;
+}
+
+.dark-mode .ql-editor {
+    color: #e2e8f0;
+}
+
+.dark-mode .ql-stroke {
+    stroke: #e2e8f0;
+}
+
+.dark-mode .ql-fill {
+    fill: #e2e8f0;
+}
+
+.dark-mode .ql-picker {
+    color: #e2e8f0;
+}
+
+/* Attendee Filters */
+.attendee-filters {
+    background: #f8fafc;
+    border-radius: var(--border-radius-lg);
+    padding: 1.5rem;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 2rem;
+}
+
+.filter-label-modern {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.search-input-modern {
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #f8fafc;
+    color: #2d3748;
+}
+
+.search-input-modern:focus {
+    outline: none;
+    border-color: #4f46e5;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.filter-btn-modern {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 0.75rem 1.25rem;
+    font-weight: 600;
+    color: #374151;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.filter-btn-modern:hover {
+    border-color: #4f46e5;
+    color: #4f46e5;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+}
+
+.filter-btn-modern.active {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #ec4899 100%);
+    border-color: transparent;
+    color: white;
+    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+}
+
+.filter-btn-modern.active:hover {
+    background: linear-gradient(135deg, #4338ca 0%, #6d28d9 50%, #db2777 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+}
+
+/* Attendee Grid View */
+.attendee-list.grid-view {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.attendee-list.grid-view .attendee-item {
+    background: white;
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.attendee-list.grid-view .attendee-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.attendee-list.grid-view .attendee-avatar {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 0.5rem;
+}
+
+.attendee-list.grid-view .attendee-info {
+    text-align: center;
+}
+
+/* Hidden attendees */
+.attendee-item.hidden {
+    display: none;
+}
+
+/* Attendee Sections */
+</style>
+{% endblock %}
 {% endblock %}

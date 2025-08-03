@@ -106,4 +106,31 @@ def get_git_version_link():
         'commit_url': commit_url,
         'full_commit_hash': full_commit_hash if 'full_commit_hash' in locals() else None,
         'commit_date': commit_date
-    } 
+    }
+
+@register.simple_tag
+def get_git_commit_date():
+    """
+    Simple template tag to get just the commit date.
+    Returns the commit date as a string or None if not available.
+    """
+    try:
+        import subprocess
+        import os
+        git_root = subprocess.check_output(
+            ['git', 'rev-parse', '--show-toplevel'],
+            cwd=os.getcwd(),
+            stderr=subprocess.PIPE,
+            universal_newlines=True
+        ).strip()
+        
+        commit_date = subprocess.check_output(
+            ['git', 'log', '-1', '--format=%cd', '--date=short'],
+            cwd=git_root,
+            stderr=subprocess.PIPE,
+            universal_newlines=True
+        ).strip()
+        
+        return commit_date
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return None 

@@ -2,6 +2,15 @@
 {% block title %}Home - FURsvp{% endblock %}
 
 {% block content %}
+<!-- Breadcrumbs -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <div class="modern-breadcrumbs">
+        <span class="breadcrumb-current">
+            <i class="material-icons me-1">home</i> Home
+        </span>
+    </div>
+</nav>
+
 <!-- Hero Section -->
 <section class="hero-section mb-5">
     <div class="container">
@@ -16,7 +25,7 @@
                         <p class="hero-description mb-5">
                             The ultimate platform for furry event organizers and attendees. 
                             Create events, manage RSVPs, and discover amazing furry gatherings 
-                            in your area. Free, open-source, and built for the community.
+                            in your area. Free, open-source, and built for the fandom.
                         </p>
                         <div class="hero-stats mb-5">
                             <div class="row justify-content-center">
@@ -53,7 +62,7 @@
                             </a>
                             {% elif user.is_authenticated %}
                             <a href="{% url 'groups_list' %}" class="btn btn-primary btn-lg me-3">
-                                <span class="material-icons me-2">group_add</span> Join Groups
+                                <span class="material-icons me-2">event</span> View Events
                             </a>
                             {% else %}
                             <a href="{% url 'register' %}" class="btn btn-primary btn-lg me-3">
@@ -123,12 +132,12 @@
                 <div class="col-md-6">
                     <h2 class="section-title d-flex align-items-center">
                         <span class="material-icons me-3">event</span> 
-                        Upcoming Events
+                        RSVPed Events
                     </h2>
                 </div>
                 <div class="col-md-6 text-md-end">
                                     <a href="{% url 'event_index' %}" class="btn btn-outline-primary">
-                    <span class="material-icons me-2">event</span> View All Events
+                    <span class="material-icons me-2">event</span> Browse All Events
                 </a>
                 </div>
             </div>
@@ -184,7 +193,7 @@
                         </div>
                         <div class="col-lg-4">
                             <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
-                                <button type="button" id="toggleAdultEvents" class="btn btn-success">
+                                <button type="button" id="toggleAdultEvents" class="btn btn-success" style="display: none;">
                                     <span class="material-icons me-1">visibility</span> Show 18+/21+
                                 </button>
                                 <div class="btn-group" role="group">

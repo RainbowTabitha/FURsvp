@@ -3,8 +3,9 @@ from .models import Event, RSVP, Post, Group
 from django.utils import timezone
 from datetime import timedelta, datetime
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from .forms import EventForm, RSVPForm, Group
-from users.models import Profile, GroupDelegation, BannedUser, Notification, GroupRole
+from users.models import Profile, GroupDelegation, BannedUser, Notification, GroupRole, AuditLog
 from django.contrib import messages
 from django.db import models, transaction
 from django.http import JsonResponse, HttpResponseForbidden, HttpResponse
@@ -25,6 +26,11 @@ import json
 import requests
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.views.decorators.http import require_GET
+from django.contrib.auth.models import User
+from .models import PlatformStats
+from django.core.mail import send_mail
+from django.conf import settings
+
 
 # Create your views here.
 
@@ -91,11 +97,18 @@ def home(request):
     
     # Base queryset - filter out events that have already passed and cancelled events
     now = timezone.now()
-    events = Event.objects.filter(
-        models.Q(date__gt=now.date()) | 
-        (models.Q(date=now.date()) & models.Q(end_time__gt=now.time())),
-        status='active'  # Only show active events
-    )
+    
+    # Only show events that the user has RSVP'd to
+    if request.user.is_authenticated:
+        events = Event.objects.filter(
+            models.Q(date__gt=now.date()) | 
+            (models.Q(date=now.date()) & models.Q(end_time__gt=now.time())),
+            status='active',  # Only show active events
+            rsvps__user=request.user  # Only events user has RSVP'd to
+        ).distinct()
+    else:
+        # If not authenticated, show no events
+        events = Event.objects.none()
 
     if filter_adult == 'false':
         events = events.exclude(age_restriction__in=['adult', 'mature'])
@@ -220,11 +233,7 @@ def home(request):
     
     # Get all unique states for the dropdown
     all_states = Event.objects.exclude(state__isnull=True).exclude(state__exact='').values_list('state', flat=True).distinct().order_by('state')
-    
-    # Calculate actual statistics
-    from django.contrib.auth.models import User
-    from .models import PlatformStats
-    
+
     # Get cumulative stats that always increase
     stats = PlatformStats.get_or_create_stats()
     
@@ -338,71 +347,66 @@ def event_detail(request, event_id):
                             link=event.get_absolute_url()
                         )
 
-    if request.method == 'POST' and request.user.is_authenticated:
-        # Prevent banned users from RSVPing
-        if is_banned_by_organizer or is_banned_from_group:
-            messages.error(request, 'You are banned from RSVPing to events by this organizer or group.', extra_tags='admin_notification')
-            return redirect('event_detail', event_id=event.id)
-
-        if 'cancel_event' in request.POST and can_cancel_event:
-            with transaction.atomic():
-                event.status = 'cancelled'
-                event.save()
-                
-                # Notify all confirmed and waitlisted attendees
-                for rsvp in event.rsvps.filter(status__in=['confirmed', 'waitlisted']):
-                    if rsvp.user:
-                        create_notification(
-                            rsvp.user,
-                            f'Event "{event.title}" has been cancelled.',
-                            link=event.get_absolute_url()
-                        )
-                
+    if request.method == 'POST':
+        if not request.user.is_authenticated:
+            messages.error(request, 'You must be logged in to RSVP.')
+            return redirect('login')
+            
+        # Handle event cancellation
+        if 'cancel_event' in request.POST:
+            if not can_cancel_event:
+                messages.error(request, 'You are not authorized to cancel this event.')
                 return redirect('event_detail', event_id=event.id)
-
-        if 'remove_rsvp' in request.POST:
-            if user_rsvp: # Ensure there is an RSVP to remove
-                with transaction.atomic():
-                    was_confirmed = (user_rsvp.status == 'confirmed')
-                    user_rsvp.delete()
-                    create_notification(request.user, f'You have removed your RSVP for {event.title}.', link=event.get_absolute_url())
-                    # Telegram webhook for public RSVP removal
-                    if event.attendee_list_public and event.group and getattr(event.group, 'telegram_webhook_channel', None):
-                        telegram_username = None
-                        if hasattr(request.user, 'profile') and getattr(request.user.profile, 'telegram_username', None):
-                            telegram_username = request.user.profile.telegram_username
-                        if telegram_username:
-                            mention = f'@{telegram_username}'
-                        else:
-                            mention = request.user.get_username() if request.user else 'Someone'
-                        date_str = event.date.strftime('%m/%d/%Y') if hasattr(event.date, 'strftime') else str(event.date)
-                        event_url = request.build_absolute_uri(event.get_absolute_url())
-                        msg = (
-                            f'❌ {mention} removed their RSVP for [{event.title}]({event_url}).\n'
-                            f'*Date:* {date_str}\n'
-                            f'*Group:* {event.group.name}'
-                        )
-                        post_to_telegram_channel(event.group.telegram_webhook_channel, msg, parse_mode="Markdown")
-                    # If a confirmed spot opened up and waitlist is enabled, promote oldest waitlisted
-                    if was_confirmed:
-                        promote_waitlisted_if_spot(event)
-            else:
-                messages.error(request, 'You do not have an RSVP to remove.', extra_tags='admin_notification')
+            
+            event.status = 'cancelled'
+            event.save()
+            
+            # Notify all attendees
+            for rsvp in event.rsvps.all():
+                if rsvp.user:
+                    create_notification(
+                        rsvp.user,
+                        f'The event "{event.title}" has been cancelled.',
+                        link=event.get_absolute_url()
+                    )
+            
+            messages.success(request, 'Event has been cancelled and all attendees have been notified.')
             return redirect('event_detail', event_id=event.id)
-        
-        if 'delete_event' in request.POST and can_ban_user:
+            
+        # Handle event deletion
+        if 'delete_event' in request.POST:
+            if not can_cancel_event:  # Use same permission as cancel
+                messages.error(request, 'You are not authorized to delete this event.')
+                return redirect('event_detail', event_id=event.id)
+            
+            # Store event info for logging before deletion
             event_title = event.title
-            event_url = request.build_absolute_uri(event.get_absolute_url())
+            event_group = event.group.name if event.group else None
+            event_group_obj = event.group  # Store the group object
+            
+            # Delete the event
             event.delete()
-            create_notification(request.user, f'Event "{event_title}" has been deleted.', link='/') # Link to home since event is deleted
-            # Telegram webhook for event deletion
-            if event.group and getattr(event.group, 'telegram_webhook_channel', None):
-                msg = (
-                    f'🚫 *Event Deleted!*\n'
-                    f'*Title:* [{event_title}]({event_url})\n'
-                    f'*Group:* {event.group.name}'
-                )
-                post_to_telegram_channel(event.group.telegram_webhook_channel, msg, parse_mode="Markdown")
+            
+            # Log the deletion
+            AuditLog.log_action(
+                user=request.user,
+                action='event_deleted',
+                description=f'Deleted event: {event_title}',
+                group=event_group_obj,
+                ip_address=request.META.get('REMOTE_ADDR'),
+                user_agent=request.META.get('HTTP_USER_AGENT', ''),
+                additional_data={
+                    'event_title': event_title,
+                    'event_group': event_group,
+                    'deleted_by': request.user.username
+                }
+            )
+            
+            messages.success(request, 'Event has been deleted successfully.')
+            return redirect('home')
+            
+        if event.status == 'cancelled':
+            messages.error(request, 'This event has been cancelled.')
             return redirect('home')
             
         form = RSVPForm(request.POST, instance=user_rsvp, event=event)
@@ -412,6 +416,7 @@ def event_detail(request, event_id):
             rsvp.event = event
             rsvp.user = request.user
             rsvp.save()
+            
             create_notification(request.user, f'Your RSVP status has been updated to {rsvp.get_status_display()!s} for {event.title}.', link=event.get_absolute_url())
             # Telegram webhook for public RSVP (any status)
             if event.attendee_list_public and event.group and getattr(event.group, 'telegram_webhook_channel', None):
@@ -457,6 +462,24 @@ def event_detail(request, event_id):
                 old_status = rsvp_to_update.status
                 rsvp_to_update.status = new_status
                 rsvp_to_update.save()
+
+                # Log the organizer RSVP status change
+                AuditLog.log_action(
+                    user=request.user,
+                    action='rsvp_status_changed',
+                    description=f'Changed {rsvp_to_update.user.username}\'s RSVP status from {old_status} to {new_status} for {event.title}',
+                    group=event.group,
+                    event=event,
+                    target_user=rsvp_to_update.user,
+                    ip_address=request.META.get('REMOTE_ADDR'),
+                    user_agent=request.META.get('HTTP_USER_AGENT', ''),
+                    additional_data={
+                        'old_status': old_status,
+                        'new_status': new_status,
+                        'rsvp_id': rsvp_to_update.id,
+                        'changed_by': request.user.username
+                    }
+                )
 
                 message = f"{rsvp_to_update.user.username}'s RSVP for {event.title} updated to {rsvp_to_update.get_status_display()}."
                 create_notification(request.user, message, link=event.get_absolute_url())
@@ -582,6 +605,29 @@ def event_detail(request, event_id):
         maybe_rsvps = []
         not_attending_rsvps = []
 
+    # Pre-load avatar data for all users to avoid individual HTTP requests
+    def get_avatar_data(profile):
+        if profile.profile_picture_base64:
+            return {
+                'has_pfp': True,
+                'avatar': profile.profile_picture_base64,
+                'initials': None,
+                'color': None
+            }
+        else:
+            return {
+                'has_pfp': False,
+                'avatar': None,
+                'initials': profile.get_initials(),
+                'color': profile.get_avatar_color()
+            }
+    
+    # Add avatar data to all users in the context
+    avatar_data = {}
+    for rsvp in rsvps:
+        if rsvp.user and rsvp.user.profile:
+            avatar_data[rsvp.user.id] = get_avatar_data(rsvp.user.profile)
+
     context = {
         'event': event,
         'rsvps': rsvps,
@@ -609,6 +655,7 @@ def event_detail(request, event_id):
         'can_view_attendee_list': can_view_attendee_list,
         'edit_event_errors': edit_event_errors,
         'edit_event_post': edit_event_post,
+        'avatar_data': avatar_data,  # Add avatar data to context
     }
     return render(request, 'events/event_detail.html', context)
 
@@ -628,6 +675,25 @@ def create_event(request):
             event = form.save(commit=False)
             event.organizer = request.user
             event.save()
+            
+            # Log the event creation
+            AuditLog.log_action(
+                user=request.user,
+                action='event_created',
+                description=f'Created new event: {event.title}',
+                group=event.group,
+                event=event,
+                ip_address=request.META.get('REMOTE_ADDR'),
+                user_agent=request.META.get('HTTP_USER_AGENT', ''),
+                additional_data={
+                    'event_title': event.title,
+                    'event_date': event.date.isoformat(),
+                    'event_group': event.group.name,
+                    'event_capacity': event.capacity,
+                    'event_status': event.status
+                }
+            )
+            
             # Telegram webhook for new event
             group = event.group
             if group and getattr(group, 'telegram_webhook_channel', None):
@@ -665,10 +731,43 @@ def edit_event(request, event_id):
     if request.method == 'POST':
         form = EventForm(request.POST, instance=event, user=request.user)
         if form.is_valid():
+            # Store old data for comparison
+            old_data = {
+                'title': event.title,
+                'date': event.date.isoformat(),
+                'description': event.description,
+                'capacity': event.capacity,
+                'status': event.status,
+                'group': event.group.name if event.group else None
+            }
+            
             event = form.save(commit=False)
             if not event.organizer:
                 event.organizer = request.user
             event.save()
+            
+            # Log the event update
+            AuditLog.log_action(
+                user=request.user,
+                action='event_updated',
+                description=f'Updated event: {event.title}',
+                group=event.group,
+                event=event,
+                ip_address=request.META.get('REMOTE_ADDR'),
+                user_agent=request.META.get('HTTP_USER_AGENT', ''),
+                additional_data={
+                    'old_data': old_data,
+                    'new_data': {
+                        'title': event.title,
+                        'date': event.date.isoformat(),
+                        'description': event.description,
+                        'capacity': event.capacity,
+                        'status': event.status,
+                        'group': event.group.name if event.group else None
+                    }
+                }
+            )
+            
             create_notification(request.user, f'Event for {event.title} updated successfully!', link=event.get_absolute_url())
             for rsvp in event.rsvps.select_related('user').all():
                 if rsvp.user and rsvp.user != request.user:
@@ -747,7 +846,15 @@ def group_detail(request, group_id):
         )
     
     # Handle POST requests
-    if request.method == 'POST' and can_edit_group:
+    if request.method == 'POST':
+        print("DEBUG: POST request received")
+        print("DEBUG: User is superuser:", request.user.is_superuser)
+        print("DEBUG: Can edit group:", can_edit_group)
+        print("DEBUG: POST keys:", list(request.POST.keys()))
+        
+        if not can_edit_group:
+            messages.error(request, 'You do not have permission to edit this group.')
+            return redirect('group_detail', group_id=group.id)
         # Handle group editing
         if 'edit_group' in request.POST:
             try:
@@ -773,18 +880,34 @@ def group_detail(request, group_id):
         
         # Handle leadership management
         elif 'add_leader' in request.POST:
-            form = GroupRoleForm(request.POST, group=group)
-            if form.is_valid():
-                role = form.save(commit=False)
-                role.group = group
-                # If this is the first leader for the group, give all permissions
-                if GroupRole.objects.filter(group=group).count() == 0:
-                    role.can_post = True
-                    role.can_manage_leadership = True
-                role.save()
-                messages.success(request, 'Leader added successfully.')
+            user_id = request.POST.get('new_leader')
+            custom_label = request.POST.get('leader_role', '')
+            
+            if user_id:
+                try:
+                    user_obj = User.objects.get(id=user_id)
+                    
+                    # Check if user is already a leader in this group
+                    existing_role = GroupRole.objects.filter(user=user_obj, group=group).first()
+                    if existing_role:
+                        messages.error(request, f'{user_obj.profile.get_display_name()} is already a leader in this group.')
+                    else:
+                        # Create new role
+                        role = GroupRole.objects.create(
+                            user=user_obj,
+                            group=group,
+                            custom_label=custom_label,
+                            can_post=True,
+                            can_manage_leadership=True
+                        )
+                        messages.success(request, f'{user_obj.profile.get_display_name()} added as leader successfully.')
+                except User.DoesNotExist:
+                    messages.error(request, 'Selected user not found.')
+                except Exception as e:
+                    messages.error(request, f'Error adding leader: {str(e)}')
             else:
-                messages.error(request, 'Error adding leader. Please check the form.')
+                messages.error(request, 'Please select a user to add as leader.')
+            
             return redirect('group_detail', group_id=group.id)
         
         elif 'edit_leader' in request.POST:
@@ -799,14 +922,67 @@ def group_detail(request, group_id):
                 messages.error(request, 'Leader not found.')
             return redirect('group_detail', group_id=group.id)
         
-        elif 'remove_leader' in request.POST:
-            role_id = request.POST.get('role_id')
-            try:
-                role = GroupRole.objects.get(pk=role_id, group=group)
-                role.delete()
-                messages.success(request, 'Leader removed successfully.')
-            except GroupRole.DoesNotExist:
-                messages.error(request, 'Leader not found.')
+        elif 'submit_leadership_changes' in request.POST or 'remove_leader' in request.POST:
+            # Handle leadership changes from the modal
+            if 'remove_leader' in request.POST:
+                # Find which remove_leader button was clicked
+                user_id = None
+                for key in request.POST.keys():
+                    if key.startswith('remove_leader_'):
+                        user_id = key.replace('remove_leader_', '')
+                        break
+                
+                if user_id:
+                    try:
+                        role = GroupRole.objects.get(user_id=user_id, group=group)
+                        user_name = role.user.profile.get_display_name()
+                        
+                        # Check if trying to remove the last leader (prevent orphaned groups)
+                        total_leaders = GroupRole.objects.filter(group=group).count()
+                        if total_leaders <= 1:
+                            messages.error(request, f'Cannot remove {user_name}: Groups must have at least one leader.')
+                        else:
+                            role.delete()
+                            messages.success(request, f'Successfully removed {user_name} as leader.')
+                    except GroupRole.DoesNotExist:
+                        messages.error(request, 'Leader not found.')
+                else:
+                    messages.error(request, 'Invalid request. No user ID found.')
+                    # Debug: log all POST keys
+                    print("DEBUG: POST keys:", list(request.POST.keys()))
+                    print("DEBUG: User is superuser:", request.user.is_superuser)
+                    print("DEBUG: Can edit group:", can_edit_group)
+            
+            # Handle add leader from the modal
+            elif 'add_leader' in request.POST:
+                user_id = request.POST.get('new_leader')
+                custom_label = request.POST.get('leader_role', '').strip()
+                
+                if user_id:
+                    try:
+                        user_obj = User.objects.get(id=user_id)
+                        
+                        # Check if user is already a leader in this group
+                        existing_role = GroupRole.objects.filter(user=user_obj, group=group).first()
+                        if existing_role:
+                            messages.error(request, f'{user_obj.profile.get_display_name()} is already a leader in this group.')
+                        else:
+                            # Create new role
+                            role = GroupRole.objects.create(
+                                user=user_obj,
+                                group=group,
+                                custom_label=custom_label,
+                                can_post=True,
+                                can_manage_leadership=True
+                            )
+                            messages.success(request, f'{user_obj.profile.get_display_name()} added as leader successfully.')
+                    except User.DoesNotExist:
+                        messages.error(request, 'Selected user not found.')
+                    except Exception as e:
+                        messages.error(request, f'Error adding leader: {str(e)}')
+                else:
+                    messages.error(request, 'Please select a user to add as leader.')
+            
             return redirect('group_detail', group_id=group.id)
     
     # Get Telegram feed for this group (if channel set), else default
@@ -815,7 +991,16 @@ def group_detail(request, group_id):
 
     # Leadership roles and form
     leadership_roles = GroupRole.objects.filter(group=group).select_related('user')
-    leadership_form = GroupRoleForm(group=group)
+    
+    # For staff, show all users. For group leaders, only show users not already in the group
+    if request.user.is_superuser:
+        leadership_form = GroupRoleForm()  # Show all users for staff
+        all_users = User.objects.all().select_related('profile')
+    else:
+        leadership_form = GroupRoleForm(group=group)  # Exclude existing members for group leaders
+        all_users = User.objects.exclude(
+            id__in=GroupRole.objects.filter(group=group).values_list('user_id', flat=True)
+        ).select_related('profile')
     
     context = {
         'group': group,
@@ -827,6 +1012,7 @@ def group_detail(request, group_id):
         'telegram_feed': telegram_feed,
         'leadership_roles': leadership_roles,
         'leadership_form': leadership_form,
+        'all_users': all_users,
         'can_manage_leadership': can_edit_group,  # or use your own logic
     }
     
@@ -842,7 +1028,12 @@ def manage_group_leadership(request, group_id):
 
     if request.method == 'POST':
         if 'add_leader' in request.POST:
-            form = GroupRoleForm(request.POST, group=group)
+            # For staff, don't pass group parameter to allow adding any user
+            if request.user.is_superuser:
+                form = GroupRoleForm(request.POST)
+            else:
+                form = GroupRoleForm(request.POST, group=group)
+            
             if form.is_valid():
                 role = form.save(commit=False)
                 role.group = group
@@ -953,132 +1144,136 @@ def event_index(request):
         (models.Q(date=now.date()) & models.Q(end_time__gt=now.time())),
         status='active'
     )
-
-    if filter_adult == 'false':
-        all_events = all_events.exclude(age_restriction__in=['adult', 'mature'])
+    
+    # Convert to list for filtering
+    all_events = list(all_events)
+    
+    # Handle adult content filtering
+    if filter_adult == 'false' or filter_adult == 'hide':
+        all_events = [e for e in all_events if e.age_restriction not in ['adult', 'mature']]
+    elif filter_adult == 'show':
+        # Show only adult events
+        all_events = [e for e in all_events if e.age_restriction in ['adult', 'mature']]
+    # If filter_adult is 'true' or empty, show all events (default behavior)
 
     # Apply search filter
     if search_query:
-        all_events = all_events.filter(
-            models.Q(title__icontains=search_query) |
-            models.Q(description__icontains=search_query) |
-            models.Q(city__icontains=search_query) |
-            models.Q(group__name__icontains=search_query)
-        )
+        all_events = [e for e in all_events if 
+                     search_query.lower() in e.title.lower() or
+                     (e.description and search_query.lower() in e.description.lower()) or
+                     (e.city and search_query.lower() in e.city.lower()) or
+                     (e.group and search_query.lower() in e.group.name.lower())]
 
     # Apply state filter
     if state_filter:
-        all_events = all_events.filter(state__iexact=state_filter)
+        all_events = [e for e in all_events if e.state and e.state.lower() == state_filter.lower()]
 
     # Get user location from form or session
     user_location = request.GET.get('user_location') or request.session.get('user_location', 'CA')
     if user_location:
         request.session['user_location'] = user_location
     
-    # Apply mileage filter using OpenStreetMap geocoding
-    if mileage_range and mileage_range != 'all':
-        try:
-            mileage = int(mileage_range)
-            
-            # Get user coordinates from session
-            user_lat = request.session.get('user_lat')
-            user_lng = request.session.get('user_lng')
-            
-            if user_lat and user_lng:
-                # Use OpenStreetMap to calculate distances to event cities
-                import requests
-                import math
-                
-                def calculate_distance(lat1, lon1, lat2, lon2):
-                    """Calculate distance between two points using Haversine formula"""
-                    R = 3959  # Earth's radius in miles
-                    
-                    lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
-                    dlat = lat2 - lat1
-                    dlon = lon2 - lon1
-                    
-                    a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
-                    c = 2 * math.asin(math.sqrt(a))
-                    distance = R * c
-                    
-                    return distance
-                
-                def geocode_city(city, state):
-                    """Geocode a city using OpenStreetMap Nominatim API"""
-                    try:
-                        query = f"{city}, {state}, USA"
-                        url = "https://nominatim.openstreetmap.org/search"
-                        params = {
-                            'q': query,
-                            'format': 'json',
-                            'limit': 1,
-                            'countrycodes': 'us'
-                        }
-                        headers = {
-                            'User-Agent': 'FURsvp/1.0 (https://fursvp.org)'
-                        }
-                        
-                        response = requests.get(url, params=params, headers=headers, timeout=5)
-                        if response.status_code == 200:
-                            data = response.json()
-                            if data:
-                                return float(data[0]['lat']), float(data[0]['lon'])
-                    except Exception as e:
-                        print(f"Geocoding error for {city}, {state}: {e}")
-                    return None, None
-                
-                # Filter events by distance
-                events_within_range = []
-                user_lat, user_lng = float(user_lat), float(user_lng)
-                
-                for event in all_events:
-                    if event.city and event.state:
-                        # Try to get coordinates for the event city
-                        event_lat, event_lng = geocode_city(event.city, event.state)
-                        
-                        if event_lat and event_lng:
-                            # Calculate distance
-                            distance = calculate_distance(user_lat, user_lng, event_lat, event_lng)
-                            
-                            if distance <= mileage:
-                                events_within_range.append(event.id)
-                        else:
-                            # Fallback: include events in the same state for local searches
-                            if mileage <= 50:
-                                user_state = request.session.get('user_state', user_location)
-                                if event.state == user_state:
-                                    events_within_range.append(event.id)
-                
-                # Filter the queryset to only include events within range
-                if events_within_range:
-                    all_events = all_events.filter(id__in=events_within_range)
-                else:
-                    # If no events found, show events in the same state
-                    user_state = request.session.get('user_state', user_location)
-                    all_events = all_events.filter(state__iexact=user_state)
-            else:
-                # Fallback to state-based filtering if no coordinates
-                if mileage <= 100:
-                    all_events = all_events.filter(state__iexact=user_location)
-                
-        except ValueError:
-            pass
-
-    all_events = all_events.annotate(
-        confirmed_count=models.Count('rsvps', filter=models.Q(rsvps__status='confirmed'))
-    )
+    # Apply pagination
+    paginator = Paginator(all_events, 12)  # 12 events per page
+    try:
+        paginated_events = paginator.page(page)
+    except PageNotAnInteger:
+        paginated_events = paginator.page(1)
+    except EmptyPage:
+        paginated_events = paginator.page(paginator.num_pages)
     
+    # Apply mileage filter using OpenStreetMap geocoding - temporarily disabled
+    # if mileage_range and mileage_range != 'all':
+    #     try:
+    #         mileage = int(mileage_range)
+    #         print(f"DEBUG: Before mileage filtering: {len(all_events)} events")
+    #         
+    #         # Get user coordinates from session
+    #         user_lat = request.session.get('user_lat')
+    #         user_lng = request.session.get('user_lng')
+    #         
+    #         if user_lat and user_lng:
+    #             # Use OpenStreetMap to calculate distances to event cities
+    #             import requests
+    #             import math
+    #             
+    #             def calculate_distance(lat1, lon1, lat2, lon2):
+    #                 """Calculate distance between two points using Haversine formula"""
+    #                 R = 3959  # Earth's radius in miles
+    #                 
+    #                 lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
+    #                 dlat = lat2 - lat1
+    #                 dlon = lon2 - lon1
+    #                     
+    #                     a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
+    #                     c = 2 * math.asin(math.sqrt(a))
+    #                     distance = R * c
+    #                     
+    #                     return distance
+    #                 
+    #                 def geocode_city(city, state):
+    #                     """Geocode a city using OpenStreetMap Nominatim API"""
+    #                     try:
+    #                         query = f"{city}, {state}, USA"
+    #                         url = "https://nominatim.openstreetmap.org/search"
+    #                         params = {
+    #                             'q': query,
+    #                             'format': 'json',
+    #                             'limit': 1,
+    #                             'countrycodes': 'us'
+    #                         }
+    #                         headers = {
+    #                             'User-Agent': 'FURsvp/1.0 (https://fursvp.org)'
+    #                         }
+    #                         
+    #                         response = requests.get(url, params=params, headers=headers, timeout=5)
+    #                         if response.status_code == 200:
+    #                             data = response.json()
+    #                             if data:
+    #                                     return float(data[0]['lat']), float(data[0]['lon'])
+    #                     except Exception as e:
+    #                         print(f"Geocoding error for {city}, {state}: {e}")
+    #                     return None, None
+    #                 
+    #                 # Filter events by distance
+    #                 events_within_range = []
+    #                 user_lat, user_lng = float(user_lat), float(user_lng)
+    #                 
+    #                 for event in all_events:
+    #                     if event.city and event.state:
+    #                         # Try to get coordinates for the event city
+    #                         event_lat, event_lng = geocode_city(event.city, event.state)
+    #                         
+    #                         if event_lat and event_lng:
+    #                             # Calculate distance
+    #                             distance = calculate_distance(user_lat, user_lng, event_lat, event_lng)
+    #                             
+    #                             if distance <= mileage:
+    #                                 events_within_range.append(event.id)
+    #                         else:
+    #                             # Fallback: include events in the same state for local searches
+    #                             if mileage <= 50:
+    #                                 user_state = request.session.get('user_state', user_location)
+    #                                 if event.state == user_state:
+    #                                     events_within_range.append(event.id)
+    #                 
+    #                 # Filter the list to only include events within range
+    #                 if events_within_range:
+    #                     all_events = [e for e in all_events if e.id in events_within_range]
+    #                 else:
+    #                     # If no events found, show events in the same state
+    #                     user_state = request.session.get('user_state', user_location)
+    #                     all_events = [e for e in all_events if e.state and e.state.lower() == user_state.lower()]
+    #             else:
+    #                 # Fallback to state-based filtering if no coordinates
+    #                 if mileage <= 100:
+    #                     all_events = [e for e in all_events if e.state and e.state.lower() == user_location.lower()]
+    #                 
+    #         except ValueError:
+    #             pass
+
     # Add user's RSVP information if user is authenticated
     if request.user.is_authenticated:
-        all_events = all_events.annotate(
-            user_rsvp_status=models.Subquery(
-                RSVP.objects.filter(
-                    event=models.OuterRef('pk'),
-                    user=request.user
-                ).values('status')[:1]
-            )
-        )
-        
         # Add user's RSVP list for template compatibility
         for event in all_events:
             user_rsvp = event.rsvps.filter(user=request.user).first()
@@ -1089,18 +1284,24 @@ def event_index(request):
     
     # Apply sorting
     if sort_by == 'date':
-        all_events = all_events.order_by('date', 'start_time') if sort_order == 'asc' else all_events.order_by('-date', '-start_time')
+        # all_events = all_events.order_by('date', 'start_time') if sort_order == 'asc' else all_events.order_by('-date', '-start_time')
+        pass
     elif sort_by == 'group':
-        all_events = all_events.order_by(models.functions.Lower('group__name') if sort_order == 'asc' else models.functions.Lower('group__name').desc())
+        # all_events = all_events.order_by(models.functions.Lower('group__name') if sort_order == 'asc' else models.functions.Lower('group__name').desc())
+        pass
     elif sort_by == 'title':
-        all_events = all_events.order_by(models.functions.Lower('title') if sort_order == 'asc' else models.functions.Lower('title').desc())
+        # all_events = all_events.order_by(models.functions.Lower('title') if sort_order == 'asc' else models.functions.Lower('title').desc())
+        pass
     elif sort_by == 'rsvps':
-        all_events = all_events.annotate(rsvp_count=models.Count('rsvps')).order_by(
-            'rsvp_count' if sort_order == 'asc' else '-rsvp_count'
-        )
+        # all_events = all_events.annotate(rsvp_count=models.Count('rsvps')).order_by(
+        #     'rsvp_count' if sort_order == 'asc' else '-rsvp_count'
+        # )
+        pass
     
-    # Pagination
-    paginator = Paginator(all_events, 20)  # Show 20 events per page for expanded view
+    # Apply pagination
+    
+    # Apply pagination
+    paginator = Paginator(all_events, 12)  # 12 events per page
     try:
         events_page = paginator.page(page)
     except PageNotAnInteger:
@@ -1111,7 +1312,7 @@ def event_index(request):
     # Add user's RSVP information if user is authenticated (AFTER pagination)
     if request.user.is_authenticated:
         # Add user's RSVP list for template compatibility
-        for event in events_page:
+        for event in events_page.object_list:
             user_rsvp = event.rsvps.filter(user=request.user).first()
             if user_rsvp:
                 event.user_rsvp_list = [user_rsvp]
@@ -1120,6 +1321,12 @@ def event_index(request):
     
     # Get all unique states for the dropdown
     all_states = Event.objects.exclude(state__isnull=True).exclude(state__exact='').values_list('state', flat=True).distinct().order_by('state')
+    
+    # Get groups count for stats
+    from users.models import Group
+    groups_count = Group.objects.count()
+    
+
     
     context = {
         'calendar': cal,
@@ -1137,12 +1344,13 @@ def event_index(request):
         'current_order': sort_order,
         'filter_adult': filter_adult,
         'view_type': view_type,
-        'paginator': paginator,
+        'paginator': events_page.paginator,
         'page_obj': events_page,
         'all_states': all_states,
         'mileage_range': mileage_range,
         'search_query': search_query,
         'state_filter': state_filter,
+        'groups_count': groups_count,
     }
     
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -1425,3 +1633,64 @@ def blog(request):
         'bluesky_profile': profile,
     }
     return render(request, 'events/blog.html', context)
+
+def contact(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        inquiry_type = request.POST.get('inquiry_type')
+        subject = request.POST.get('subject')
+        message = request.POST.get('message')
+        
+        # Validate required fields
+        if not all([name, email, inquiry_type, subject, message]):
+            messages.error(request, 'Please fill in all required fields.')
+            return render(request, 'events/contact.html')
+        
+        # Prepare email content
+        inquiry_type_display = {
+            'general': 'General Inquiries',
+            'organizer': 'Organizer Inquiries', 
+            'user': 'User Inquiries',
+            'development': 'Development Inquiries'
+        }.get(inquiry_type, inquiry_type)
+        
+        email_subject = f"FURsvp Contact: {subject} - {inquiry_type_display}"
+        
+        email_body = f"""
+New contact form submission from FURsvp website:
+
+Name: {name}
+Email: {email}
+Inquiry Type: {inquiry_type_display}
+Subject: {subject}
+
+Message:
+{message}
+
+---
+This message was sent from the FURsvp contact form.
+        """
+        
+        try:
+            # Send email using Django's email backend
+            send_mail(
+                subject=email_subject,
+                message=email_body,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[settings.CONTACT_EMAIL],  # You'll need to add this to settings
+                fail_silently=False,
+            )
+            
+            messages.success(request, 'Thank you for your message! We will get back to you within 3 business days.')
+            return render(request, 'events/contact.html')
+            
+        except Exception as e:
+            messages.error(request, 'Sorry, there was an error sending your message. Please try again later.')
+            return render(request, 'events/contact.html')
+    
+    return render(request, 'events/contact.html')
+
+def custom_404(request, exception=None):
+    """Custom 404 error page"""
+    return render(request, 'events/404.html', status=404)

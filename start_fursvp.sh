@@ -18,8 +18,8 @@ echo "Starting Django-Q cluster..."
 nohup "$PYTHON_PATH" "$MANAGE_PY" collectstatic --noinput
 
 # --- Update git version in code ---
-echo "Updating git version in cod..."
-"$PYTHON_PATH" "$MANAGE_PY" get_git_version
+echo "Updating git version in code..."
+"$PYTHON_PATH" "$MANAGE_PY" get_git_version > /dev/null 2>&1
 
 # --- Start Gunicorn in the background ---
 echo "Starting Web Server (Gunicorn)..."

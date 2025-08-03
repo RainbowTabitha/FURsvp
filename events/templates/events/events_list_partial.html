@@ -14,7 +14,7 @@
 .event-title {
     font-size: 1.25rem;
     font-weight: 700;
-    color: #2563eb;
+    color: #8b5cf6;
     margin-bottom: 0.3rem;
 }
 .event-meta, .event-details {
@@ -22,7 +22,7 @@
     font-size: 1.05rem;
 }
 .rsvp-badge-modern {
-    background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%);
+    background: linear-gradient(90deg, #8b5cf6 0%, #a855f7 100%);
     color: #fff;
     border-radius: 1.2rem;
     font-size: 1.05rem;
@@ -30,10 +30,10 @@
     padding: 0.5rem 1.2rem;
     display: flex;
     align-items: center;
-    box-shadow: 0 2px 8px rgba(59,130,246,0.10);
+    box-shadow: 0 2px 8px rgba(139,92,246,0.10);
 }
 .event-list-chevron {
-    color: #2563eb;
+    color: #8b5cf6;
     font-size: 2rem;
     margin-left: 1.5rem;
     opacity: 0.7;
@@ -319,13 +319,13 @@
 }
 
 .dark-mode .event-title {
-    color: #60a5fa !important;
+    color: #a855f7 !important;
 }
 .dark-mode .event-meta, .dark-mode .event-details {
     color: #a1a1aa !important;
 }
 .dark-mode .rsvp-badge-modern {
-    background: linear-gradient(90deg, #2563eb 0%, #06b6d4 100%) !important;
+    background: linear-gradient(90deg, #8b5cf6 0%, #a855f7 100%) !important;
     color: #fff !important;
 }
 .dark-mode .gradient-badge-18 {
@@ -338,6 +338,180 @@
 }
 .dark-mode .event-list-chevron {
     color: #60a5fa !important;
+}
+
+/* Empty Events State Styles */
+.empty-events-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 1.5rem;
+    border: 2px dashed #cbd5e1;
+    margin: 2rem 0;
+}
+
+.empty-events-icon {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+}
+
+.empty-events-icon i {
+    font-size: 3rem;
+    color: #64748b;
+}
+
+.empty-events-state h3 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #374151;
+    margin-bottom: 1rem;
+}
+
+.empty-events-state p {
+    font-size: 1.125rem;
+    color: #6b7280;
+    margin-bottom: 2rem;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.empty-events-suggestions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    transition: all 0.3s ease;
+}
+
+.suggestion-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.suggestion-item i {
+    color: #667eea;
+    font-size: 1.25rem;
+}
+
+.suggestion-item span {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+.empty-events-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.empty-events-actions .btn {
+    border-radius: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Dark mode styles for empty state */
+.dark-mode .empty-events-state {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-color: #475569;
+}
+
+.dark-mode .empty-events-icon {
+    background: linear-gradient(135deg, #475569 0%, #64748b 100%);
+}
+
+.dark-mode .empty-events-icon i {
+    color: #94a3b8;
+}
+
+.dark-mode .empty-events-state h3 {
+    color: #f1f5f9;
+}
+
+.dark-mode .empty-events-state p {
+    color: #cbd5e1;
+}
+
+.dark-mode .suggestion-item {
+    background: #334155;
+    border-color: #475569;
+    color: #f1f5f9;
+}
+
+.dark-mode .suggestion-item i {
+    color: #60a5fa;
+}
+
+.dark-mode .suggestion-item span {
+    color: #e2e8f0;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .empty-events-state {
+        padding: 2rem 1rem;
+        margin: 1rem 0;
+    }
+    
+    .empty-events-icon {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .empty-events-icon i {
+        font-size: 2.5rem;
+    }
+    
+    .empty-events-state h3 {
+        font-size: 1.5rem;
+    }
+    
+    .empty-events-suggestions {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .suggestion-item {
+        padding: 0.75rem;
+    }
+    
+    .empty-events-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .empty-events-actions .btn {
+        width: 100%;
+        max-width: 250px;
+    }
 }
 </style>
 <div class="row" id="eventsGrid" style="display: flex;">
@@ -412,9 +586,39 @@
         </a>
     </div>
     {% empty %}
-    <div class="col-12">
-        <div class="alert alert-info text-center" role="alert">
-            <i class="material-icons align-middle me-2">event_busy</i> No upcoming events found.
+    <div class="empty-events-state">
+        <div class="empty-events-icon">
+            <i class="material-icons">event_busy</i>
+        </div>
+        <h3>No Events Found</h3>
+        <p>No events match your current filters. Try adjusting your search criteria:</p>
+        <div class="empty-events-suggestions">
+            <div class="suggestion-item">
+                <i class="material-icons">search</i>
+                <span>Clear your search terms</span>
+            </div>
+            <div class="suggestion-item">
+                <i class="material-icons">location_on</i>
+                <span>Increase your distance range</span>
+            </div>
+            <div class="suggestion-item">
+                <i class="material-icons">visibility</i>
+                <span>Show 18+/21+ events</span>
+            </div>
+            <div class="suggestion-item">
+                <i class="material-icons">calendar_today</i>
+                <span>Maybe there isn't anything here</span>
+            </div>
+        </div>
+        <div class="empty-events-actions">
+            <button type="button" class="btn btn-outline-primary" id="clearFiltersBtn">
+                <i class="material-icons">clear_all</i>
+                Clear All Filters
+            </button>
+            <a href="{% url 'event_index' %}" class="btn btn-primary">
+                <i class="material-icons">refresh</i>
+                Reset View
+            </a>
         </div>
     </div>
     {% endfor %}
@@ -495,8 +699,40 @@
         </div>
     </a>
     {% empty %}
-    <div class="alert alert-info text-center" role="alert">
-        <i class="material-icons align-middle me-2">event_busy</i> No upcoming events found.
+    <div class="empty-events-state">
+        <div class="empty-events-icon">
+            <i class="material-icons">event_busy</i>
+        </div>
+        <h3>No Events Found</h3>
+        <p>No events match your current filters. Try adjusting your search criteria:</p>
+        <div class="empty-events-suggestions">
+            <div class="suggestion-item">
+                <i class="material-icons">search</i>
+                <span>Clear your search terms</span>
+            </div>
+            <div class="suggestion-item">
+                <i class="material-icons">location_on</i>
+                <span>Increase your distance range</span>
+            </div>
+            <div class="suggestion-item">
+                <i class="material-icons">visibility</i>
+                <span>Show 18+/21+ events</span>
+            </div>
+            <div class="suggestion-item">
+                <i class="material-icons">calendar_today</i>
+                <span>Try a different month</span>
+            </div>
+        </div>
+        <div class="empty-events-actions">
+            <button type="button" class="btn btn-outline-primary" id="clearFiltersBtn">
+                <i class="material-icons">clear_all</i>
+                Clear All Filters
+            </button>
+            <a href="{% url 'event_index' %}" class="btn btn-primary">
+                <i class="material-icons">refresh</i>
+                Reset View
+            </a>
+        </div>
     </div>
     {% endfor %}
 </div>

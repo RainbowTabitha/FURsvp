@@ -33,17 +33,25 @@ def increment_group_stats(sender, instance, created, **kwargs):
 def decrement_user_stats(sender, instance, **kwargs):
     """Decrement cumulative user count when a user is deleted"""
     try:
-        PlatformStats.decrement_users()
-    except Exception:
-        pass  # Silently fail if there's an issue
+        # Only decrement if we're not in a transaction that might be rolled back
+        if not connection.in_atomic_block:
+            PlatformStats.decrement_users()
+    except Exception as e:
+        # Silently fail if there's an issue - don't prevent user deletion
+        print(f"Warning: Could not decrement user stats: {e}")
+        pass
 
 @receiver(post_delete, sender=Group)
 def decrement_group_stats(sender, instance, **kwargs):
     """Decrement cumulative group count when a group is deleted"""
     try:
-        PlatformStats.decrement_groups()
-    except Exception:
-        pass  # Silently fail if there's an issue
+        # Only decrement if we're not in a transaction that might be rolled back
+        if not connection.in_atomic_block:
+            PlatformStats.decrement_groups()
+    except Exception as e:
+        # Silently fail if there's an issue - don't prevent group deletion
+        print(f"Warning: Could not decrement group stats: {e}")
+        pass
 
 
 def initialize_platform_stats():

@@ -28,9 +28,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'D71CFE3703158C6A495D119ED73820B99ACAC6E07BA1A910BC4F66B971466AC3')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False  # Set to False for production
+DEBUG = True  # Set to False for production
 
-ALLOWED_HOSTS = ["fursvp.org", "127.0.0.1", "localhost"]  # Set to your production domain
+ALLOWED_HOSTS = ["*"]  # Set to your production domain
 
 
 # Application definition
@@ -68,6 +68,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'fursvp.middleware.StaticFilesMiddleware',
     'django_otp.middleware.OTPMiddleware',
+    'users.middleware.BanCheckMiddleware',
 ]
 
 CORS_ALLOWED_ORIGIN_REGEXES = [
@@ -91,6 +92,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'users.context_processors.banner_settings',
                 'events.context_processors.global_stats',
+                'events.context_processors.user_groups',
             ],
         },
     },
@@ -180,30 +182,6 @@ CACHES = {
     }
 }
 
-TINYMCE_DEFAULT_CONFIG = {
-    'height': 360,
-    'width': '100%',
-    'menubar': False,
-    'plugins': 'autolink lists link image charmap print preview anchor',
-    'toolbar': 'bold italic underline strikethrough | fontselect fontsizeselect formatselect | alignleft aligncenter alignright alignjustify | outdent indent |  numlist bullist | forecolor backcolor removeformat | pagebreak | charmap emoticons | preview save print | insertfile image media template link anchor codesample | ltr rtl',
-    'content_style': 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; }',
-    'branding': False,
-    'promotion': False,
-    'license_key': 'gpl',
-    'statusbar': True,
-    'resize': 'both',
-    'toolbar_mode': 'sliding',
-    'toolbar_sticky': True,
-    # Secure configuration
-    'valid_elements': 'p[style],strong,em,span[style],a[href|target=_blank],ul,ol,li,br,img[src|alt|width|height|style]',
-    'extended_valid_elements': 'img[class|src|border=0|alt|title|hspace|vspace|width|height|align|onmouseover|onmouseout|name]',
-    'forced_root_block': 'p',
-    'force_br_newlines': False,
-    'force_p_newlines': True,
-    'remove_script_host': True,
-    'convert_urls': False,
-}
-
 LOGIN_REDIRECT_URL = '/'
 
 # Django-Q Cluster Configuration
@@ -265,3 +243,12 @@ SWAGGER_SETTINGS = {
     'LOGIN_URL': None,
     'LOGOUT_URL': None,
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.environ.get('EMAIL_HOST')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
+CONTACT_EMAIL = os.environ.get('CONTACT_EMAIL', 'info@fursvp.org')

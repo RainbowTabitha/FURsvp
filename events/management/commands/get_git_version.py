@@ -7,13 +7,18 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         try:
-            # Get the git repository root directory
-            git_root = subprocess.check_output(
-                ['git', 'rev-parse', '--show-toplevel'],
-                cwd=os.getcwd(),
-                stderr=subprocess.PIPE,
-                universal_newlines=True
-            ).strip()
+            # Check if we're in a git repository
+            try:
+                # Get the git repository root directory
+                git_root = subprocess.check_output(
+                    ['git', 'rev-parse', '--show-toplevel'],
+                    cwd=os.getcwd(),
+                    stderr=subprocess.PIPE,
+                    universal_newlines=True
+                ).strip()
+            except subprocess.CalledProcessError:
+                self.stdout.write(self.style.WARNING('Not in a git repository'))
+                return
             
             # Get the current commit hash
             commit_hash = subprocess.check_output(
@@ -61,11 +66,6 @@ class Command(BaseCommand):
             }
             
             self.stdout.write(self.style.SUCCESS(f'Git version info: {version_info}'))
-            return version_info
             
-        except subprocess.CalledProcessError as e:
-            self.stdout.write(self.style.ERROR(f'Error getting git version: {e}'))
-            return None
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f'Unexpected error: {e}'))
-            return None 
+            self.stdout.write(self.style.ERROR(f'Unexpected error: {e}')) 

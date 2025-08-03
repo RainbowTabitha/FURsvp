@@ -92,14 +92,14 @@ body {
     font-weight: 600;
     margin-bottom: 20px;
     padding-bottom: 10px;
-    border-bottom: 2px solid #667eea;
+    border-bottom: 2px solid #8b5cf6;
 }
 
 /* Improve the welcome section */
 .welcome-section {
     text-align: center;
     padding: 40px 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
     color: white;
     border-radius: 12px;
     margin-bottom: 30px;
@@ -131,7 +131,7 @@ body {
     border-radius: 10px;
     padding: 25px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.07);
-    border-top: 4px solid #667eea;
+    border-top: 4px solid #8b5cf6;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 

@@ -3,1159 +3,2465 @@
 {% load widget_tweaks %}
 {% block title %}Administration - FURsvp{% endblock %}
 
+{% block extra_css %}
+<style>
+/* Admin Panel Styles */
+.admin-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 0;
+}
+
+.admin-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.admin-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.admin-header p {
+    color: #6b7280;
+    font-size: 1.125rem;
+    margin: 0;
+}
+
+/* Navigation Tabs */
+.admin-nav {
+    margin-bottom: 2rem;
+}
+
+.admin-nav .nav-pills {
+    gap: 0.5rem;
+}
+
+.admin-nav .nav-link {
+    border: none;
+    border-radius: 0.75rem;
+    background: #f8fafc;
+    color: #374151;
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: 0.75rem 1.5rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.admin-nav .nav-link:hover {
+    background: #e5e7eb;
+    color: #1f2937;
+    transform: translateY(-1px);
+}
+
+.admin-nav .nav-link.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* Content Cards */
+.admin-card {
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.admin-card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+}
+
+.admin-card-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.admin-card-header p {
+    margin: 0.5rem 0 0 0;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.95rem;
+}
+
+.admin-card-body {
+    padding: 2rem;
+}
+
+/* Search Bar */
+.search-container {
+    background: #f8fafc;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid #e2e8f0;
+}
+
+.search-form {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.search-input {
+    flex: 1;
+    border: 2px solid #e2e8f0;
+    border-radius: 0.75rem;
+    padding: 0.875rem 1.25rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.search-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 0.75rem;
+    padding: 0.875rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.search-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+/* User Table */
+.user-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.user-table th {
+    background: #f8fafc;
+    padding: 1rem 1.5rem;
+    text-align: left;
+    font-weight: 700;
+    color: #374151;
+    border-bottom: 2px solid #e5e7eb;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.user-table td {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: middle;
+}
+
+.user-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 1.125rem;
+    overflow: hidden;
+}
+
+.user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.user-name {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.username {
+    color: #6b7280;
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.user-id {
+    color: #9ca3af;
+    font-size: 0.75rem;
+    font-family: monospace;
+}
+
+/* Status Indicators */
+.status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.status-staff {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-2fa {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.status-no-2fa {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.last-login {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+/* Permission Controls */
+.permission-controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.permission-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.permission-toggle input[type="checkbox"] {
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 0.25rem;
+    border: 2px solid #d1d5db;
+    cursor: pointer;
+}
+
+.permission-toggle label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+    cursor: pointer;
+}
+
+/* Tom Select Styling */
+.tom-select-groups {
+    min-width: 200px;
+}
+
+.ts-wrapper {
+    border: 2px solid #e2e8f0;
+    border-radius: 0.75rem;
+    background: white;
+}
+
+.ts-wrapper:focus-within {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.ts-control {
+    border: none !important;
+    background: transparent !important;
+    padding: 0.75rem 1rem !important;
+}
+
+.ts-dropdown {
+    border: 2px solid #667eea !important;
+    border-radius: 0.75rem !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+}
+
+.ts-option {
+    padding: 0.75rem 1rem !important;
+    border-bottom: 1px solid #f3f4f6 !important;
+}
+
+.ts-option:hover {
+    background: #f8fafc !important;
+}
+
+.ts-option.selected {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+}
+
+/* Ban user select specific styling */
+.tom-select-ban {
+    min-width: 300px;
+}
+
+.tom-select-ban .ts-wrapper {
+    min-height: 48px;
+}
+
+.tom-select-ban .ts-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Modal Tom Select styling */
+.tom-select-modal-groups {
+    width: 100%;
+}
+
+.tom-select-modal-groups .ts-wrapper {
+    min-height: 48px;
+    border: 2px solid #e2e8f0;
+    border-radius: 0.75rem;
+    background: white;
+}
+
+/* Groups with logos Tom Select styling */
+.tom-select-groups-with-logos {
+    min-width: 250px;
+}
+
+.tom-select-groups-with-logos .ts-wrapper {
+    border: 2px solid #e2e8f0;
+    border-radius: 0.75rem;
+    background: white;
+}
+
+.tom-select-groups-with-logos .ts-wrapper:focus-within {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.tom-select-groups-with-logos .ts-control {
+    border: none;
+    background: transparent;
+    padding: 0.75rem 1rem;
+    min-height: 48px;
+}
+
+.tom-select-groups-with-logos .ts-dropdown {
+    border: 2px solid #e2e8f0;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    max-height: 200px;
+}
+
+.tom-select-groups-with-logos .ts-dropdown .option {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.tom-select-groups-with-logos .ts-dropdown .option:hover {
+    background: #f8fafc;
+}
+
+.tom-select-groups-with-logos .ts-dropdown .option.selected {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+/* Users with avatars Tom Select styling */
+.tom-select-users-with-avatars {
+    min-width: 300px;
+}
+
+.tom-select-users-with-avatars .ts-wrapper {
+    border: 2px solid #e2e8f0;
+    border-radius: 0.75rem;
+    background: white;
+}
+
+.tom-select-users-with-avatars .ts-wrapper:focus-within {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.tom-select-users-with-avatars .ts-control {
+    border: none;
+    background: transparent;
+    padding: 0.75rem 1rem;
+    min-height: 48px;
+}
+
+.tom-select-users-with-avatars .ts-dropdown {
+    border: 2px solid #e2e8f0;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    max-height: 200px;
+}
+
+.tom-select-users-with-avatars .ts-dropdown .option {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.tom-select-users-with-avatars .ts-dropdown .option:hover {
+    background: #f8fafc;
+}
+
+.tom-select-users-with-avatars .ts-dropdown .option.selected {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.tom-select-modal-groups .ts-wrapper:focus-within {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.tom-select-modal-groups .ts-control {
+    border: none;
+    background: transparent;
+    padding: 0.75rem 1rem;
+    min-height: 48px;
+}
+
+.tom-select-modal-groups .ts-dropdown {
+    border: 2px solid #e2e8f0;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    max-height: 200px;
+}
+
+.tom-select-modal-groups .ts-dropdown .option {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.tom-select-modal-groups .ts-dropdown .option:hover {
+    background: #f8fafc;
+}
+
+.tom-select-modal-groups .ts-dropdown .option.selected {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.tom-select-modal-groups .ts-dropdown .option .group-description {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+/* Notification user select styling */
+.tom-select-notification-users {
+    width: 100%;
+}
+
+.tom-select-notification-users .ts-wrapper {
+    min-height: 48px;
+    border: 2px solid #e2e8f0;
+    border-radius: 0.75rem;
+    background: white;
+}
+
+.tom-select-notification-users .ts-wrapper:focus-within {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.tom-select-notification-users .ts-control {
+    border: none;
+    background: transparent;
+    padding: 0.75rem 1rem;
+    min-height: 48px;
+}
+
+.tom-select-notification-users .ts-dropdown {
+    border: 2px solid #e2e8f0;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    max-height: 200px;
+}
+
+.tom-select-notification-users .ts-dropdown .option {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.tom-select-notification-users .ts-dropdown .option:hover {
+    background: #f8fafc;
+}
+
+.tom-select-notification-users .ts-dropdown .option.selected {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+/* Action Buttons */
+.action-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+}
+
+.btn-danger:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+}
+
+.btn-success:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* Form Styling */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-control {
+    width: 100%;
+    border: 2px solid #e2e8f0;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+}
+
+.pagination .page-link {
+    padding: 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 0.5rem;
+    color: #374151;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.pagination .page-link:hover {
+    background: #f8fafc;
+    border-color: #667eea;
+}
+
+.pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-color: #667eea;
+    color: white;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #6b7280;
+}
+
+.empty-state .material-icons {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .user-table {
+        font-size: 0.875rem;
+    }
+    
+    .user-table th,
+    .user-table td {
+        padding: 0.75rem 1rem;
+    }
+    
+    .permission-controls {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .search-form {
+        flex-direction: column;
+    }
+}
+
+/* Modal styling */
+.modal-content {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    border-bottom: 2px solid #f1f5f9;
+    padding: 1.5rem;
+}
+
+.modal-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    border-top: 2px solid #f1f5f9;
+    padding: 1.5rem;
+}
+
+/* Modal form styling */
+.modal .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.modal .form-label {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.modal .permission-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.modal .permission-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    background: #f8fafc;
+    transition: all 0.2s ease;
+    min-height: 48px;
+    cursor: pointer;
+}
+
+.modal .permission-toggle:hover {
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.modal .permission-toggle:focus-within {
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.modal .permission-toggle input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #667eea;
+    flex-shrink: 0;
+    cursor: pointer;
+    border: 2px solid #d1d5db;
+    border-radius: 3px;
+}
+
+.modal .permission-toggle input[type="checkbox"]:checked {
+    background-color: #667eea;
+    border-color: #667eea;
+}
+
+.modal .permission-toggle label {
+    font-weight: 600;
+    color: #374151;
+    cursor: pointer;
+    margin: 0;
+    font-size: 0.9rem;
+    min-width: 80px;
+}
+
+.modal .permission-description {
+    font-size: 0.8rem;
+    color: #6b7280;
+    font-weight: 400;
+    margin-left: auto;
+}
+
+/* Fix modal positioning */
+.modal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 1055 !important;
+}
+
+.modal-dialog {
+    position: relative !important;
+    margin: 1.75rem auto !important;
+    pointer-events: none !important;
+}
+
+.modal-dialog-centered {
+    display: flex !important;
+    align-items: center !important;
+    min-height: calc(100% - 3.5rem) !important;
+}
+
+.modal-content {
+    position: relative !important;
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    pointer-events: auto !important;
+    background-color: #fff !important;
+    background-clip: padding-box !important;
+    border: 1px solid rgba(0, 0, 0, 0.2) !important;
+    border-radius: 0.3rem !important;
+    outline: 0 !important;
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.5) !important;
+}
+
+.modal-backdrop {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 1050 !important;
+}
+</style>
+
+<!-- Tom Select CSS -->
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <div class="card shadow-sm mb-4">
-        <div class="card-body p-4">
-            <h1 class="display-5 mb-4 text-center">
-                <i class="material-icons align-middle me-2">admin_panel_settings</i> Administration Panel
+<div class="admin-container">
+    <!-- Header -->
+    <div class="admin-header">
+        <h1>
+            <span class="material-icons">admin_panel_settings</span>
+            Administration Panel
             </h1>
+        <p>Manage users, groups, and platform settings</p>
+    </div>
 
-            <ul class="nav nav-tabs mb-4" id="adminTabs" role="tablist">
+    <!-- Navigation -->
+    <div class="admin-nav">
+        <ul class="nav nav-pills justify-content-center" id="adminTabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="organizers-tab" data-bs-toggle="tab" data-bs-target="#organizers" type="button" role="tab" aria-controls="organizers" aria-selected="true">
-                        <i class="material-icons align-middle me-1">manage_accounts</i> Users
+                <button class="nav-link active" id="users-tab" data-bs-toggle="pill" data-bs-target="#users" type="button" role="tab">
+                    <span class="material-icons">people</span>
+                    Users
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="groups-tab" data-bs-toggle="tab" data-bs-target="#groups" type="button" role="tab" aria-controls="groups" aria-selected="false">
-                        <i class="material-icons align-middle me-1">group_add</i> Manage Groups
+                <button class="nav-link" id="groups-tab" data-bs-toggle="pill" data-bs-target="#groups" type="button" role="tab">
+                    <span class="material-icons">groups</span>
+                    Groups
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="bans-tab" data-bs-toggle="tab" data-bs-target="#bans" type="button" role="tab" aria-controls="bans" aria-selected="false">
-                        <i class="material-icons align-middle me-1">gavel</i> Ban Users
+                <button class="nav-link" id="bans-tab" data-bs-toggle="pill" data-bs-target="#bans" type="button" role="tab">
+                    <span class="material-icons">gavel</span>
+                    Bans
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="banner-tab" data-bs-toggle="tab" data-bs-target="#banner" type="button" role="tab" aria-controls="banner" aria-selected="false">
-                        <i class="material-icons align-middle me-1">campaign</i> Site Banner
+                <button class="nav-link" id="notify-tab" data-bs-toggle="pill" data-bs-target="#notify" type="button" role="tab">
+                    <span class="material-icons">notifications</span>
+                    Notifications
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="notify-tab" data-bs-toggle="tab" data-bs-target="#notify" type="button" role="tab" aria-controls="notify" aria-selected="false">
-                        <i class="material-icons align-middle me-1">notifications</i> Send Notification
+                <button class="nav-link" id="audit-tab" data-bs-toggle="pill" data-bs-target="#audit" type="button" role="tab">
+                    <span class="material-icons">history</span>
+                    Audit Log
                     </button>
                 </li>
-                {% if user.profile.can_post_blog %}
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="blogmgmt-tab" data-bs-toggle="tab" data-bs-target="#blogmgmt" type="button" role="tab" aria-controls="blogmgmt" aria-selected="false">
-                        <i class="material-icons align-middle me-1">rss_feed</i> Blog Management
+                <button class="nav-link" id="blog-tab" data-bs-toggle="pill" data-bs-target="#blog" type="button" role="tab">
+                    <span class="material-icons">article</span>
+                    Blog
                     </button>
                 </li>
-                {% endif %}
             </ul>
+    </div>
 
-            <div class="tab-content" id="adminTabsContent">
-                <div class="tab-pane fade show active" id="organizers" role="tabpanel" aria-labelledby="organizers-tab">
-                    <h2 class="card-title h4 mb-4 text-primary fw-bold">
-                        <i class="material-icons me-2">people</i> Users
+    <!-- Tab Content -->
+    <div class="tab-content" id="adminTabContent">
+        <!-- Users Tab -->
+        <div class="tab-pane fade show active" id="users" role="tabpanel">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h2>
+                        <span class="material-icons">people</span>
+                        User Management
                     </h2>
-                    <!-- Search Bar for Users -->
-                    <div class="mb-4">
-                        <form method="get" class="d-flex">
-                        <div class="input-group">
-                            <span class="input-group-text bg-light">
-                                <i class="material-icons">search</i>
-                            </span>
-                                <input type="text" name="user_search" value="{{ user_search }}" class="form-control" placeholder="Search users by display name, username, or email...">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="material-icons">search</i> Search
+                    <p>Manage user permissions, groups, and account settings</p>
+                </div>
+                <div class="admin-card-body">
+                    <!-- Search -->
+                    <div class="search-container">
+                        <form method="get" class="search-form">
+                            <input type="hidden" name="tab" value="users">
+                            <input type="text" name="user_search" value="{{ user_search }}" class="search-input" placeholder="Search users by username, email, or display name...">
+                            <button type="submit" class="search-btn">
+                                <span class="material-icons">search</span>
+                                Search
                                 </button>
-                                {% if user_search %}
-                                <a href="?{% if request.GET.group_search %}group_search={{ request.GET.group_search }}{% endif %}{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}" class="btn btn-outline-secondary">
-                                    <i class="material-icons">clear</i> Clear
-                                </a>
-                                {% endif %}
-                        </div>
                         </form>
                     </div>
-                    <form method="post">
-                        {% csrf_token %}
+
+                                        <!-- Users Table -->
+                    {% if users_to_promote %}
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle caption-top mb-0" id="usersTable">
+                            <table class="user-table">
                                 <thead>
                                     <tr>
-                                        <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">person</i> Username</th>
-                                        <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">email</i> Email</th>
-                                        <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">admin_panel_settings</i> Site Admin</th>
-                                        <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">group</i> Groups</th>
+                                        <th>User</th>
+                                        <th>Status</th>
+                                        <th>Last Login</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for user_obj in users_to_promote %}
-                                    <tr data-user-id="{{ user_obj.id }}">
+                                    <tr data-user-id="{{ user_obj.id }}" 
+                                        data-staff="{{ user_obj.is_superuser|yesno:'true,false' }}"
+                                        data-blog-permission="{{ user_obj.profile.can_post_blog|yesno:'true,false' }}">
                                         <td>
-                                            <span class="fw-medium">{{ user_obj.profile.get_display_name }}</span>
-                                            <small class="text-muted d-block">({{ user_obj.username }})</small>
+                                            <div class="user-info">
+                                                <div class="user-avatar" {% if not user_obj.profile.profile_picture_base64 %}style="background-color: {{ user_obj.profile.get_avatar_color }};"{% endif %}>
+                                                    {% if user_obj.profile.profile_picture_base64 %}
+                                                        <img src="{{ user_obj.profile.profile_picture_base64 }}" alt="{{ user_obj.profile.get_display_name }}">
+                                                    {% else %}
+                                                        {{ user_obj.profile.get_initials }}
+                                                    {% endif %}
+                                                </div>
+                                                <div class="user-details">
+                                                    <div class="user-name">
+                                                        {{ user_obj.profile.get_display_name }}
+                                                        {% if user_obj.is_superuser %}
+                                                            <span class="material-icons verified-checkmark" style="color: #f59e0b; font-size: 1rem;">build</span>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="username">@{{ user_obj.username }}</div>
+                                                    <div class="user-id">ID: {{ user_obj.id }}</div>
+                                                    <!-- Hidden group data for JavaScript -->
+                                                    {% for group in user_obj.group_roles.all %}
+                                                        <span data-group-id="{{ group.group.id }}" style="display: none;"></span>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
                                         </td>
-                                        <td>{{ user_obj.email }}</td>
                                         <td>
-                                            <span class="badge {% if user_obj.is_superuser %}bg-success{% else %}bg-danger{% endif %} py-2 px-3 rounded-pill fw-normal">
-                                                {{ user_obj.is_superuser|yesno:"Yes,No" }}
-                                            </span>
+                                            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                                {% if user_obj.is_superuser %}
+                                                    <span class="status-indicator status-staff">
+                                                        <span class="material-icons" style="font-size: 0.75rem;">build</span>
+                                                        Staff
+                                                    </span>
+                                                {% endif %}
+                                                {% if user_obj.totpdevice_set.exists %}
+                                                    <span class="status-indicator status-2fa">
+                                                        <span class="material-icons" style="font-size: 0.75rem;">security</span>
+                                                        2FA Enabled
+                                                    </span>
+                                                {% else %}
+                                                    <span class="status-indicator status-no-2fa">
+                                                        <span class="material-icons" style="font-size: 0.75rem;">warning</span>
+                                                        No 2FA
+                                                    </span>
+                                                {% endif %}
+                                            </div>
                                         </td>
                                         <td>
-                                            {% with profile_form=user_profile_forms|get_item:user_obj.id %}
-                                                {{ profile_form.profile_picture_base64 }}
-                                                {{ profile_form.discord_username.as_hidden }}
-                                                {{ profile_form.display_name.as_hidden }}
-                                                {{ profile_form.telegram_username.as_hidden }}
-                                                {{ profile_form.admin_groups|add_class:"tomselect-allowed-groups form-select form-select-sm"|attr:"multiple:true" }}
-                                            {% endwith %}
+                                            <div class="last-login">
+                                                {% if user_obj.last_login %}
+                                                    {{ user_obj.last_login|date:"M j, Y g:i A" }}
+                                                {% else %}
+                                                    Never
+                                                {% endif %}
+                                            </div>
                                         </td>
-                                    </tr>
-                                    {% empty %}
-                                    <tr>
-                                        <td colspan="4" class="text-center py-4 text-muted">
-                                            <i class="material-icons d-block mb-2 fs-1">person_off</i>
-                                            No users found.
+                                        <td>
+                                            <div style="display: flex; gap: 0.5rem;">
+                                                <button class="action-btn btn-primary" onclick="editUser({{ user_obj.id }})">
+                                                    <span class="material-icons">edit</span>
+                                                    Edit
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
                         </div>
-                        <!-- User Pagination -->
-                        {% if users_to_promote.paginator.num_pages > 1 %}
-                        <nav aria-label="User list pagination" class="mt-4">
-                            <ul class="pagination justify-content-center material-circular-pagination">
+
+                        <!-- Pagination -->
+                        {% if users_to_promote.has_other_pages %}
+                            <nav class="pagination">
                                 {% if users_to_promote.has_previous %}
-                                <li class="page-item">
-                                    <a class="page-link material-page-link" href="?user_page=1{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="First">
-                                        <i class="material-icons" style="font-size: 24px;">first_page</i>
-                                    </a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link material-page-link" href="?user_page={{ users_to_promote.previous_page_number }}{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="Previous">
-                                        <i class="material-icons" style="font-size: 24px;">chevron_left</i>
-                                    </a>
-                                </li>
-                                {% else %}
-                                <li class="page-item disabled">
-                                    <span class="page-link material-page-link disabled">
-                                        <i class="material-icons" style="font-size: 24px;">first_page</i>
-                                    </span>
-                                </li>
-                                <li class="page-item disabled">
-                                    <span class="page-link material-page-link disabled">
-                                        <i class="material-icons" style="font-size: 24px;">chevron_left</i>
-                                    </span>
-                                </li>
+                                    <a href="?tab=users&user_page={{ users_to_promote.previous_page_number }}{% if user_search %}&user_search={{ user_search }}{% endif %}" class="page-link">Previous</a>
                                 {% endif %}
+                                    
                                 {% for num in users_to_promote.paginator.page_range %}
                                     {% if users_to_promote.number == num %}
-                                        <li class="page-item active"><a class="page-link material-page-link active" href="#">{{ num }}</a></li>
+                                        <span class="page-link active">{{ num }}</span>
                                     {% elif num > users_to_promote.number|add:'-3' and num < users_to_promote.number|add:'3' %}
-                                        <li class="page-item"><a class="page-link material-page-link" href="?user_page={{ num }}{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}">{{ num }}</a></li>
+                                        <a href="?tab=users&user_page={{ num }}{% if user_search %}&user_search={{ user_search }}{% endif %}" class="page-link">{{ num }}</a>
                                     {% endif %}
                                 {% endfor %}
+                                    
                                 {% if users_to_promote.has_next %}
-                                <li class="page-item">
-                                    <a class="page-link material-page-link" href="?user_page={{ users_to_promote.next_page_number }}{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="Next">
-                                        <i class="material-icons" style="font-size: 24px;">chevron_right</i>
-                                    </a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link material-page-link" href="?user_page={{ users_to_promote.paginator.num_pages }}{% if request.GET.group_page %}&group_page={{ request.GET.group_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="Last">
-                                        <i class="material-icons" style="font-size: 24px;">last_page</i>
-                                    </a>
-                                </li>
-                                {% else %}
-                                <li class="page-item disabled">
-                                    <span class="page-link material-page-link disabled">
-                                        <i class="material-icons" style="font-size: 24px;">chevron_right</i>
-                                    </span>
-                                </li>
-                                <li class="page-item disabled">
-                                    <span class="page-link material-page-link disabled">
-                                        <i class="material-icons" style="font-size: 24px;">last_page</i>
-                                    </span>
-                                </li>
+                                    <a href="?tab=users&user_page={{ users_to_promote.next_page_number }}{% if user_search %}&user_search={{ user_search }}{% endif %}" class="page-link">Next</a>
                                 {% endif %}
-                            </ul>
                         </nav>
                         {% endif %}
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                            <button type="submit" name="promote_users_submit" class="btn btn-primary btn-lg rounded-pill px-4 shadow-sm">
-                                <i class="material-icons me-2">save</i> Update Approval Status
-                            </button>
+                    {% else %}
+                        <div class="empty-state">
+                            <span class="material-icons">people_outline</span>
+                            <h4>No users found</h4>
+                            <p>Try adjusting your search criteria</p>
                         </div>
-                    </form>
+                        {% endif %}
                 </div>
-                <div class="tab-pane fade" id="groups" role="tabpanel" aria-labelledby="groups-tab">
-                    <h2 class="card-title h4 mb-4 text-primary fw-bold">
-                        <i class="material-icons me-2">groups</i> Manage Groups
+            </div>
+        </div>
+
+        <!-- Groups Tab -->
+        <div class="tab-pane fade" id="groups" role="tabpanel">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h2>
+                        <span class="material-icons">groups</span>
+                        Group Management
                     </h2>
-                    <!-- Search Bar for Groups -->
-                    <div class="mb-4">
-                        <form method="get" class="d-flex">
-                        <div class="input-group">
-                            <span class="input-group-text bg-light">
-                                <i class="material-icons">search</i>
-                            </span>
-                                <input type="text" name="group_search" value="{{ group_search }}" class="form-control" placeholder="Search groups...">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="material-icons">search</i> Search
+                    <p>Create, edit, and manage event groups</p>
+                </div>
+                <div class="admin-card-body">
+                    <!-- Search -->
+                    <div class="search-container">
+                        <form method="get" class="search-form">
+                            <input type="hidden" name="tab" value="groups">
+                            <input type="text" name="group_search" value="{{ group_search }}" class="search-input" placeholder="Search groups...">
+                            <button type="submit" class="search-btn">
+                                <span class="material-icons">search</span>
+                                Search
                                 </button>
-                                {% if group_search %}
-                                <a href="?{% if request.GET.user_search %}user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}" class="btn btn-outline-secondary">
-                                    <i class="material-icons">clear</i> Clear
-                                </a>
-                                {% endif %}
-                        </div>
                         </form>
                     </div>
-                    <!-- Create New Group Form -->
-                    <div class="d-flex justify-content-between align-items-center mb-4 mt-3">
-                        <button type="button" class="btn btn-success btn-lg rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#createGroupModal">
-                            <i class="material-icons me-2">add_circle</i> Create New Group
+
+                    <!-- Create New Group -->
+                    <div class="search-container">
+                        <form method="post" class="search-form">
+                            {% csrf_token %}
+                            <input type="text" name="new_group_name" class="search-input" placeholder="Enter new group name..." required>
+                            <button type="submit" name="create_group_submit" class="search-btn">
+                                <span class="material-icons">add</span>
+                            Create Group
                         </button>
+                        </form>
                     </div>
 
-                    <!-- Existing Groups Table -->
+                    <!-- Add Users to Group -->
+                    <div class="search-container" style="text-align: center;">
+                        <form method="post" class="search-form" style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+                            {% csrf_token %}
+                            <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; justify-content: center;">
+                                <select name="add_user_group_id" id="addUserGroupSelect" class="tom-select-groups-with-logos" required>
+                                    <option value="">Select a group...</option>
+                                    {% for group in all_groups %}
+                                        <option value="{{ group.id }}" 
+                                                data-name="{{ group.name }}"
+                                                data-description="{{ group.description|default:'' }}"
+                                                data-logo="{% if group.logo_base64 %}data:image/png;base64,{{ group.logo_base64 }}{% endif %}"
+                                                data-search="{{ group.name }} {{ group.description|default:'' }}">
+                                            {{ group.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <select name="selected_users" id="addUsersSelect" class="tom-select-users-with-avatars" multiple required>
+                                    <option value="">Select users...</option>
+                                    {% for user_obj in all_users %}
+                                        <option value="{{ user_obj.id }}" 
+                                                data-username="@{{ user_obj.username }}"
+                                                data-display-name="{{ user_obj.profile.get_display_name }}"
+                                                data-avatar-color="{{ user_obj.profile.get_avatar_color }}"
+                                                data-has-pfp="{% if user_obj.profile.profile_picture_base64 %}true{% else %}false{% endif %}"
+                                                data-search="{{ user_obj.profile.get_display_name }} {{ user_obj.username }}">
+                                            {{ user_obj.profile.get_display_name }} (@{{ user_obj.username }})
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="submit" name="add_users_to_group" class="search-btn">
+                                <span class="material-icons">group_add</span>
+                                Add Users to Group
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Groups Table -->
                     {% if all_groups %}
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle caption-top mb-0" id="groupsTable">
+                        <table class="user-table">
                                 <thead>
                                     <tr>
-                                        <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">label</i> Group Name</th>
-                                        <th scope="col" class="text-secondary" style="width: 480px;">Actions</th>
+                                    <th>Group Name</th>
+                                    <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for group in all_groups %}
                                     <tr>
                                         <td>
-                                            <span class="badge bg-info text-dark py-2 px-3 rounded-pill fw-normal">
-                                                <i class="material-icons me-1" style="font-size: 18px;">group</i>
-                                                {{ group.name }}
-                                            </span>
+                                        <div class="user-info">
+                                            <div class="user-avatar">
+                                                {% if group.logo_base64 %}
+                                                        <img src="data:image/png;base64,{{ group.logo_base64 }}" alt="{{ group.name }}">
+                                                {% else %}
+                                                        <span class="material-icons">group</span>
+                                                {% endif %}
+                                            </div>
+                                            <div class="user-details">
+                                                    <div class="user-name">{{ group.name }}</div>
+                                                    <div class="username">{{ group.description|default:"No description"|truncatechars:80|escape }}</div>
+                                            </div>
+                                        </div>
                                         </td>
                                         <td>
-                                            <form method="post" class="d-flex align-items-center gap-2">
+                                            <form method="post" style="display: flex; gap: 0.5rem; align-items: center;">
                                                 {% csrf_token %}
-                                                {% with rename_form=rename_group_forms|get_item:group.id %}
-                                                    {{ rename_form.name|add_class:"form-control form-control-sm flex-grow-1"|attr:"placeholder:Rename group" }}
-                                                {% endwith %}
-                                                <button type="submit" name="rename_group_{{ group.id }}" class="btn btn-sm btn-outline-primary rounded-circle" style="width: 38px; height: 38px;">
-                                                    <i class="material-icons">edit</i>
+                                                <input type="text" name="rename_{{ group.id }}" value="{{ group.name }}" class="form-control" style="min-width: 200px;">
+                                                <button type="submit" name="rename_group_{{ group.id }}" class="action-btn btn-primary" title="Edit group name">
+                                                    <span class="material-icons">edit</span>
                                                 </button>
                                                 <input type="hidden" name="group_id" value="{{ group.id }}">
-                                                <button type="submit" name="delete_group_submit" class="btn btn-sm btn-outline-danger rounded-circle" style="width: 38px; height: 38px;" onclick="return confirm('Are you sure you want to delete group \'{{ group.name }}\'?');">
-                                                    <i class="material-icons">delete</i>
+                                                <button type="submit" name="delete_group_submit" class="action-btn btn-danger" 
+                                                        onclick="return confirm('Are you sure you want to delete group \'{{ group.name }}\'?');"
+                                                        title="Delete group">
+                                                    <span class="material-icons">delete</span>
                                                 </button>
                                             </form>
-                                        </td>
-                                    </tr>
-                                    {% empty %}
-                                    <tr>
-                                        <td colspan="2" class="text-center py-4 text-muted">
-                                            <i class="material-icons d-block mb-2 fs-1">info</i>
-                                            No groups found.
                                         </td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
                         </div>
-                        <!-- Group Pagination -->
-                        {% if all_groups.paginator.num_pages > 1 %}
-                        <nav aria-label="Group list pagination" class="mt-4">
-                            <ul class="pagination justify-content-center material-circular-pagination">
+
+                        <!-- Pagination -->
+                        {% if all_groups.has_other_pages %}
+                            <nav class="pagination">
                                 {% if all_groups.has_previous %}
-                                <li class="page-item">
-                                    <a class="page-link material-page-link" href="?group_page=1{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="First">
-                                        <i class="material-icons" style="font-size: 24px;">first_page</i>
-                                    </a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link material-page-link" href="?group_page={{ all_groups.previous_page_number }}{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="Previous">
-                                        <i class="material-icons" style="font-size: 24px;">chevron_left</i>
-                                    </a>
-                                </li>
-                                {% else %}
-                                <li class="page-item disabled">
-                                    <span class="page-link material-page-link disabled">
-                                        <i class="material-icons" style="font-size: 24px;">first_page</i>
-                                    </span>
-                                </li>
-                                <li class="page-item disabled">
-                                    <span class="page-link material-page-link disabled">
-                                        <i class="material-icons" style="font-size: 24px;">chevron_left</i>
-                                    </span>
-                                </li>
+                                    <a href="?tab=groups&group_page={{ all_groups.previous_page_number }}{% if group_search %}&group_search={{ group_search }}{% endif %}" class="page-link">Previous</a>
                                 {% endif %}
+                                
                                 {% for num in all_groups.paginator.page_range %}
                                     {% if all_groups.number == num %}
-                                        <li class="page-item active"><a class="page-link material-page-link active" href="#">{{ num }}</a></li>
+                                        <span class="page-link active">{{ num }}</span>
                                     {% elif num > all_groups.number|add:'-3' and num < all_groups.number|add:'3' %}
-                                        <li class="page-item"><a class="page-link material-page-link" href="?group_page={{ num }}{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}">{{ num }}</a></li>
+                                        <a href="?tab=groups&group_page={{ num }}{% if group_search %}&group_search={{ group_search }}{% endif %}" class="page-link">{{ num }}</a>
                                     {% endif %}
                                 {% endfor %}
+                                
                                 {% if all_groups.has_next %}
-                                <li class="page-item">
-                                    <a class="page-link material-page-link" href="?group_page={{ all_groups.next_page_number }}{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="Next">
-                                        <i class="material-icons" style="font-size: 24px;">chevron_right</i>
-                                    </a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link material-page-link" href="?group_page={{ all_groups.paginator.num_pages }}{% if request.GET.user_page %}&user_page={{ request.GET.user_page }}{% endif %}{% if request.GET.user_search %}&user_search={{ request.GET.user_search }}{% endif %}{% if request.GET.group_search %}&group_search={{ request.GET.group_search }}{% endif %}" aria-label="Last">
-                                        <i class="material-icons" style="font-size: 24px;">last_page</i>
-                                    </a>
-                                </li>
-                                {% else %}
-                                <li class="page-item disabled">
-                                    <span class="page-link material-page-link disabled">
-                                        <i class="material-icons" style="font-size: 24px;">chevron_right</i>
-                                    </span>
-                                </li>
-                                <li class="page-item disabled">
-                                    <span class="page-link material-page-link disabled">
-                                        <i class="material-icons" style="font-size: 24px;">last_page</i>
-                                    </span>
-                                </li>
+                                    <a href="?tab=groups&group_page={{ all_groups.next_page_number }}{% if group_search %}&group_search={{ group_search }}{% endif %}" class="page-link">Next</a>
                                 {% endif %}
-                            </ul>
-                        </nav>
+                            </nav>
                         {% endif %}
-                    {% else %}
-                        <div class="alert alert-info border-0 rounded-3 text-muted">
-                            <i class="material-icons me-2">info</i>
-                            No groups created yet.
+                                {% else %}
+                        <div class="empty-state">
+                            <span class="material-icons">group_off</span>
+                            <h4>No groups found</h4>
+                            <p>Create your first group to get started</p>
                         </div>
                     {% endif %}
                 </div>
-                <div class="tab-pane fade" id="bans" role="tabpanel" aria-labelledby="bans-tab">
-                    <h2 class="card-title h4 mb-4 text-primary fw-bold">
-                        <i class="material-icons me-2">group_off</i> Manage Bans
+                        </div>
+                    </div>
+
+        <!-- Bans Tab -->
+        <div class="tab-pane fade" id="bans" role="tabpanel">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h2>
+                        <span class="material-icons">gavel</span>
+                        Ban Management
                     </h2>
+                    <p>Manage site-wide user bans</p>
+                        </div>
+                <div class="admin-card-body">
+                    <!-- Ban User Form -->
+                    <div class="search-container">
+                        <form method="post" class="search-form">
+                            {% csrf_token %}
+                            <select name="ban_user_id" id="banUserSelect" class="tom-select-ban" required>
+                                <option value="">Select user to ban...</option>
+                                {% for user_obj in all_users %}
+                                                                <option value="{{ user_obj.id }}" 
+                                    data-username="@{{ user_obj.username }}"
+                                    data-display-name="{{ user_obj.profile.get_display_name }}"
+                                    data-avatar-color="{{ user_obj.profile.get_avatar_color }}"
+                                    data-has-pfp="{% if user_obj.profile.profile_picture_base64 %}true{% else %}false{% endif %}"
+                                    data-search="{{ user_obj.profile.get_display_name }} {{ user_obj.username }}">
+                                {{ user_obj.profile.get_display_name }} (@{{ user_obj.username }})
+                            </option>
+                                {% endfor %}
+                            </select>
+                            <input type="text" name="ban_reason" class="search-input" placeholder="Ban reason..." required>
+                            <button type="submit" name="ban_user_submit" class="search-btn">
+                                <span class="material-icons">gavel</span>
+                                Ban User
+                            </button>
+                        </form>
+                    </div>
 
-                    <!-- Site-wide Ban Form -->
-                    <div class="card bg-light border-0 rounded-3 mb-4">
-                        <div class="card-body">
-                            <h3 class="h5 mb-3 text-secondary">
-                                <i class="material-icons me-2">gavel</i> Apply Site-wide Ban
-                            </h3>
-                            <form method="post" id="sitewideBanForm">
-                                {% csrf_token %}
-                                <input type="hidden" name="action" value="ban">
-                                <input type="hidden" name="ban_type" value="sitewide">
-                                <div class="mb-3">
-                                    <label for="banUsernameInput" class="form-label">
-                                        <i class="material-icons align-middle me-1">person</i> User to Ban (Username)
-                                    </label>
-                                    <select class="form-control" id="banUsernameInput" name="user_id" placeholder="Search for a user..." required></select>
+                    <!-- Banned Users Table -->
+                    {% if all_banned_users %}
+                        <div class="table-responsive">
+                            <table class="user-table">
+                                <thead>
+                                    <tr>
+                                        <th>User</th>
+                                        <th>Banned By</th>
+                                        <th>Reason</th>
+                                        <th>Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for ban in all_banned_users %}
+                                    <tr>
+                                        <td>
+                                            <div class="user-info">
+                                                <div class="user-avatar" {% if not ban.user.profile.profile_picture_base64 %}style="background-color: {{ ban.user.profile.get_avatar_color }};"{% endif %}>
+                                                    {% if ban.user.profile.profile_picture_base64 %}
+                                                        <img src="{{ ban.user.profile.profile_picture_base64 }}" alt="{{ ban.user.profile.get_display_name }}">
+                                                    {% else %}
+                                                        {{ ban.user.profile.get_initials }}
+                                                    {% endif %}
+                    </div>
+                                                <div class="user-details">
+                                                    <div class="user-name">{{ ban.user.profile.get_display_name }}</div>
+                                                    <div class="username">@{{ ban.user.username }}</div>
+                </div>
+                                    </div>
+                                        </td>
+                                        <td>
+                                            {% if ban.banned_by %}
+                                                {{ ban.banned_by.profile.get_display_name }}
+                                            {% else %}
+                                                System
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ ban.reason|default:"No reason provided" }}</td>
+                                        <td>{{ ban.banned_at|date:"M j, Y g:i A" }}</td>
+                                        <td>
+                                            <form method="post" style="display: inline;">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="unban_user_id" value="{{ ban.user.id }}">
+                                                <button type="submit" name="unban_user_submit" class="action-btn btn-success">
+                                                    <span class="material-icons">undo</span>
+                                                    Unban
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                                 </div>
-                                <div class="mb-3">
-                                    <label for="banReasonInput" class="form-label">
-                                        <i class="material-icons align-middle me-1">description</i> Reason (Optional)
-                                    </label>
-                                    <textarea class="form-control" id="banReasonInput" name="reason" rows="3" placeholder="Enter reason for ban"></textarea>
+                    {% else %}
+                        <div class="empty-state">
+                            <span class="material-icons">gavel</span>
+                            <h4>No banned users</h4>
+                            <p>All users are currently in good standing</p>
+                        </div>
+                    {% endif %}
+                </div>
                                 </div>
-                                <div class="d-grid">
-                                    <button type="submit" class="btn btn-danger btn-lg rounded-pill px-4 shadow-sm">
-                                        <i class="material-icons me-2">gavel</i> Apply Site-wide Ban
+                                </div>
+                                
+        <!-- Notifications Tab -->
+        <div class="tab-pane fade" id="notify" role="tabpanel">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h2>
+                        <span class="material-icons">notifications</span>
+                        Send Notifications
+                    </h2>
+                    <p>Send notifications to users, organizers, or everyone</p>
+                                </div>
+                <div class="admin-card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label class="form-label">Recipients</label>
+                            <select name="notification_recipients" class="form-control" required>
+                                <option value="">Select recipients...</option>
+                                <option value="all">All Users</option>
+                                <option value="organizers">Event Organizers</option>
+                                <option value="selected">Selected Users</option>
+                            </select>
+                </div>
+                        
+                        <div class="form-group" id="user-selection" style="display: none;">
+                            <label class="form-label">Select Users</label>
+                            <select name="selected_users" id="notificationUserSelect" class="tom-select-notification-users" multiple>
+                                {% for user_obj in all_users %}
+                                    <option value="{{ user_obj.id }}" 
+                                            data-username="@{{ user_obj.username }}"
+                                            data-display-name="{{ user_obj.profile.get_display_name }}"
+                                            data-avatar-color="{{ user_obj.profile.get_avatar_color }}"
+                                            data-has-pfp="{% if user_obj.profile.profile_picture_base64 %}true{% else %}false{% endif %}"
+                                            data-search="{{ user_obj.profile.get_display_name }} {{ user_obj.username }}">
+                                        {{ user_obj.profile.get_display_name }} (@{{ user_obj.username }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Message</label>
+                            <textarea name="notification_message" class="form-control form-textarea" placeholder="Enter your notification message..." required></textarea>
+                    </div>
+                    
+                        <div class="form-group">
+                            <label class="form-label">Link (Optional)</label>
+                            <input type="url" name="notification_link" class="form-control" placeholder="https://...">
+                        </div>
+                        
+                        <button type="submit" name="send_notification" class="action-btn btn-primary">
+                            <span class="material-icons">send</span>
+                            Send Notification
+                        </button>
+                    </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+        <!-- Audit Log Tab -->
+        <div class="tab-pane fade" id="audit" role="tabpanel">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h2>
+                        <span class="material-icons">history</span>
+                        Audit Log
+                    </h2>
+                    <p>View system activity and administrative actions</p>
+                                </div>
+                <div class="admin-card-body">
+                    <!-- Search -->
+                    <div class="search-container">
+                        <form method="get" class="search-form">
+                            <input type="hidden" name="tab" value="audit">
+                            <input type="text" name="audit_search" value="{{ audit_search }}" class="search-input" placeholder="Search audit log...">
+                            <select name="audit_action_filter" class="form-control">
+                                        <option value="">All Actions</option>
+                                        {% for action_code, action_name in audit_actions %}
+                                            <option value="{{ action_code }}" {% if audit_action_filter == action_code %}selected{% endif %}>{{ action_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                            <button type="submit" class="search-btn">
+                                <span class="material-icons">search</span>
+                                Search
                                     </button>
-                                </div>
                             </form>
-                        </div>
                     </div>
 
-
-                    <!-- Search Bar for Bans -->
-                    <div class="mb-4">
-                        <div class="input-group">
-                            <span class="input-group-text bg-light">
-                                <i class="material-icons">search</i>
-                            </span>
-                            <input type="text" id="banSearch" class="form-control" placeholder="Search banned users...">
-                        </div>
-                    </div>
+                    <!-- Audit Log Table -->
+                    {% if audit_logs %}
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle caption-top mb-0" id="bansTable">
+                        <table class="user-table">
                             <thead>
                                 <tr>
-                                    <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">person</i> Banned User</th>
-                                    <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">group</i> Group/Type</th>
-                                    <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">admin_panel_settings</i> Banned By</th>
-                                    <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">description</i> Reason</th>
-                                    <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">event</i> Banned At</th>
-                                    <th scope="col" class="text-secondary"><i class="material-icons me-1 opacity-75">cancel</i> Action</th>
+                                    <th>User</th>
+                                    <th>Action</th>
+                                    <th>Description</th>
+                                        <th>Timestamp</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for banned_entry in all_banned_users %}
+                                    {% for log in audit_logs %}
                                 <tr>
-                                    <td>{{ banned_entry.user.profile.get_display_name }}</td>
                                     <td>
-                                        {% if banned_entry.group %}
-                                            {{ banned_entry.group.name }}
-                                        {% elif banned_entry.organizer %}
-                                            Organizer: {{ banned_entry.organizer.username }}
+                                            {% if log.user %}
+                                                <div class="user-info">
+                                                    <div class="user-avatar" {% if not log.user.profile.profile_picture_base64 %}style="background-color: {{ log.user.profile.get_avatar_color }};"{% endif %}>
+                                                        {% if log.user.profile.profile_picture_base64 %}
+                                                            <img src="{{ log.user.profile.profile_picture_base64 }}" alt="{{ log.user.profile.get_display_name }}">
                                         {% else %}
-                                            Site-wide
+                                                            {{ log.user.profile.get_initials }}
+                                        {% endif %}
+                                        </div>
+                                                    <div class="user-details">
+                                                        <div class="user-name">{{ log.user.profile.get_display_name }}</div>
+                                                        <div class="username">@{{ log.user.username }}</div>
+                                                    </div>
+                                                </div>
+                                        {% else %}
+                                                System
                                         {% endif %}
                                     </td>
-                                    <td>{{ banned_entry.banned_by.username|default:"N/A" }}</td>
-                                    <td>{{ banned_entry.reason|default:"No reason provided" }}</td>
-                                    <td>{{ banned_entry.banned_at|date:"Y-m-d H:i" }}</td>
                                     <td>
-                                        <button type="button" class="btn btn-sm btn-success rounded-pill px-3 unban-btn"
-                                                data-user-id="{{ banned_entry.user.id }}"
-                                                data-group-id="{{ banned_entry.group.id|default:"" }}"
-                                                data-organizer-id="{{ banned_entry.organizer.id|default:"" }}"
-                                                data-ban-type="{% if banned_entry.group %}group{% elif banned_entry.organizer %}organizer{% else %}sitewide{% endif %}">
-                                            <i class="material-icons me-1">lock_open</i> Unban
-                                        </button>
+                                            <span class="status-indicator status-staff">{{ log.get_action_display }}</span>
                                     </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="6" class="text-center text-muted">No users currently banned.</td>
+                                        <td>{{ log.description }}</td>
+                                        <td>{{ log.timestamp|date:"M j, Y g:i A" }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
-                </div>
-                <div class="tab-pane fade" id="banner" role="tabpanel" aria-labelledby="banner-tab">
-                    <h2 class="card-title h4 mb-4 text-primary fw-bold">
-                        <i class="material-icons me-2">campaign</i> Site Banner Management
-                    </h2>
-                    
-                    <div class="card bg-light border-0 rounded-3 mb-4">
-                        <div class="card-body">
-                            <h3 class="h5 mb-3 text-secondary">
-                                <i class="material-icons me-2">settings</i> Configure Site Banner
-                            </h3>
-                            <form method="post" id="bannerForm">
-                                {% csrf_token %}
-                                <input type="hidden" name="action" value="update_banner">
-                                
-                                <div class="mb-3">
-                                    <label for="banner_enabled" class="form-label">
-                                        <i class="material-icons align-middle me-1">toggle_on</i> Enable Banner
-                                    </label>
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" id="banner_enabled" name="banner_enabled" {% if banner_enabled %}checked{% endif %}>
-                                        <label class="form-check-label" for="banner_enabled">
-                                            Show banner at the top of the site
-                                        </label>
-                                    </div>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="banner_text" class="form-label">
-                                        <i class="material-icons align-middle me-1">text_fields</i> Banner Text
-                                    </label>
-                                    <textarea class="form-control" id="banner_text" name="banner_text" rows="3" placeholder="Enter banner message...">{{ banner_text|default:'' }}</textarea>
-                                    <div class="form-text">This text will be displayed in the banner at the top of the site.</div>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="banner_type" class="form-label">
-                                        <i class="material-icons align-middle me-1">palette</i> Banner Style
-                                    </label>
-                                    <select class="form-control" id="banner_type" name="banner_type">
-                                        <option value="info" {% if banner_type == 'info' %}selected{% endif %}>Information (Blue)</option>
-                                        <option value="warning" {% if banner_type == 'warning' %}selected{% endif %}>Warning (Yellow)</option>
-                                        <option value="success" {% if banner_type == 'success' %}selected{% endif %}>Success (Green)</option>
-                                        <option value="danger" {% if banner_type == 'danger' %}selected{% endif %}>Danger (Red)</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="d-grid">
-                                    <button type="submit" class="btn btn-primary btn-lg rounded-pill px-4 shadow-sm">
-                                        <i class="material-icons me-2">save</i> Update Banner
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                    
-                    <!-- Banner Preview -->
-                    <div class="card border-0 rounded-3 mb-4">
-                        <div class="card-header bg-light">
-                            <h4 class="h6 mb-0">
-                                <i class="material-icons me-2">visibility</i> Banner Preview
-                            </h4>
-                        </div>
-                        <div class="card-body p-0">
-                            <div id="bannerPreview" class="site-banner" style="display: none; margin: 0; border-radius: 0.5rem;">
-                                <div class="container">
-                                    <div class="d-flex align-items-center justify-content-between">
-                                        <div class="d-flex align-items-center">
-                                            <i class="material-icons me-2">info</i>
-                                            <span id="previewText">Banner preview will appear here</span>
-                                        </div>
-                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="noBannerPreview" class="text-muted text-center py-4">
-                                <i class="material-icons fs-1 mb-2">visibility_off</i>
-                                <p class="mb-0">Banner is currently disabled</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="tab-pane fade" id="notify" role="tabpanel" aria-labelledby="notify-tab">
-                    <div class="mb-4 mt-4">
-                        <form method="post" action="{% url 'send_notification' %}" class="row g-2 align-items-end">
-                            {% csrf_token %}
-                            <div class="col-md-7">
-                                <label for="user_select" class="form-label fw-bold">Select users to notify</label>
-                                <select id="user_select" name="user_ids" multiple required class="form-control tomselect-user-select">
-                                    <option value="" disabled selected>Please select users</option>
-                                    {% for user_obj in users_to_promote %}
-                                        <option value="{{ user_obj.id }}">{{ user_obj.profile.get_display_name }} ({{ user_obj.email }})</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label for="notification_message" class="form-label fw-bold">Message</label>
-                                <input type="text" class="form-control" id="notification_message" name="notification_message" placeholder="Enter notification message..." required>
-                            </div>
-                            <div class="col-md-2 d-grid">
-                                <button type="submit" class="btn btn-warning btn-lg rounded-pill shadow-sm mt-4">
-                                    <i class="material-icons me-1">campaign</i> Send
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                {% if user.profile.can_post_blog %}
-                <div class="tab-pane fade" id="blogmgmt" role="tabpanel" aria-labelledby="blogmgmt-tab">
-                    <h2 class="card-title h4 mb-4 text-primary fw-bold">
-                        <i class="material-icons me-2">rss_feed</i> Blog Management
-                    </h2>
-                    <form method="post" action="{% url 'post_to_bluesky' %}">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            <label for="id_title" class="form-label">Title</label>
-                            <input type="text" name="title" id="id_title" class="form-control" placeholder="Title" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="id_content" class="form-label">Content</label>
-                            <textarea name="content" id="id_content" class="form-control" rows="5" placeholder="Write your blog post here..." required></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="material-icons me-1">send</i> Post to Blog/Bluesky
-                        </button>
-                    </form>
-                    <hr class="my-4">
-                    <h3 class="h5 mb-3 text-secondary fw-bold">
-                        <i class="material-icons me-2">list</i> Recent Blog Posts
-                    </h3>
-                    <div id="bluesky-posts-list">
-                        {% if bluesky_posts %}
-                            {% for post in bluesky_posts %}
-                                <div class="card mb-3">
-                                    <div class="card-body">
-                                        <div class="fw-bold mb-1">{{ post.post.record.text|linebreaksbr }}</div>
-                                        <div class="text-muted small mb-2">
-                                            {{ post.post.record.created_at|date:"F j, Y, g:i A" }}
-                                        </div>
-                                        <form method="post" action="{% url 'delete_bluesky_post' %}" onsubmit="return confirm('Are you sure you want to delete this post?');">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="uri" value="{{ post.post.uri }}">
-                                            <button type="submit" class="btn btn-danger btn-sm">
-                                                <i class="material-icons">delete</i> Delete
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                            {% if bluesky_posts_paginator and bluesky_posts_paginator.num_pages > 1 %}
-                            <nav aria-label="Bluesky blog post pagination" class="mt-3">
-                                <ul class="pagination justify-content-center">
-                                    {% if bluesky_posts.has_previous %}
-                                        <li class="page-item">
-                                            <a class="page-link" href="?tab=blogmgmt&blog_page=1" aria-label="First">&laquo;</a>
-                                        </li>
-                                        <li class="page-item">
-                                            <a class="page-link" href="?tab=blogmgmt&blog_page={{ bluesky_posts.previous_page_number }}" aria-label="Previous">&lsaquo;</a>
-                                        </li>
-                                    {% endif %}
-                                    {% for num in bluesky_posts_paginator.page_range %}
-                                        {% if bluesky_posts.number == num %}
-                                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-                                        {% elif num > bluesky_posts.number|add:'-3' and num < bluesky_posts.number|add:'3' %}
-                                            <li class="page-item"><a class="page-link" href="?tab=blogmgmt&blog_page={{ num }}">{{ num }}</a></li>
-                                        {% endif %}
-                                    {% endfor %}
-                                    {% if bluesky_posts.has_next %}
-                                        <li class="page-item">
-                                            <a class="page-link" href="?tab=blogmgmt&blog_page={{ bluesky_posts.next_page_number }}" aria-label="Next">&rsaquo;</a>
-                                        </li>
-                                        <li class="page-item">
-                                            <a class="page-link" href="?tab=blogmgmt&blog_page={{ bluesky_posts_paginator.num_pages }}" aria-label="Last">&raquo;</a>
-                                        </li>
-                                    {% endif %}
-                                </ul>
-                            </nav>
-                            {% endif %}
-                        {% else %}
-                            <div class="alert alert-info">No recent posts found.</div>
-                        {% endif %}
-                    </div>
-                </div>
-                {% endif %}
-            </div>
 
+                        <!-- Pagination -->
+                        {% if audit_logs.has_other_pages %}
+                            <nav class="pagination">
+                            {% if audit_logs.has_previous %}
+                                    <a href="?tab=audit&audit_page={{ audit_logs.previous_page_number }}{% if audit_search %}&audit_search={{ audit_search }}{% endif %}{% if audit_action_filter %}&audit_action_filter={{ audit_action_filter }}{% endif %}" class="page-link">Previous</a>
+                            {% endif %}
+                                
+                            {% for num in audit_logs.paginator.page_range %}
+                                {% if audit_logs.number == num %}
+                                        <span class="page-link active">{{ num }}</span>
+                                {% elif num > audit_logs.number|add:'-3' and num < audit_logs.number|add:'3' %}
+                                        <a href="?tab=audit&audit_page={{ num }}{% if audit_search %}&audit_search={{ audit_search }}{% endif %}{% if audit_action_filter %}&audit_action_filter={{ audit_action_filter }}{% endif %}" class="page-link">{{ num }}</a>
+                                {% endif %}
+                            {% endfor %}
+                                
+                            {% if audit_logs.has_next %}
+                                    <a href="?tab=audit&audit_page={{ audit_logs.next_page_number }}{% if audit_search %}&audit_search={{ audit_search }}{% endif %}{% if audit_action_filter %}&audit_action_filter={{ audit_action_filter }}{% endif %}" class="page-link">Next</a>
+                            {% endif %}
+                    </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="empty-state">
+                            <span class="material-icons">history</span>
+                            <h4>No audit log entries</h4>
+                            <p>No administrative actions have been recorded yet</p>
+                    </div>
+                    {% endif %}
+        </div>
+                            </div>
+                            </div>
+
+        <!-- Blog Tab -->
+        <div class="tab-pane fade" id="blog" role="tabpanel">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h2>
+                        <span class="material-icons">article</span>
+                        Blog Posts
+                    </h2>
+                    <p>Create and manage Bluesky blog posts</p>
+            </div>
+                <div class="admin-card-body">
+                    <!-- Create Blog Post -->
+            <form method="post">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label class="form-label">Title</label>
+                            <input type="text" name="blog_title" class="form-control" placeholder="Enter blog post title..." required>
+                    </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Content</label>
+                            <textarea name="blog_content" class="form-control form-textarea" placeholder="Write your blog post content..." required></textarea>
+                </div>
+                        
+                        <button type="submit" name="create_blog_post" class="action-btn btn-primary">
+                            <span class="material-icons">post_add</span>
+                            Post to Bluesky
+                    </button>
+                    </form>
+
+                    <!-- Recent Blog Posts -->
+                    {% if bluesky_posts %}
+                        <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Recent Posts</h3>
+                        <div class="table-responsive">
+                            <table class="user-table">
+                                <thead>
+                                    <tr>
+                                        <th>Post</th>
+                                        <th>Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for post in bluesky_posts %}
+                                    <tr>
+                                        <td>
+                                            <div class="user-details">
+                                                <div class="user-name">{{ post.post.text|truncatechars:100 }}</div>
+                                                <div class="username">{{ post.post.uri }}</div>
+                </div>
+                                        </td>
+                                        <td>{{ post.post.indexedAt|date:"M j, Y g:i A" }}</td>
+                                        <td>
+                                            <form method="post" style="display: inline;">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="delete_post_uri" value="{{ post.post.uri }}">
+                                                <button type="submit" name="delete_blog_post" class="action-btn btn-danger" 
+                                                        onclick="return confirm('Are you sure you want to delete this post?');">
+                                                    <span class="material-icons">delete</span>
+                                                    Delete
+                                                </button>
+            </form>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <span class="material-icons">article</span>
+                            <h4>No blog posts</h4>
+                            <p>Create your first blog post to get started</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('DOM Content Loaded. Attempting to initialize TomSelect.');
-        const elements = document.querySelectorAll('select.tomselect-allowed-groups');
-        console.log(`Found ${elements.length} elements with class 'tomselect-allowed-groups'.`);
-        elements.forEach(function(element) {
-            console.log('Initializing TomSelect for element:', element);
-            new TomSelect(element, {
-                plugins: {
-                    remove_button: {
-                        title: 'Remove this item',
-                    }
-                },
-                dropdownParent: 'body',
-                create: false, // Prevent users from creating new options
-                onInitialize: function() {
-                    // Add modern styling to TomSelect elements
-                    this.wrapper.classList.add('form-select-sm', 'rounded-pill', 'shadow-sm');
-                    this.control.classList.add('rounded-pill', 'border-0');
-                    this.dropdown.classList.add('shadow', 'rounded-3', 'border-0');
-                    
-                    // Style the control input
-                    const controlInput = this.control.querySelector('input');
-                    if (controlInput) {
-                        controlInput.classList.add('form-control-sm', 'border-0', 'shadow-none');
-                        controlInput.style.fontSize = '0.875rem';
-                    }
-                    
-                    // Style the wrapper
-                    this.wrapper.style.minHeight = '38px';
-                    this.wrapper.style.border = '1px solid #dee2e6';
-                    this.wrapper.style.backgroundColor = '#fff';
-                    
-                    // Style the dropdown items
-                    const dropdownItems = this.dropdown.querySelectorAll('.option');
-                    dropdownItems.forEach(item => {
-                        item.style.padding = '0.5rem 1rem';
-                        item.style.fontSize = '0.875rem';
-                    });
-                }
-            });
-        });
-
-        // Ban search functionality
-        const banSearch = document.getElementById('banSearch');
-        const bansTable = document.getElementById('bansTable');
-        
-        if (banSearch && bansTable) {
-            banSearch.addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase();
-                const rows = bansTable.getElementsByTagName('tr');
-                
-                for (let i = 1; i < rows.length; i++) { // Start from 1 to skip header
-                    const row = rows[i];
-                    const userCell = row.querySelector('td:first-child');
-                    const groupCell = row.querySelector('td:nth-child(2)');
-                    
-                    if (userCell && groupCell) {
-                        const userText = userCell.textContent.toLowerCase();
-                        const groupText = groupCell.textContent.toLowerCase();
-                        row.style.display = (userText.includes(searchTerm) || groupText.includes(searchTerm)) ? '' : 'none';
-                    }
-                }
-            });
-        }
-
-        // User search autocomplete for site-wide ban
-        new TomSelect('#banUsernameInput', {
-            valueField: 'id',
-            labelField: 'text',
-            searchField: 'text',
-            create: false,
-            load: function(query, callback) {
-                if (!query.length) return callback();
-                fetch('{% url "user_search_autocomplete" %}?q=' + encodeURIComponent(query))
-                    .then(response => response.json())
-                    .then(data => {
-                        callback(data.results);
-                    }).catch(() => {
-                        callback();
-                    });
-            },
-            onInitialize: function() {
-                this.dropdown.classList.add('shadow', 'rounded-3');
-            }
-        });
-
-        // Handle unban buttons
-        document.querySelectorAll('.unban-btn').forEach(button => {
-            button.addEventListener('click', async function() {
-                const userId = this.dataset.userId;
-                const groupId = this.dataset.groupId;
-                const organizerId = this.dataset.organizerId;
-                const banType = this.dataset.banType;
-                
-                if (!confirm('Are you sure you want to unban this user?')) {
-                    return;
-                }
-
-                const formData = new FormData();
-                formData.append('user_id', userId);
-                formData.append('group_id', groupId);
-                formData.append('organizer_id', organizerId);
-                formData.append('action', 'unban');
-                formData.append('ban_type', banType);
-
-                try {
-                    const url = `/users/${userId}/ban/`;
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRFToken': getCookie('csrftoken')
-                        },
-                        body: formData
-                    });
-
-                    const data = await response.json();
-
-                    if (response.ok) {
-                        alert(data.message);
-                        location.reload();
-                    } else {
-                        alert('Error: ' + data.message);
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('An error occurred while processing your request.');
-                }
-            });
-        });
-
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-
-        // Tab persistence logic
-        const adminTabs = document.getElementById('adminTabs');
-        if (adminTabs) {
-            const tabButtons = adminTabs.querySelectorAll('.nav-link');
-            
-            // Function to update URL with tab, pagination, and search state
-            function updateUrlWithState(tabId, userPage, groupPage, userSearch, groupSearch) {
-                const params = new URLSearchParams(window.location.search);
-                if (userPage) params.set('user_page', userPage);
-                if (groupPage) params.set('group_page', groupPage);
-                if (userSearch) params.set('user_search', userSearch);
-                if (groupSearch) params.set('group_search', groupSearch);
-                params.set('tab', tabId);
-                const newUrl = `${window.location.pathname}?${params.toString()}`;
-                window.history.pushState({}, '', newUrl);
-            }
-
-            tabButtons.forEach(button => {
-                button.addEventListener('shown.bs.tab', function (event) {
-                    const tabId = event.target.id;
-                    const currentUserPage = new URLSearchParams(window.location.search).get('user_page');
-                    const currentGroupPage = new URLSearchParams(window.location.search).get('group_page');
-                    const currentUserSearch = new URLSearchParams(window.location.search).get('user_search');
-                    const currentGroupSearch = new URLSearchParams(window.location.search).get('group_search');
-                    
-                    // Store the current state
-                    localStorage.setItem('lastAdminTab', tabId);
-                    if (currentUserPage) localStorage.setItem('lastUserPage', currentUserPage);
-                    if (currentGroupPage) localStorage.setItem('lastGroupPage', currentGroupPage);
-                    if (currentUserSearch) localStorage.setItem('lastUserSearch', currentUserSearch);
-                    if (currentGroupSearch) localStorage.setItem('lastGroupSearch', currentGroupSearch);
-                    
-                    // Update URL with current state
-                    updateUrlWithState(tabId, currentUserPage, currentGroupPage, currentUserSearch, currentGroupSearch);
-                });
-            });
-
-            // Restore state on page load
-            const urlParams = new URLSearchParams(window.location.search);
-            const tabParam = urlParams.get('tab');
-            const userPage = urlParams.get('user_page');
-            const groupPage = urlParams.get('group_page');
-            const userSearch = urlParams.get('user_search');
-            const groupSearch = urlParams.get('group_search');
-            
-            // If we have a tab parameter, use it
-            if (tabParam) {
-                const tabButton = document.getElementById(tabParam);
-                if (tabButton) {
-                    const bsTab = new bootstrap.Tab(tabButton);
-                    bsTab.show();
-                }
-            } else {
-                // Otherwise use the stored tab
-                const lastTab = localStorage.getItem('lastAdminTab');
-                if (lastTab) {
-                    const lastTabButton = document.getElementById(lastTab);
-                    if (lastTabButton) {
-                        const bsTab = new bootstrap.Tab(lastTabButton);
-                        bsTab.show();
-                        
-                        // If we don't have pagination/search params but have stored ones, update URL
-                        if (!userPage && !groupPage && !userSearch && !groupSearch) {
-                            const lastUserPage = localStorage.getItem('lastUserPage');
-                            const lastGroupPage = localStorage.getItem('lastGroupPage');
-                            const lastUserSearch = localStorage.getItem('lastUserSearch');
-                            const lastGroupSearch = localStorage.getItem('lastGroupSearch');
-                            updateUrlWithState(lastTab, lastUserPage, lastGroupPage, lastUserSearch, lastGroupSearch);
-                        }
-                    }
-                }
-            }
-        }
-
-        // Handle site-wide ban form submission via AJAX
-        const sitewideBanForm = document.getElementById('sitewideBanForm');
-        if (sitewideBanForm) {
-            sitewideBanForm.addEventListener('submit', async function(event) {
-                event.preventDefault(); // Prevent default form submission
-
-                const formData = new FormData(this); // 'this' refers to the form element
-                const selectedUserId = formData.get('user_id');
-                if (!selectedUserId) {
-                    alert('Please select a user to ban.');
-                    return;
-                }
-
-                try {
-                    const url = `/users/${selectedUserId}/ban/`;
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRFToken': getCookie('csrftoken')
-                        },
-                        body: formData
-                    });
-
-                    const data = await response.json();
-
-                    if (response.ok) {
-                        alert(data.message);
-                        // Reload the page to show updated ban list and clear form
-                        location.reload(); 
-                    } else {
-                        // Handle specific error messages from the backend
-                        alert('Error: ' + data.message);
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('An unexpected error occurred while applying the ban.');
-                }
-            });
-        }
-
-        // Banner preview functionality
-        const bannerForm = document.getElementById('bannerForm');
-        const bannerEnabled = document.getElementById('banner_enabled');
-        const bannerText = document.getElementById('banner_text');
-        const bannerType = document.getElementById('banner_type');
-        const bannerPreview = document.getElementById('bannerPreview');
-        const noBannerPreview = document.getElementById('noBannerPreview');
-        const previewText = document.getElementById('previewText');
-
-        function updateBannerPreview() {
-            const enabled = bannerEnabled.checked;
-            const text = bannerText.value.trim();
-            const type = bannerType.value;
-
-            if (enabled && text) {
-                // Show banner preview
-                bannerPreview.style.display = 'block';
-                noBannerPreview.style.display = 'none';
-                
-                // Update preview content
-                previewText.textContent = text;
-                
-                // Update banner style - use the same classes as the actual banner
-                bannerPreview.className = `site-banner alert-${type}`;
-                bannerPreview.style.margin = '0';
-                bannerPreview.style.borderRadius = '0.5rem';
-                
-                // Update icon based on type
-                const icon = bannerPreview.querySelector('.material-icons');
-                const iconMap = {
-                    'info': 'info',
-                    'warning': 'warning',
-                    'success': 'check_circle',
-                    'danger': 'error'
-                };
-                icon.textContent = iconMap[type] || 'info';
-            } else {
-                // Hide banner preview
-                bannerPreview.style.display = 'none';
-                noBannerPreview.style.display = 'block';
-            }
-        }
-
-        // Add event listeners for banner preview
-        if (bannerEnabled) {
-            bannerEnabled.addEventListener('change', updateBannerPreview);
-        }
-        if (bannerText) {
-            bannerText.addEventListener('input', updateBannerPreview);
-        }
-        if (bannerType) {
-            bannerType.addEventListener('change', updateBannerPreview);
-        }
-
-        // Initialize banner preview on page load
-        updateBannerPreview();
-
-        // TomSelect for user notification
-        if (window.TomSelect) {
-            new TomSelect('#user_select', {
-                plugins: {
-                    remove_button: {
-                        title: 'Remove this user',
-                    }
-                },
-                dropdownParent: 'body',
-                create: false,
-                maxOptions: 1000,
-                render: {
-                    option: function(data, escape) {
-                        return `<div>${escape(data.text)}</div>`;
-                    }
-                }
-            });
-        }
-    });
-</script>
-
-<!-- Create Group Modal -->
-<div class="modal fade" id="createGroupModal" tabindex="-1" aria-labelledby="createGroupModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-3 shadow">
-            <div class="modal-header bg-primary text-white border-0">
-                <h5 class="modal-title" id="createGroupModalLabel"><i class="material-icons me-2">group_add</i> Create New Group</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editUserModalLabel">
+                    <span class="material-icons">edit</span>
+                    Edit User
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="post">
+            <form method="post" id="editUserForm">
                 {% csrf_token %}
-                <div class="modal-body p-4">
-                    <div class="mb-3">
-                        <label for="id_name" class="form-label visually-hidden">Group Name</label>
-                        {{ group_form.name|add_class:"form-control form-control-lg"|attr:"placeholder:Enter new group name" }}
+                <div class="modal-body">
+                    <div class="user-info mb-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="user-avatar" id="modalUserAvatar" style="width: 48px; height: 48px; flex-shrink: 0;">
+                                <!-- User avatar will be populated by JavaScript -->
+                        </div>
+                            <div class="user-details flex-grow-1">
+                                <div class="user-name" id="modalUserName" style="font-size: 1.1rem; font-weight: 600;"></div>
+                                <div class="username" id="modalUserUsername" style="font-size: 0.9rem; color: #6b7280;"></div>
+                                <div class="user-id" id="modalUserId" style="font-size: 0.8rem; color: #9ca3af;"></div>
+                        </div>
+                                        </div>
+                                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Permissions</label>
+                        <div class="permission-controls">
+                            <div class="permission-toggle">
+                                <input type="checkbox" id="modal_staff" name="modal_staff">
+                                <label for="modal_staff">Staff</label>
+                                <span class="permission-description">Superuser access</span>
+                            </div>
+                            <div class="permission-toggle">
+                                <input type="checkbox" id="modal_blog" name="modal_blog">
+                                <label for="modal_blog">Blog Post</label>
+                                <span class="permission-description">Can post to Bluesky</span>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="modal-footer border-0 pt-0 pe-4 pb-4">
-                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" name="create_group_submit" class="btn btn-success rounded-pill px-4"><i class="material-icons me-2">add</i> Create Group</button>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Groups</label>
+                        <select name="modal_groups" id="modalGroups" class="tom-select-modal-groups" multiple>
+                            {% for group in all_groups %}
+                                <option value="{{ group.id }}" 
+                                        data-name="{{ group.name }}"
+                                        data-description="{{ group.description|default:'' }}">
+                                    {{ group.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                                </div>
+                    </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" name="update_user_modal" class="btn btn-primary">
+                        <span class="material-icons">save</span>
+                        Save Changes
+                    </button>
                 </div>
             </form>
+            </div>
         </div>
     </div>
-</div>
+
+<!-- Tom Select JS -->
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Tom Select for group selection
+    const groupSelects = document.querySelectorAll('.tom-select-groups');
+    groupSelects.forEach(function(select) {
+            new TomSelect(select, {
+                    plugins: ['remove_button'],
+                    maxItems: null,
+            placeholder: 'Select groups...'
+        });
+    });
+    
+        // Initialize Tom Select for groups with logos
+        const groupLogoSelect = document.getElementById('addUserGroupSelect');
+        if (groupLogoSelect) {
+            // Cache for group logos
+            const logoCache = new Map();
+            
+            // Function to fetch group logo
+            async function fetchGroupLogo(groupId) {
+                if (logoCache.has(groupId)) {
+                    return logoCache.get(groupId);
+                }
+                
+                try {
+                    const response = await fetch(`/users/group-logo/${groupId}/`);
+                    const data = await response.json();
+                    logoCache.set(groupId, data);
+                    return data;
+                } catch (error) {
+                    console.error('Error fetching group logo:', error);
+                    return null;
+                }
+            }
+            
+            // Pre-load logos for all options
+            async function preloadLogos() {
+                const options = groupLogoSelect.querySelectorAll('option[value]');
+                const promises = [];
+                
+                for (const option of options) {
+                    const groupId = option.value;
+                    if (groupId && !logoCache.has(groupId)) {
+                        promises.push(fetchGroupLogo(groupId));
+                    }
+                }
+                
+                await Promise.all(promises);
+            }
+            
+            new TomSelect(groupLogoSelect, {
+                    render: {
+                        option: function(data, escape) {
+                    try {
+                        // Handle different data structures
+                        let name = '';
+                        let description = '';
+                        let logo = '';
+                        
+                        if (data && typeof data === 'object') {
+                            // Try to get data from various possible sources
+                            if (data.option && data.option.dataset) {
+                                name = data.option.dataset.name || '';
+                                description = data.option.dataset.description || '';
+                            } else if (data.dataset) {
+                                name = data.dataset.name || '';
+                                description = data.dataset.description || '';
+                            } else if (data.text) {
+                                name = data.text;
+                            }
+                            
+                            // Get group ID for logo lookup
+                            const groupId = data.value || '';
+                            const logoData = logoCache.get(groupId);
+                            
+                            // Create logo HTML
+                            if (logoData && logoData.has_logo && logoData.logo) {
+                                logo = logoData.logo;
+                            }
+                        }
+                        
+                        // Fallback to data.text if name is still empty
+                        if (!name && data && data.text) {
+                            name = data.text;
+                        }
+                        
+                        let logoHtml = '';
+                        if (logo) {
+                            logoHtml = `<img src="${logo}" alt="${escape(name)}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; margin-right: 8px;">`;
+                        } else {
+                            logoHtml = `<div style="width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; margin-right: 8px; color: white; font-size: 12px; font-weight: bold;">G</div>`;
+                        }
+                        
+                        return `<div style="display: flex; align-items: center;">
+                            ${logoHtml}
+                            <div>
+                                <div style="font-weight: 600;">${escape(name)}</div>
+                                ${description ? `<div style="font-size: 12px; color: #6b7280;">${escape(description)}</div>` : ''}
+                            </div>
+                        </div>`;
+                    } catch (error) {
+                        console.error('Error rendering group option:', error, data);
+                        return `<div style="display: flex; align-items: center;">
+                            <div style="width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; margin-right: 8px; color: white; font-size: 12px; font-weight: bold;">G</div>
+                            <div>
+                                <div style="font-weight: 600;">Group</div>
+                            </div>
+                                </div>`;
+                            }
+                        },
+                        item: function(data, escape) {
+                    try {
+                        // Handle different data structures
+                        let name = '';
+                        let logo = '';
+                        
+                                                if (data && typeof data === 'object') {
+                            // Try to get data from various possible sources
+                            if (data.option && data.option.dataset) {
+                                name = data.option.dataset.name || '';
+                            } else if (data.dataset) {
+                                name = data.dataset.name || '';
+                            } else if (data.text) {
+                                name = data.text;
+                            }
+                            
+                            // Get group ID for logo lookup
+                            const groupId = data.value || '';
+                            const logoData = logoCache.get(groupId);
+                            
+                            // Create logo HTML
+                            if (logoData && logoData.has_logo && logoData.logo) {
+                                logo = logoData.logo;
+                            }
+                        }
+                        
+                        // Fallback to data.text if name is still empty
+                        if (!name && data && data.text) {
+                            name = data.text;
+                        }
+                        
+                        let logoHtml = '';
+                        if (logo) {
+                            logoHtml = `<img src="${logo}" alt="${escape(name)}" style="width: 20px; height: 20px; border-radius: 50%; object-fit: cover; margin-right: 6px;">`;
+                        } else {
+                            logoHtml = `<div style="width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; margin-right: 6px; color: white; font-size: 10px; font-weight: bold;">G</div>`;
+                        }
+                        
+                        return `<div style="display: flex; align-items: center;">
+                            ${logoHtml}
+                                <span>${escape(name)}</span>
+                            </div>`;
+                    } catch (error) {
+                        console.error('Error rendering group item:', error, data);
+                        return `<div style="display: flex; align-items: center;">
+                            <div style="width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; margin-right: 6px; color: white; font-size: 10px; font-weight: bold;">G</div>
+                            <span>Group</span>
+                        </div>`;
+                    }
+                }
+            },
+            placeholder: 'Select a group...',
+            create: false,
+            maxItems: 1,
+            closeAfterSelect: true,
+            sortField: 'text',
+            searchField: ['text', 'data-search']
+        });
+        
+        // Logos are already in the HTML data attributes, no need to preload
+    }
+    
+    // Initialize Tom Select for users with avatars
+    const usersAvatarSelect = document.getElementById('addUsersSelect');
+    if (usersAvatarSelect) {
+        // Cache for avatars
+        const avatarCache = new Map();
+        
+        // Function to fetch avatar
+        async function fetchAvatar(userId) {
+            if (avatarCache.has(userId)) {
+                return avatarCache.get(userId);
+            }
+            
+            try {
+                const response = await fetch(`/users/avatar/${userId}/`);
+                const data = await response.json();
+                avatarCache.set(userId, data);
+                return data;
+            } catch (error) {
+                console.error('Error fetching avatar:', error);
+                return null;
+            }
+        }
+        
+        // Function to create avatar HTML
+        function createAvatarHtml(avatarData, size = 24) {
+            if (avatarData && avatarData.has_pfp && avatarData.avatar) {
+                return `<img src="${avatarData.avatar}" alt="Profile" style="width: ${size}px; height: ${size}px; border-radius: 50%; object-fit: cover;">`;
+            } else {
+                const initials = avatarData ? avatarData.initials : 'U';
+                const color = avatarData ? avatarData.color : '#667eea';
+                return `<div style="width: ${size}px; height: ${size}px; border-radius: 50%; background-color: ${color}; display: flex; align-items: center; justify-content: center; color: white; font-size: ${size * 0.5}px; font-weight: bold;">${initials}</div>`;
+            }
+        }
+        
+        // Pre-load avatars for all options
+        async function preloadAvatars() {
+            const options = usersAvatarSelect.querySelectorAll('option[value]');
+            const promises = [];
+            
+            for (const option of options) {
+                const userId = option.value;
+                if (userId && !avatarCache.has(userId)) {
+                    promises.push(fetchAvatar(userId));
+                }
+            }
+            
+            await Promise.all(promises);
+        }
+        
+        // Initialize Tom Select with synchronous render functions
+        const tomSelect = new TomSelect(usersAvatarSelect, {
+            render: {
+                option: function(data, escape) {
+                    try {
+                        // Handle different data structures
+                        let displayName = '';
+                        let username = '';
+                        let userId = '';
+                        
+                        if (data && typeof data === 'object') {
+                            // Try to get data from various possible sources
+                            if (data.option && data.option.dataset) {
+                                displayName = data.option.dataset.displayName || '';
+                                username = data.option.dataset.username || '';
+                            } else if (data.dataset) {
+                                displayName = data.dataset.displayName || '';
+                                username = data.dataset.username || '';
+                            } else if (data.text) {
+                                displayName = data.text;
+                            }
+                            
+                            userId = data.value || '';
+                        }
+                        
+                        // Fallback to data.text if displayName is still empty
+                        if (!displayName && data && data.text) {
+                            displayName = data.text;
+                        }
+                        
+                        // Get avatar data from cache (should be pre-loaded)
+                        const avatarData = avatarCache.get(userId);
+                        
+                        // Create avatar HTML
+                        const avatarHtml = createAvatarHtml(avatarData, 24);
+                        
+                        return `<div style="display: flex; align-items: center; gap: 8px;">
+                            ${avatarHtml}
+                            <div>
+                                <div style="font-weight: 600;">${escape(displayName)}</div>
+                                <div style="font-size: 12px; color: #6b7280;">${escape(username)}</div>
+                            </div>
+                        </div>`;
+                    } catch (error) {
+                        console.error('Error rendering user option:', error, data);
+                        return `<div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: bold;">U</div>
+                            <div>
+                                <div style="font-weight: 600;">User</div>
+                                <div style="font-size: 12px; color: #6b7280;">user</div>
+                            </div>
+                                </div>`;
+                        }
+                },
+                item: function(data, escape) {
+                    try {
+                        // Handle different data structures
+                        let displayName = '';
+                        let userId = '';
+                        
+                        if (data && typeof data === 'object') {
+                            // Try to get data from various possible sources
+                            if (data.option && data.option.dataset) {
+                                displayName = data.option.dataset.displayName || '';
+                            } else if (data.dataset) {
+                                displayName = data.dataset.displayName || '';
+                            } else if (data.text) {
+                                displayName = data.text;
+                            }
+                            
+                            userId = data.value || '';
+                        }
+                        
+                        // Fallback to data.text if displayName is still empty
+                        if (!displayName && data && data.text) {
+                            displayName = data.text;
+                        }
+                        
+                        // Get avatar data from cache
+                        const avatarData = avatarCache.get(userId);
+                        
+                        // Create avatar HTML for selected item
+                        const avatarHtml = createAvatarHtml(avatarData, 20);
+                        
+                        return `<div style="display: flex; align-items: center; gap: 6px;">
+                            ${avatarHtml}
+                            <span>${escape(displayName)}</span>
+                        </div>`;
+                    } catch (error) {
+                        console.error('Error rendering user item:', error, data);
+                        return `<div style="display: flex; align-items: center; gap: 6px;">
+                            <div style="width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: bold;">U</div>
+                            <span>User</span>
+                        </div>`;
+                    }
+                }
+            },
+            placeholder: 'Select users...',
+            create: false,
+            maxItems: null,
+            closeAfterSelect: false,
+            sortField: 'text',
+            searchField: ['text', 'data-search']
+        });
+        
+        // Pre-load avatars after Tom Select is initialized
+        preloadAvatars().then(() => {
+            // Refresh the dropdown to show avatars
+            tomSelect.refreshOptions();
+        });
+    }
+    
+        // Initialize Tom Select for ban user selection with avatars
+    const banUserSelect = document.getElementById('banUserSelect');
+    if (banUserSelect) {
+        // Cache for avatars
+        const avatarCache = new Map();
+        
+        // Function to fetch avatar
+        async function fetchAvatar(userId) {
+            if (avatarCache.has(userId)) {
+                return avatarCache.get(userId);
+            }
+            
+            try {
+                const response = await fetch(`/users/avatar/${userId}/`);
+                const data = await response.json();
+                avatarCache.set(userId, data);
+                return data;
+            } catch (error) {
+                console.error('Error fetching avatar:', error);
+                return null;
+            }
+        }
+        
+        // Function to create avatar HTML
+        function createAvatarHtml(avatarData, size = 24) {
+            if (avatarData && avatarData.has_pfp && avatarData.avatar) {
+                return `<img src="${avatarData.avatar}" alt="Profile" style="width: ${size}px; height: ${size}px; border-radius: 50%; object-fit: cover;">`;
+                } else {
+                const initials = avatarData ? avatarData.initials : 'U';
+                const color = avatarData ? avatarData.color : '#667eea';
+                return `<div style="width: ${size}px; height: ${size}px; border-radius: 50%; background-color: ${color}; display: flex; align-items: center; justify-content: center; color: white; font-size: ${size * 0.5}px; font-weight: bold;">${initials}</div>`;
+            }
+        }
+        
+        // Pre-load avatars for all options
+        async function preloadAvatars() {
+            const options = banUserSelect.querySelectorAll('option[value]');
+            const promises = [];
+            
+            for (const option of options) {
+                const userId = option.value;
+                if (userId && !avatarCache.has(userId)) {
+                    promises.push(fetchAvatar(userId));
+                }
+            }
+            
+            await Promise.all(promises);
+        }
+        
+        // Initialize Tom Select with synchronous render functions
+        const tomSelect = new TomSelect(banUserSelect, {
+            render: {
+                option: function(data, escape) {
+                    try {
+                        // Handle different data structures
+                        let displayName = '';
+                        let username = '';
+                        let userId = '';
+                        
+                        if (data && typeof data === 'object') {
+                            // Try to get data from various possible sources
+                            if (data.option && data.option.dataset) {
+                                displayName = data.option.dataset.displayName || '';
+                                username = data.option.dataset.username || '';
+                            } else if (data.dataset) {
+                                displayName = data.dataset.displayName || '';
+                                username = data.dataset.username || '';
+                            } else if (data.text) {
+                                displayName = data.text;
+                            }
+                            
+                            userId = data.value || '';
+                        }
+                        
+                        // Fallback to data.text if displayName is still empty
+                        if (!displayName && data && data.text) {
+                            displayName = data.text;
+                        }
+                        
+                        // Get avatar data from cache (should be pre-loaded)
+                        const avatarData = avatarCache.get(userId);
+                        
+                        // Create avatar HTML
+                        const avatarHtml = createAvatarHtml(avatarData, 24);
+                        
+                        return `<div style="display: flex; align-items: center; gap: 8px;">
+                            ${avatarHtml}
+                            <div>
+                                <div style="font-weight: 600;">${escape(displayName)}</div>
+                                <div style="font-size: 12px; color: #6b7280;">${escape(username)}</div>
+                            </div>
+                        </div>`;
+                    } catch (error) {
+                        console.error('Error rendering ban user option:', error, data);
+                        return `<div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: bold;">U</div>
+                            <div>
+                                <div style="font-weight: 600;">User</div>
+                                <div style="font-size: 12px; color: #6b7280;">user</div>
+                            </div>
+                        </div>`;
+                    }
+                },
+                item: function(data, escape) {
+                    try {
+                        // Handle different data structures
+                        let displayName = '';
+                        let userId = '';
+                        
+                        if (data && typeof data === 'object') {
+                            // Try to get data from various possible sources
+                            if (data.option && data.option.dataset) {
+                                displayName = data.option.dataset.displayName || '';
+                            } else if (data.dataset) {
+                                displayName = data.dataset.displayName || '';
+                            } else if (data.text) {
+                                displayName = data.text;
+                            }
+                            
+                            userId = data.value || '';
+                        }
+                        
+                        // Fallback to data.text if displayName is still empty
+                        if (!displayName && data && data.text) {
+                            displayName = data.text;
+                        }
+                        
+                        // Get avatar data from cache
+                        const avatarData = avatarCache.get(userId);
+                        
+                        // Create avatar HTML for selected item
+                        const avatarHtml = createAvatarHtml(avatarData, 20);
+                        
+                        return `<div style="display: flex; align-items: center; gap: 6px;">
+                            ${avatarHtml}
+                            <span>${escape(displayName)}</span>
+                        </div>`;
+                    } catch (error) {
+                        console.error('Error rendering ban user item:', error, data);
+                        return `<div style="display: flex; align-items: center; gap: 6px;">
+                            <div style="width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: bold;">U</div>
+                            <span>User</span>
+                        </div>`;
+                    }
+                }
+            },
+            placeholder: 'Select user to ban...',
+            create: false,
+            maxItems: 1,
+            closeAfterSelect: true,
+            sortField: 'text',
+            searchField: ['text', 'data-search']
+        });
+        
+        // Pre-load avatars after Tom Select is initialized
+        preloadAvatars().then(() => {
+            // Refresh the dropdown to show avatars
+            tomSelect.refreshOptions();
+        });
+    }
+    
+    // Initialize Tom Select for notification user selection with avatars
+    const notificationUserSelect = document.getElementById('notificationUserSelect');
+    if (notificationUserSelect) {
+        // Cache for avatars (shared with ban user select)
+        const avatarCache = new Map();
+        
+        // Function to fetch avatar (reuse from ban user select)
+        async function fetchAvatar(userId) {
+            if (avatarCache.has(userId)) {
+                return avatarCache.get(userId);
+            }
+            
+            try {
+                const response = await fetch(`/users/avatar/${userId}/`);
+                const data = await response.json();
+                avatarCache.set(userId, data);
+                return data;
+            } catch (error) {
+                console.error('Error fetching avatar:', error);
+                return null;
+            }
+        }
+        
+        // Function to create avatar HTML
+        function createAvatarHtml(avatarData, size = 24) {
+            if (avatarData && avatarData.has_pfp && avatarData.avatar) {
+                return `<img src="${avatarData.avatar}" alt="Profile" style="width: ${size}px; height: ${size}px; border-radius: 50%; object-fit: cover;">`;
+                } else {
+                const initials = avatarData ? avatarData.initials : 'U';
+                const color = avatarData ? avatarData.color : '#667eea';
+                return `<div style="width: ${size}px; height: ${size}px; border-radius: 50%; background-color: ${color}; display: flex; align-items: center; justify-content: center; color: white; font-size: ${size * 0.5}px; font-weight: bold;">${initials}</div>`;
+            }
+        }
+        
+        // Pre-load avatars for all options
+        async function preloadAvatars() {
+            const options = notificationUserSelect.querySelectorAll('option[value]');
+            const promises = [];
+            
+            for (const option of options) {
+                const userId = option.value;
+                if (userId && !avatarCache.has(userId)) {
+                    promises.push(fetchAvatar(userId));
+                }
+            }
+            
+            await Promise.all(promises);
+        }
+        
+        // Initialize Tom Select with synchronous render functions
+        const notificationTomSelect = new TomSelect(notificationUserSelect, {
+            render: {
+                option: function(data, escape) {
+                    try {
+                        // Handle different data structures
+                        let displayName = '';
+                        let username = '';
+                        let userId = '';
+                        
+                        if (data && typeof data === 'object') {
+                            // Try to get data from various possible sources
+                            if (data.option && data.option.dataset) {
+                                displayName = data.option.dataset.displayName || '';
+                                username = data.option.dataset.username || '';
+                            } else if (data.dataset) {
+                                displayName = data.dataset.displayName || '';
+                                username = data.dataset.username || '';
+                            } else if (data.text) {
+                                displayName = data.text;
+                            }
+                            
+                            userId = data.value || '';
+                        }
+                        
+                        // Fallback to data.text if displayName is still empty
+                        if (!displayName && data && data.text) {
+                            displayName = data.text;
+                        }
+                        
+                        // Get avatar data from cache (should be pre-loaded)
+                        const avatarData = avatarCache.get(userId);
+                        
+                        // Create avatar HTML
+                        const avatarHtml = createAvatarHtml(avatarData, 24);
+                        
+                        return `<div style="display: flex; align-items: center; gap: 8px;">
+                            ${avatarHtml}
+                            <div>
+                                <div style="font-weight: 600;">${escape(displayName)}</div>
+                                <div style="font-size: 12px; color: #6b7280;">${escape(username)}</div>
+                            </div>
+                        </div>`;
+            } catch (error) {
+                        console.error('Error rendering notification user option:', error, data);
+                        return `<div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: bold;">U</div>
+                            <div>
+                                <div style="font-weight: 600;">User</div>
+                                <div style="font-size: 12px; color: #6b7280;">user</div>
+                            </div>
+                        </div>`;
+                    }
+                },
+                item: function(data, escape) {
+                    try {
+                        // Handle different data structures
+                        let displayName = '';
+                        let userId = '';
+                        
+                        if (data && typeof data === 'object') {
+                            // Try to get data from various possible sources
+                            if (data.option && data.option.dataset) {
+                                displayName = data.option.dataset.displayName || '';
+                            } else if (data.dataset) {
+                                displayName = data.dataset.displayName || '';
+                            } else if (data.text) {
+                                displayName = data.text;
+                            }
+                            
+                            userId = data.value || '';
+                        }
+                        
+                        // Fallback to data.text if displayName is still empty
+                        if (!displayName && data && data.text) {
+                            displayName = data.text;
+                        }
+                        
+                        // Get avatar data from cache
+                        const avatarData = avatarCache.get(userId);
+                        
+                        // Create avatar HTML for selected item
+                        const avatarHtml = createAvatarHtml(avatarData, 20);
+                        
+                        return `<div style="display: flex; align-items: center; gap: 6px;">
+                            ${avatarHtml}
+                            <span>${escape(displayName)}</span>
+                        </div>`;
+                    } catch (error) {
+                        console.error('Error rendering notification user item:', error, data);
+                        return `<div style="display: flex; align-items: center; gap: 6px;">
+                            <div style="width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: bold;">U</div>
+                            <span>User</span>
+                        </div>`;
+                    }
+                }
+            },
+            placeholder: 'Select users...',
+            create: false,
+            maxItems: null,
+            closeAfterSelect: false,
+            sortField: 'text',
+            searchField: ['text', 'data-search']
+        });
+        
+        // Pre-load avatars after Tom Select is initialized
+        preloadAvatars().then(() => {
+            // Refresh the dropdown to show avatars
+            notificationTomSelect.refreshOptions();
+        });
+    }
+    
+    // Initialize modal Tom Select when modal is shown
+    document.getElementById('editUserModal').addEventListener('shown.bs.modal', function() {
+        const modalGroupsSelect = document.getElementById('modalGroups');
+        if (modalGroupsSelect && !modalGroupsSelect.tomselect) {
+            new TomSelect(modalGroupsSelect, {
+                plugins: ['remove_button'],
+                maxItems: null,
+                placeholder: 'Select groups...',
+                render: {
+                    option: function(data, escape) {
+                        try {
+                            // Handle different data structures
+                            let name = '';
+                            let description = '';
+                            
+                            if (data && typeof data === 'object') {
+                                // Try to get data from various possible sources
+                                if (data.option && data.option.dataset) {
+                                    name = data.option.dataset.name || '';
+                                    description = data.option.dataset.description || '';
+                                } else if (data.dataset) {
+                                    name = data.dataset.name || '';
+                                    description = data.dataset.description || '';
+                                } else if (data.text) {
+                                    name = data.text;
+                                }
+                            }
+                            
+                            // Fallback to data.text if name is still empty
+                            if (!name && data && data.text) {
+                                name = data.text;
+                            }
+                            
+                            let descriptionHtml = '';
+                            if (description) {
+                                descriptionHtml = `<div class="group-description">${escape(description)}</div>`;
+                            }
+                            
+                            return `<div>
+                                <div style="font-weight: 600;">${escape(name)}</div>
+                                ${descriptionHtml}
+                            </div>`;
+                        } catch (error) {
+                            console.error('Error rendering modal group option:', error, data);
+                            return `<div>
+                                <div style="font-weight: 600;">Group</div>
+                            </div>`;
+                        }
+                    },
+                    item: function(data, escape) {
+                        try {
+                            // Handle different data structures
+                            let name = '';
+                            
+                            if (data && typeof data === 'object') {
+                                // Try to get data from various possible sources
+                                if (data.option && data.option.dataset) {
+                                    name = data.option.dataset.name || '';
+                                } else if (data.dataset) {
+                                    name = data.dataset.name || '';
+                                } else if (data.text) {
+                                    name = data.text;
+                                }
+                            }
+                            
+                            // Fallback to data.text if name is still empty
+                            if (!name && data && data.text) {
+                                name = data.text;
+                            }
+                            
+                            return `<span>${escape(name)}</span>`;
+                        } catch (error) {
+                            console.error('Error rendering modal group item:', error, data);
+                            return `<span>Group</span>`;
+                        }
+                }
+            }
+                            });
+    }
+
+    // Fix modal positioning
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ensure modals are properly positioned
+        const modals = document.querySelectorAll('.modal');
+    modals.forEach(function(modal) {
+            modal.addEventListener('show.bs.modal', function() {
+                // Force modal to center in viewport
+                const dialog = this.querySelector('.modal-dialog');
+                if (dialog) {
+                    dialog.style.marginTop = '0';
+                    dialog.style.marginBottom = '0';
+                }
+            });
+        });
+        });
+    });
+
+    // Handle notification recipient selection
+    const recipientSelect = document.querySelector('select[name="notification_recipients"]');
+    const userSelection = document.getElementById('user-selection');
+    
+    if (recipientSelect) {
+        recipientSelect.addEventListener('change', function() {
+            if (this.value === 'selected') {
+                userSelection.style.display = 'block';
+                } else {
+                userSelection.style.display = 'none';
+            }
+        });
+    }
+
+    // Initialize Bootstrap tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Set active tab based on URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const activeTab = urlParams.get('tab');
+    if (activeTab) {
+        const tabButton = document.querySelector(`[data-bs-target="#${activeTab}"]`);
+        if (tabButton) {
+            // Remove active class from all tabs
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('show', 'active'));
+            
+            // Add active class to current tab
+            tabButton.classList.add('active');
+            const targetPane = document.getElementById(activeTab);
+            if (targetPane) {
+                targetPane.classList.add('show', 'active');
+            }
+        }
+    }
+    
+    // Update URL when tabs are clicked
+    document.querySelectorAll('.nav-link[data-bs-toggle="pill"]').forEach(tab => {
+        tab.addEventListener('click', function() {
+            const target = this.getAttribute('data-bs-target');
+            const tabName = target.replace('#', '');
+            
+            // Update URL with tab parameter
+            const currentUrl = new URL(window.location);
+            currentUrl.searchParams.set('tab', tabName);
+            
+            // Preserve other parameters (page, search, etc.)
+            const currentParams = new URLSearchParams(window.location.search);
+            currentParams.forEach((value, key) => {
+                if (key !== 'tab') {
+                    currentUrl.searchParams.set(key, value);
+                }
+            });
+            
+            // Update URL without page reload
+            window.history.pushState({}, '', currentUrl);
+        });
+    });
+});
+
+// Global variables for user data
+let userData = {};
+
+function editUser(userId) {
+    // Get user data from the table row
+    const userRow = document.querySelector(`tr[data-user-id="${userId}"]`);
+    if (!userRow) return;
+    
+    // Extract user data
+    const userAvatar = userRow.querySelector('.user-avatar');
+    const userName = userRow.querySelector('.user-name');
+    const username = userRow.querySelector('.username');
+    const userStatus = userRow.querySelector('.status-staff');
+    const user2fa = userRow.querySelector('.status-2fa');
+    
+    // Populate modal
+    document.getElementById('modalUserAvatar').innerHTML = userAvatar.innerHTML;
+    document.getElementById('modalUserName').textContent = userName.textContent.replace('✓', '').trim();
+    document.getElementById('modalUserUsername').textContent = username.textContent;
+    document.getElementById('modalUserId').textContent = `ID: ${userId}`;
+    
+    // Set permissions
+    document.getElementById('modal_staff').checked = userStatus !== null;
+    document.getElementById('modal_blog').checked = userRow.querySelector('[data-blog-permission="true"]') !== null;
+    
+    // Set groups (this will be handled by the backend)
+    const modalGroupsSelect = document.getElementById('modalGroups');
+    if (modalGroupsSelect.tomselect) {
+        modalGroupsSelect.tomselect.clear();
+        // Get current groups from the user data
+        const currentGroups = userRow.querySelectorAll('[data-group-id]');
+        currentGroups.forEach(group => {
+            modalGroupsSelect.tomselect.addItem(group.dataset.groupId);
+        });
+    }
+    
+    // Add user ID to form
+    const form = document.getElementById('editUserForm');
+    let userIdInput = form.querySelector('input[name="edit_user_id"]');
+    if (!userIdInput) {
+        userIdInput = document.createElement('input');
+        userIdInput.type = 'hidden';
+        userIdInput.name = 'edit_user_id';
+        form.appendChild(userIdInput);
+    }
+    userIdInput.value = userId;
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
+    modal.show();
+}
+</script>
 {% endblock %}
-
-<style>
-    /* Glassmorphism Card */
-    .admin-glass-card {
-        background: rgba(255,255,255,0.88);
-        border-radius: 1.5rem;
-        box-shadow: 0 8px 32px rgba(59,130,246,0.13);
-        backdrop-filter: blur(6px);
-        padding: 2.5rem 2.2rem 2.2rem 2.2rem;
-        margin-bottom: 2.5rem;
-        border: 1.5px solid #e0e7ef;
-    }
-    .admin-tabs .nav-link {
-        background: linear-gradient(90deg, #e0e7ff 0%, #f0f9ff 100%);
-        color: #223b7b;
-        border: none;
-        border-radius: 2em 2em 0 0;
-        font-weight: 700;
-        font-size: 1.13rem;
-        margin-right: 0.5rem;
-        padding: 0.7em 2em;
-        transition: background 0.18s, color 0.18s, box-shadow 0.18s, transform 0.13s;
-    }
-    .admin-tabs .nav-link.active, .admin-tabs .nav-link:hover {
-        background: linear-gradient(90deg, #2563eb 0%, #06b6d4 100%);
-        color: #fff;
-        box-shadow: 0 4px 18px rgba(59,130,246,0.13);
-        transform: translateY(-2px) scale(1.04);
-    }
-    .admin-section-header {
-        font-size: 2rem;
-        font-weight: 900;
-        color: #223b7b;
-        letter-spacing: 0.01em;
-        margin-bottom: 1.7rem;
-        display: flex;
-        align-items: center;
-        gap: 0.7rem;
-    }
-    .admin-section-header .material-icons {
-        font-size: 2.1rem;
-        color: #2563eb;
-        margin-right: 0.3rem;
-    }
-    .admin-table {
-        background: #f8fafc;
-        border-radius: 1.1rem;
-        box-shadow: 0 2px 12px rgba(59,130,246,0.07);
-        overflow: hidden;
-    }
-    .admin-table th, .admin-table td {
-        border: none;
-        padding: 1.1rem 1.2rem;
-        vertical-align: middle;
-    }
-    .admin-table thead th {
-        background: #e0e7ff;
-        color: #223b7b;
-        font-weight: 700;
-        font-size: 1.08rem;
-        border-bottom: 2px solid #d1d5db;
-    }
-    .admin-table tbody tr {
-        transition: background 0.18s;
-    }
-    .admin-table tbody tr:hover {
-        background: #e0e7ff;
-    }
-    .admin-search-bar .form-control {
-        background: #f8fafc;
-        border-radius: 2em;
-        border: 1.5px solid #e0e7ef;
-        font-size: 1.13rem;
-        font-weight: 500;
-        color: #223b7b;
-        transition: box-shadow 0.18s, border-color 0.18s;
-    }
-    .admin-search-bar .form-control:focus {
-        box-shadow: 0 0 0 2px #b3d1f7;
-        border-color: #2563eb;
-        background: #fff;
-    }
-    .admin-action-btn {
-        background: linear-gradient(90deg, #2563eb 0%, #06b6d4 100%);
-        color: #fff !important;
-        font-weight: 700;
-        border: none;
-        border-radius: 2em;
-        box-shadow: 0 2px 12px rgba(59, 130, 246, 0.10);
-        padding: 0.7em 2em;
-        font-size: 1.08rem;
-        transition: background 0.18s, box-shadow 0.18s, transform 0.13s;
-        margin-top: 0.2rem;
-        margin-bottom: 0.7rem;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.7em;
-    }
-    .admin-action-btn:hover, .admin-action-btn:focus {
-        background: linear-gradient(90deg, #1a2f9a 0%, #0e7490 100%);
-        color: #fff !important;
-        box-shadow: 0 4px 18px rgba(59, 130, 246, 0.18);
-        transform: scale(1.03);
-    }
-    .pagination .page-link {
-        padding: 0.7rem 1.3rem;
-        font-size: 1.1rem;
-        min-width: 44px;
-        border-radius: 1.5rem;
-        font-weight: 600;
-        color: #2563eb;
-        background: #f8fafc;
-        border: none;
-        margin: 0 0.2em;
-        transition: background 0.18s, color 0.18s;
-    }
-    .pagination .page-item.active .page-link, .pagination .page-link:hover {
-        background: linear-gradient(90deg, #2563eb 0%, #06b6d4 100%);
-        color: #fff;
-    }
-    @media (max-width: 600px) {
-        .admin-glass-card {
-            padding: 1.2rem 0.5rem 1.2rem 0.5rem;
-        }
-        .admin-tabs .nav-link {
-            font-size: 1rem;
-            padding: 0.7em 0.7em;
-        }
-        .admin-section-header {
-            font-size: 1.2rem;
-            gap: 0.3rem;
-        }
-    }
-</style>
-
-<style>
-.material-circular-pagination .material-page-link {
-    border-radius: 50% !important;
-    width: 44px;
-    height: 44px;
-    min-width: 44px;
-    min-height: 44px;
-    max-width: 44px;
-    max-height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #2563eb;
-    background: #fff;
-    border: 2px solid #2563eb;
-    margin: 0 0.18em;
-    box-shadow: 0 2px 8px rgba(59,130,246,0.07);
-    transition: background 0.18s, color 0.18s, border 0.18s;
-}
-.material-circular-pagination .material-page-link.active,
-.material-circular-pagination .material-page-link:focus,
-.material-circular-pagination .material-page-link:hover {
-    background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
-    color: #fff;
-    border-color: #2563eb;
-    box-shadow: 0 4px 16px rgba(59,130,246,0.18);
-}
-.material-circular-pagination .page-item.active .material-page-link {
-    background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
-    color: #fff;
-    border-color: #2563eb;
-    box-shadow: 0 4px 16px rgba(59,130,246,0.18);
-}
-.material-circular-pagination .material-page-link i.material-icons {
-    font-size: 24px;
-    vertical-align: middle;
-}
-.material-circular-pagination .page-link {
-    border: none;
-    outline: none;
-}
-.material-circular-pagination .page-item.disabled .material-page-link {
-    background: #f1f5f9;
-    color: #b3b3b3;
-    border-color: #e0e7ef;
-    box-shadow: none;
-    cursor: not-allowed;
-}
-</style>
