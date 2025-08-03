@@ -46,8 +46,9 @@ You can manage your notification preferences in your account settings.
                 fail_silently=True,  # Don't fail if email sending fails
             )
         except Exception as e:
-            # Log the error but don't fail the notification creation
-            print(f"Failed to send email notification to {user.email}: {e}")
+            # Email sending failed, but we don't want to log this as an error
+            # since fail_silently=True means this is expected behavior
+            pass
     
     return notification
 
