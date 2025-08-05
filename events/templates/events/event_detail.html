@@ -1,12 +1,14 @@
 {% extends 'events/base.html' %}
 {% load users_extras %}
+{% load description_extras %}
 {% block title %}{{ event.title }} - FURsvp{% endblock %}
 {% load widget_tweaks %}
 
 {% block extra_css %}
 {{ block.super }}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/trix@2.0.8/dist/trix.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css" />
 {% endblock %}
 
 {% block content %}
@@ -198,7 +200,7 @@
                         <h3 class="description-title">
                             <i class="material-icons me-2">description</i> Description
                         </h3>
-                        <div class="description-content">{{ event.description|safe }}</div>
+                        <div class="description-content">{{ event.description|process_description_images|safe }}</div>
                     </div>
                     
                     {% if event.accessibility_details %}
@@ -355,8 +357,8 @@
 {% if is_organizer or is_site_admin or is_delegated_assistant %}
 <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header bg-gradient-primary text-white">
+        <div class="modal-content modern-modal">
+            <div class="modal-header modern-modal-header">
                 <h5 class="modal-title d-flex align-items-center" id="editEventModalLabel">
                     <span class="material-icons me-2">edit</span> Edit Event
                 </h5>
@@ -364,190 +366,262 @@
             </div>
             <form method="post" action="{% url 'edit_event' event.id %}" enctype="multipart/form-data" id="editEventForm">
                 {% csrf_token %}
-                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
-                    <!-- Title Field -->
-                    <div class="mb-3">
-                        <label for="{{ event_form.title.id_for_label }}" class="form-label">
-                            <span class="material-icons me-2">event</span> Event Title
-                        </label>
-                        {% render_field event_form.title class="form-control" %}
-                        {% if event_form.title.errors %}
-                        <div class="invalid-feedback d-block">{{ event_form.title.errors }}</div>
-                        {% endif %}
-                    </div>
+                <div class="modal-body modern-modal-body">
+                    <!-- Event Details -->
+                    <div class="form-section mb-4">
+                        <div class="form-section-header">
+                            <span class="material-icons">event</span>
+                            <h6 class="form-section-title">Event Details</h6>
+                        </div>
+                        <div class="form-section-content">
+                            <div class="mb-3">
+                                <label for="{{ event_form.title.id_for_label }}" class="form-label modern-label">
+                                    <span class="material-icons me-2">event</span> Event Title
+                                </label>
+                                {% render_field event_form.title class="form-control modern-input" placeholder="Enter event title" %}
+                                {% if event_form.title.errors %}
+                                <div class="invalid-feedback d-block">{{ event_form.title.errors }}</div>
+                                {% endif %}
+                            </div>
 
-                    <!-- Group Field -->
-                    <div class="mb-3">
-                        <label for="{{ event_form.group.id_for_label }}" class="form-label">
-                            <span class="material-icons me-2">groups</span> Group
-                        </label>
-                        {% render_field event_form.group class="form-control" %}
-                        {% if event_form.group.errors %}
-                        <div class="invalid-feedback d-block">{{ event_form.group.errors }}</div>
-                        {% endif %}
+                            <div class="mb-3">
+                                <label for="{{ event_form.group.id_for_label }}" class="form-label modern-label">
+                                    <span class="material-icons me-2">groups</span> Group
+                                </label>
+                                {% render_field event_form.group class="form-control modern-input" %}
+                                {% if event_form.group.errors %}
+                                <div class="invalid-feedback d-block">{{ event_form.group.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ event_form.description.id_for_label }}" class="form-label modern-label">
+                                    <span class="material-icons me-2">description</span> Description
+                                </label>
+                                <input type="hidden" id="{{ event_form.description.id_for_label }}" name="{{ event_form.description.name }}" value="{{ event_form.description.value|default:'' }}">
+                                <trix-editor input="{{ event_form.description.id_for_label }}" placeholder="Describe your event in detail..." style="min-height: 200px; border: 2px solid #e2e8f0; border-radius: 8px; padding: 1rem; background: white;"></trix-editor>
+                                {% if event_form.description.errors %}
+                                <div class="invalid-feedback d-block">{{ event_form.description.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Date/Time Fields -->
-                    <div class="mb-3">
-                        <label class="form-label">
-                            <span class="material-icons me-2">calendar_today</span> Date and Time
-                        </label>
-                        <div class="row">
-                            <div class="col-md-4 mb-2 mb-md-0">
-                                {% render_field event_form.date class="form-control" placeholder="MM/DD/YYYY" %}
-                                {% if event_form.date.errors %}
-                                <div class="invalid-feedback d-block">{{ event_form.date.errors }}</div>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-4 mb-2 mb-md-0">
-                                <label for="{{ event_form.start_time.id_for_label }}" class="form-label visually-hidden">Start Time</label>
-                                {% render_field event_form.start_time class="form-control" placeholder="Start time" required='required' %}
-                                {% if event_form.start_time.errors %}
-                                <div class="invalid-feedback d-block">{{ event_form.start_time.errors }}</div>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-4">
-                                <label for="{{ event_form.end_time.id_for_label }}" class="form-label visually-hidden">End Time</label>
-                                {% render_field event_form.end_time class="form-control" placeholder="End time" required='required' %}
-                                {% if event_form.end_time.errors %}
-                                <div class="invalid-feedback d-block">{{ event_form.end_time.errors }}</div>
-                                {% endif %}
+                    <div class="form-section mb-4">
+                        <div class="form-section-header">
+                            <span class="material-icons">schedule</span>
+                            <h6 class="form-section-title">Date & Time</h6>
+                        </div>
+                        <div class="form-section-content">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ event_form.date.id_for_label }}" class="form-label modern-label">
+                                        <span class="material-icons me-2">calendar_today</span> Date
+                                    </label>
+                                    {% render_field event_form.date class="form-control modern-input" placeholder="MM/DD/YYYY" %}
+                                    {% if event_form.date.errors %}
+                                    <div class="invalid-feedback d-block">{{ event_form.date.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ event_form.start_time.id_for_label }}" class="form-label modern-label">
+                                        <span class="material-icons me-2">access_time</span> Start Time
+                                    </label>
+                                    {% render_field event_form.start_time class="form-control modern-input" placeholder="Start time" required='required' %}
+                                    {% if event_form.start_time.errors %}
+                                    <div class="invalid-feedback d-block">{{ event_form.start_time.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ event_form.end_time.id_for_label }}" class="form-label modern-label">
+                                        <span class="material-icons me-2">access_time</span> End Time
+                                    </label>
+                                    {% render_field event_form.end_time class="form-control modern-input" placeholder="End time" required='required' %}
+                                    {% if event_form.end_time.errors %}
+                                    <div class="invalid-feedback d-block">{{ event_form.end_time.errors }}</div>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Location Fields -->
-                    <div class="mb-3">
-                        <label for="{{ event_form.address.id_for_label }}" class="form-label">
-                            <span class="material-icons me-2">location_on</span> Street Address
-                        </label>
-                        <div class="input-group mb-2">
-                            {% render_field event_form.address class="form-control" placeholder="Enter street address" style="max-width: calc(100% - 50px);" %}
-                            <button type="button" class="btn btn-outline-primary" id="useLocationBtn" title="Use My Location" style="min-width: 50px;">
-                                <span class="material-icons">my_location</span>
-                            </button>
+                    <div class="form-section mb-4">
+                        <div class="form-section-header">
+                            <span class="material-icons">location_on</span>
+                            <h6 class="form-section-title">Location</h6>
                         </div>
-                        {% if event_form.address.errors %}
-                        <div class="invalid-feedback d-block">{{ event_form.address.errors }}</div>
-                        {% endif %}
-                        <div class="row">
-                            <div class="col-md-6 mb-3 mb-md-0">
-                                <label for="{{ event_form.city.id_for_label }}" class="form-label">
-                                    <span class="material-icons me-2">location_city</span> City
+                        <div class="form-section-content">
+                            <div class="mb-3">
+                                <label for="{{ event_form.address.id_for_label }}" class="form-label modern-label">
+                                    <span class="material-icons me-2">location_on</span> Street Address
                                 </label>
-                                {% render_field event_form.city class="form-control" placeholder="Enter city" %}
-                                {% if event_form.city.errors %}
-                                <div class="invalid-feedback d-block">{{ event_form.city.errors }}</div>
+                                {% render_field event_form.address class="form-control modern-input" placeholder="Enter street address" %}
+                                {% if event_form.address.errors %}
+                                <div class="invalid-feedback d-block">{{ event_form.address.errors }}</div>
                                 {% endif %}
                             </div>
-                            <div class="col-md-6">
-                                <label for="{{ event_form.state.id_for_label }}" class="form-label">
-                                    <span class="material-icons me-2">map</span> State
-                                </label>
-                                {% render_field event_form.state class="form-select" %}
-                                {% if event_form.state.errors %}
-                                <div class="invalid-feedback d-block">{{ event_form.state.errors }}</div>
-                                {% endif %}
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ event_form.city.id_for_label }}" class="form-label modern-label">
+                                        <span class="material-icons me-2">location_city</span> City
+                                    </label>
+                                    {% render_field event_form.city class="form-control modern-input" placeholder="Enter city" %}
+                                    {% if event_form.city.errors %}
+                                    <div class="invalid-feedback d-block">{{ event_form.city.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ event_form.state.id_for_label }}" class="form-label modern-label">
+                                        <span class="material-icons me-2">map</span> State
+                                    </label>
+                                    {% render_field event_form.state class="form-select modern-input" %}
+                                    {% if event_form.state.errors %}
+                                    <div class="invalid-feedback d-block">{{ event_form.state.errors }}</div>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Age Restriction Field -->
-                    <div class="mb-3">
-                        <label for="{{ event_form.age_restriction.id_for_label }}" class="form-label">
-                            <span class="material-icons me-2">warning</span> Age Restriction
-                        </label>
-                        {% render_field event_form.age_restriction class="form-select" %}
-                        {% if event_form.age_restriction.errors %}
-                        <div class="invalid-feedback d-block">{{ event_form.age_restriction.errors }}</div>
-                        {% endif %}
-                    </div>
 
-                    <!-- Description Field -->
-                    <div class="mb-3">
-                        <label for="{{ event_form.description.id_for_label }}" class="form-label">
-                            <span class="material-icons me-2">description</span> Description
-                        </label>
-                        {% render_field event_form.description class="form-control" %}
-                        {% if event_form.description.errors %}
-                        <div class="invalid-feedback d-block">{{ event_form.description.errors }}</div>
-                        {% endif %}
-                    </div>
 
-                    <!-- Event Capacity Field -->
-                    <div class="mb-3">
-                        <label for="{{ event_form.capacity.id_for_label }}" class="form-label">
-                            <span class="material-icons me-2">people</span> Event Capacity
-                        </label>
-                        {% render_field event_form.capacity class="form-control" %}
-                        {% if event_form.capacity.errors %}
-                        <div class="invalid-feedback d-block">{{ event_form.capacity.errors }}</div>
-                        {% endif %}
-                    </div>
-
-                    <!-- Checkboxes -->
-                    <div class="mb-3">
-                        <div class="form-check">
-                            {% render_field event_form.waitlist_enabled class="form-check-input" id="waitlist_checkbox" %}
-                            <label class="form-check-label d-flex align-items-center" for="waitlist_checkbox">
-                                <span class="material-icons me-2">hourglass_empty</span> Enable Waitlist
-                            </label>
+                    <!-- Event Settings -->
+                    <div class="form-section mb-4">
+                        <div class="form-section-header">
+                            <span class="material-icons">settings</span>
+                            <h6 class="form-section-title">Event Settings</h6>
                         </div>
-                        {% if event_form.waitlist_enabled.errors %}
-                        <div class="invalid-feedback d-block">{{ event_form.waitlist_enabled.errors }}</div>
-                        {% endif %}
-                    </div>
-
-                    <div class="mb-3">
-                        <div class="form-check">
-                            {% render_field event_form.attendee_list_public class="form-check-input" id="attendee_list_checkbox" %}
-                            <label class="form-check-label d-flex align-items-center" for="attendee_list_checkbox">
-                                <span class="material-icons me-2">visibility</span> Make attendee list public
-                            </label>
+                        <div class="form-section-content">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ event_form.age_restriction.id_for_label }}" class="form-label modern-label">
+                                        <span class="material-icons me-2">warning</span> Age Restriction
+                                    </label>
+                                    {% render_field event_form.age_restriction class="form-select modern-input" %}
+                                    {% if event_form.age_restriction.errors %}
+                                    <div class="invalid-feedback d-block">{{ event_form.age_restriction.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ event_form.capacity.id_for_label }}" class="form-label modern-label">
+                                        <span class="material-icons me-2">people</span> Event Capacity
+                                    </label>
+                                    {% render_field event_form.capacity class="form-control modern-input" placeholder="Leave blank for no limit" %}
+                                    {% if event_form.capacity.errors %}
+                                    <div class="invalid-feedback d-block">{{ event_form.capacity.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
-                        {% if event_form.attendee_list_public.errors %}
-                        <div class="invalid-feedback d-block">{{ event_form.attendee_list_public.errors }}</div>
-                        {% endif %}
                     </div>
 
-                    <!-- Accessibility Details Field -->
-                    <div class="mb-3">
-                        <label for="{{ event_form.accessibility_details.id_for_label }}" class="form-label">
-                            <span class="material-icons me-2">accessible</span> Accessibility Details
-                        </label>
-                        {% render_field event_form.accessibility_details class="form-control" %}
-                        <small class="form-text text-muted">Leave blank if not accessible.</small>
-                        {% if event_form.accessibility_details.errors %}
-                        <div class="invalid-feedback d-block">{{ event_form.accessibility_details.errors }}</div>
-                        {% endif %}
+                    <!-- Event Options -->
+                    <div class="form-section mb-4">
+                        <div class="form-section-header">
+                            <span class="material-icons">tune</span>
+                            <h6 class="form-section-title">Event Options</h6>
+                        </div>
+                        <div class="form-section-content">
+                            <div class="options-grid">
+                                <div class="option-card">
+                                    <div class="option-header">
+                                        <span class="material-icons option-icon">hourglass_empty</span>
+                                        <h6 class="option-title">Waitlist</h6>
+                                    </div>
+                                    <div class="option-content">
+                                        <div class="form-check modern-checkbox">
+                                            {% render_field event_form.waitlist_enabled class="form-check-input" id="waitlist_checkbox" %}
+                                            <label class="form-check-label" for="waitlist_checkbox">
+                                                Enable waitlist when capacity is reached
+                                            </label>
+                                        </div>
+                                        <small class="option-description">Allow users to join a waitlist if the event is full</small>
+                                    </div>
+                                    {% if event_form.waitlist_enabled.errors %}
+                                    <div class="invalid-feedback d-block">{{ event_form.waitlist_enabled.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="option-card">
+                                    <div class="option-header">
+                                        <span class="material-icons option-icon">visibility</span>
+                                        <h6 class="option-title">Attendee Visibility</h6>
+                                    </div>
+                                    <div class="option-content">
+                                        <div class="form-check modern-checkbox">
+                                            {% render_field event_form.attendee_list_public class="form-check-input" id="attendee_list_checkbox" %}
+                                            <label class="form-check-label" for="attendee_list_checkbox">
+                                                Make attendee list visible to everyone
+                                            </label>
+                                        </div>
+                                        <small class="option-description">Show who's attending to all users</small>
+                                    </div>
+                                    {% if event_form.attendee_list_public.errors %}
+                                    <div class="invalid-feedback d-block">{{ event_form.attendee_list_public.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Details -->
+                    <div class="form-section mb-4">
+                        <div class="form-section-header">
+                            <span class="material-icons">info</span>
+                            <h6 class="form-section-title">Additional Details</h6>
+                        </div>
+                        <div class="form-section-content">
+                            <div class="mb-3">
+                                <label for="{{ event_form.accessibility_details.id_for_label }}" class="form-label modern-label">
+                                    <span class="material-icons me-2">accessible</span> Accessibility Details
+                                </label>
+                                {% render_field event_form.accessibility_details class="form-control modern-input" placeholder="Describe accessibility features..." %}
+                                <small class="form-text text-muted">Leave blank if not accessible.</small>
+                                {% if event_form.accessibility_details.errors %}
+                                <div class="invalid-feedback d-block">{{ event_form.accessibility_details.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
 
                     <!-- RSVP Questions -->
-                    <div class="mb-3">
-                        <label for="{{ event_form.question1_text.id_for_label }}" class="form-label">
-                            <span class="material-icons me-2">quiz</span> RSVP Question 1
-                        </label>
-                        {% render_field event_form.question1_text class="form-control" placeholder="RSVP Question 1 (leave blank to disable)" %}
-                        <div class="form-text">Leave blank to disable this question.</div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="{{ event_form.question2_text.id_for_label }}" class="form-label">
-                            <span class="material-icons me-2">quiz</span> RSVP Question 2
-                        </label>
-                        {% render_field event_form.question2_text class="form-control" placeholder="RSVP Question 2 (leave blank to disable)" %}
-                        <div class="form-text">Leave blank to disable this question.</div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="{{ event_form.question3_text.id_for_label }}" class="form-label">
-                            <span class="material-icons me-2">quiz</span> RSVP Question 3
-                        </label>
-                        {% render_field event_form.question3_text class="form-control" placeholder="RSVP Question 3 (leave blank to disable)" %}
-                        <div class="form-text">Leave blank to disable this question.</div>
+                    <div class="form-section mb-4">
+                        <div class="form-section-header">
+                            <span class="material-icons">quiz</span>
+                            <h6 class="form-section-title">RSVP Questions</h6>
+                        </div>
+                        <div class="form-section-content">
+                            <div class="mb-3">
+                                <label for="{{ event_form.question1_text.id_for_label }}" class="form-label modern-label">
+                                    <span class="material-icons me-2">quiz</span> Question 1
+                                </label>
+                                {% render_field event_form.question1_text class="form-control modern-input" placeholder="RSVP Question 1 (leave blank to disable)" %}
+                                <small class="form-text text-muted">Leave blank to disable this question.</small>
+                            </div>
+                            <div class="mb-3">
+                                <label for="{{ event_form.question2_text.id_for_label }}" class="form-label modern-label">
+                                    <span class="material-icons me-2">quiz</span> Question 2
+                                </label>
+                                {% render_field event_form.question2_text class="form-control modern-input" placeholder="RSVP Question 2 (leave blank to disable)" %}
+                                <small class="form-text text-muted">Leave blank to disable this question.</small>
+                            </div>
+                            <div class="mb-3">
+                                <label for="{{ event_form.question3_text.id_for_label }}" class="form-label modern-label">
+                                    <span class="material-icons me-2">quiz</span> Question 3
+                                </label>
+                                {% render_field event_form.question3_text class="form-control modern-input" placeholder="RSVP Question 3 (leave blank to disable)" %}
+                                <small class="form-text text-muted">Leave blank to disable this question.</small>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">
+                <div class="modal-footer modern-modal-footer">
+                    <button type="button" class="btn btn-outline-secondary modern-btn" data-bs-dismiss="modal">
+                        <span class="material-icons me-1">close</span> Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary modern-btn">
                         <span class="material-icons me-1">save</span> Save Changes
                     </button>
                 </div>
@@ -907,7 +981,8 @@
 {% block extra_js %}
 {{ block.super }}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+<script src="https://unpkg.com/trix@2.0.8/dist/trix.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         console.log('DOM loaded, initializing JavaScript...');
@@ -990,18 +1065,6 @@
                     }
                 }
             });
-        }
-
-        // Auto-open the edit modal if ?edit=1 is in the URL
-        function getUrlParam(name) {
-            const url = new URL(window.location.href);
-            return url.searchParams.get(name);
-        }
-        if (getUrlParam('edit') === '1') {
-            const editEventModal = new bootstrap.Modal(document.getElementById('editEventModal'));
-            setTimeout(function () {
-                editEventModal.show();
-            }, 400);
         }
 
         // Initialize Leaflet Map
@@ -1174,63 +1237,198 @@
             });
         }
 
-        // Initialize Quill.js for edit event modal
-        function initQuill() {
-            const isDark = document.body.classList.contains('dark-mode');
-            const descriptionField = document.querySelector('#editEventModal textarea[name="description"]');
+        // Initialize Trix editor for edit event modal
+        function initTrixEditor() {
+            const descriptionField = document.querySelector('#editEventModal input[name="description"]');
             
-            if (!descriptionField) return;
-            
-            // Create Quill container
-            const quillContainer = document.createElement('div');
-            quillContainer.id = 'quill-editor-event';
-            quillContainer.style.height = '300px';
-            descriptionField.parentNode.insertBefore(quillContainer, descriptionField);
-            descriptionField.style.display = 'none';
-            
-            // Initialize Quill
-            const quill = new Quill('#quill-editor-event', {
-                theme: 'snow',
-                modules: {
-                    toolbar: [
-                        ['bold', 'italic', 'underline', 'strike'],
-                        [{ 'color': [] }, { 'background': [] }],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        [{ 'align': [] }],
-                        ['link', 'image'],
-                        ['clean']
-                    ]
-                },
-                placeholder: 'Describe your event...',
-                readOnly: false
-            });
-            
-            // Set initial content if any
-            if (descriptionField.value) {
-                quill.root.innerHTML = descriptionField.value;
+            if (!descriptionField) {
+                console.log('Description field not found');
+                return;
             }
             
-            // Sync Quill content with hidden textarea
-            quill.on('text-change', function() {
-                descriptionField.value = quill.root.innerHTML;
-            });
-            
-            // Dark mode support
-            if (isDark) {
-                quillContainer.querySelector('.ql-toolbar').style.backgroundColor = '#2d3748';
-                quillContainer.querySelector('.ql-toolbar').style.borderColor = '#4a5568';
-                quillContainer.querySelector('.ql-container').style.backgroundColor = '#2d3748';
-                quillContainer.querySelector('.ql-container').style.borderColor = '#4a5568';
-                quillContainer.querySelector('.ql-editor').style.color = '#e2e8f0';
+            // Check if Trix is already initialized
+            const existingTrixEditor = document.querySelector('#editEventModal trix-editor');
+            if (existingTrixEditor) {
+                console.log('Trix editor already exists, skipping initialization');
+                return;
             }
+            
+            console.log('Trix editor already properly initialized in HTML');
         }
 
-        // Initialize Quill when edit event modal is shown
+        // Initialize flatpickr and Trix editor when edit event modal is shown
         const editEventModal = document.getElementById('editEventModal');
         if (editEventModal) {
             editEventModal.addEventListener('shown.bs.modal', function () {
-                setTimeout(initQuill, 100);
+                console.log('Edit modal shown, initializing components...');
+                setTimeout(() => {
+                    initEditModalFlatpickr();
+                    initTrixEditor();
+                }, 300); // Increased delay to ensure modal and libraries are fully loaded
             });
+        } else {
+            console.log('Edit modal not found');
+        }
+        
+        // Initialize flatpickr for edit modal
+        function initEditModalFlatpickr() {
+            console.log('Initializing flatpickr for edit modal...');
+            
+            // Check if flatpickr is available
+            if (typeof flatpickr === 'undefined') {
+                console.error('Flatpickr is not loaded');
+                return;
+            }
+            
+            // Date picker
+            const dateInput = document.querySelector('#editEventModal input[name="date"]');
+            console.log('Date input found:', !!dateInput, 'Value:', dateInput?.value);
+            if (dateInput) {
+                try {
+                    // Ensure the input has the correct value before initializing flatpickr
+                    const eventDate = '{{ event.date|date:"m/d/Y" }}';
+                    if (eventDate && eventDate !== 'None') {
+                        dateInput.value = eventDate;
+                        console.log('Set date input value to:', eventDate);
+                    }
+                    
+                    // Parse the date value properly
+                    let defaultDate = undefined;
+                    if (dateInput.value) {
+                        // Try to parse the date in various formats
+                        const dateValue = dateInput.value;
+                        console.log('Parsing date value:', dateValue);
+                        
+                        // Check if it's already in the correct format
+                        if (dateValue.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
+                            defaultDate = dateValue;
+                        } else {
+                            // Try to parse other formats
+                            const parsedDate = new Date(dateValue);
+                            if (!isNaN(parsedDate.getTime())) {
+                                defaultDate = parsedDate;
+                            }
+                        }
+                    }
+                    
+                    const datePicker = flatpickr(dateInput, {
+                        dateFormat: "m/d/Y",
+                        allowInput: true,
+                        clickOpens: true,
+                        theme: "light",
+                        defaultDate: defaultDate
+                    });
+                    console.log('Date picker initialized with value:', dateInput.value, 'defaultDate:', defaultDate);
+                } catch (error) {
+                    console.error('Error initializing date picker:', error);
+                }
+            } else {
+                console.log('Date input not found');
+            }
+            
+            // Start time picker
+            const startTimeInput = document.querySelector('#editEventModal input[name="start_time"]');
+            console.log('Start time input found:', !!startTimeInput, 'Value:', startTimeInput?.value);
+            if (startTimeInput) {
+                try {
+                    // Ensure the input has the correct value before initializing flatpickr
+                    const eventStartTime = '{{ event.start_time|time:"g:i A" }}';
+                    if (eventStartTime && eventStartTime !== 'None') {
+                        startTimeInput.value = eventStartTime;
+                        console.log('Set start time input value to:', eventStartTime);
+                    }
+                    
+                    // Parse the time value properly
+                    let defaultTime = undefined;
+                    if (startTimeInput.value) {
+                        const timeValue = startTimeInput.value;
+                        console.log('Parsing start time value:', timeValue);
+                        
+                        // Try to parse the time in various formats
+                        if (timeValue.match(/^\d{1,2}:\d{2}/)) {
+                            // Convert to a proper date object for flatpickr
+                            const [hours, minutes] = timeValue.split(':');
+                            const today = new Date();
+                            today.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+                            defaultTime = today;
+                        } else {
+                            // Try to parse other formats
+                            const parsedTime = new Date(`2000-01-01T${timeValue}`);
+                            if (!isNaN(parsedTime.getTime())) {
+                                defaultTime = parsedTime;
+                            }
+                        }
+                    }
+                    
+                    const startTimePicker = flatpickr(startTimeInput, {
+                        enableTime: true,
+                        noCalendar: true,
+                        dateFormat: "h:i K",
+                        time_24hr: false,
+                        allowInput: true,
+                        clickOpens: true,
+                        theme: "light",
+                        defaultDate: defaultTime
+                    });
+                    console.log('Start time picker initialized with value:', startTimeInput.value, 'defaultTime:', defaultTime);
+                } catch (error) {
+                    console.error('Error initializing start time picker:', error);
+                }
+            } else {
+                console.log('Start time input not found');
+            }
+            
+            // End time picker
+            const endTimeInput = document.querySelector('#editEventModal input[name="end_time"]');
+            console.log('End time input found:', !!endTimeInput, 'Value:', endTimeInput?.value);
+            if (endTimeInput) {
+                try {
+                    // Ensure the input has the correct value before initializing flatpickr
+                    const eventEndTime = '{{ event.end_time|time:"g:i A" }}';
+                    if (eventEndTime && eventEndTime !== 'None') {
+                        endTimeInput.value = eventEndTime;
+                        console.log('Set end time input value to:', eventEndTime);
+                    }
+                    
+                    // Parse the time value properly
+                    let defaultTime = undefined;
+                    if (endTimeInput.value) {
+                        const timeValue = endTimeInput.value;
+                        console.log('Parsing end time value:', timeValue);
+                        
+                        // Try to parse the time in various formats
+                        if (timeValue.match(/^\d{1,2}:\d{2}/)) {
+                            // Convert to a proper date object for flatpickr
+                            const [hours, minutes] = timeValue.split(':');
+                            const today = new Date();
+                            today.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+                            defaultTime = today;
+                        } else {
+                            // Try to parse other formats
+                            const parsedTime = new Date(`2000-01-01T${timeValue}`);
+                            if (!isNaN(parsedTime.getTime())) {
+                                defaultTime = parsedTime;
+                            }
+                        }
+                    }
+                    
+                    const endTimePicker = flatpickr(endTimeInput, {
+                        enableTime: true,
+                        noCalendar: true,
+                        dateFormat: "h:i K",
+                        time_24hr: false,
+                        allowInput: true,
+                        clickOpens: true,
+                        theme: "light",
+                        defaultDate: defaultTime
+                    });
+                    console.log('End time picker initialized with value:', endTimeInput.value, 'defaultTime:', defaultTime);
+                } catch (error) {
+                    console.error('Error initializing end time picker:', error);
+                }
+            } else {
+                console.log('End time input not found');
+            }
         }
     });
 </script>
@@ -1238,32 +1436,31 @@
 
 
 <script>
-
-
-function fallbackCopyTextToClipboard(input) {
-    input.select();
-    input.setSelectionRange(0, 99999);
-    try {
-        document.execCommand('copy');
-    } catch (err) {
-        console.error('Failed to copy: ', err);
+document.addEventListener('DOMContentLoaded', function () {
+    function fallbackCopyTextToClipboard(input) {
+        input.select();
+        input.setSelectionRange(0, 99999);
+        try {
+            document.execCommand('copy');
+        } catch (err) {
+            console.error('Failed to copy: ', err);
+        }
     }
-}
 
-function showCopyFeedback(button) {
-    const originalContent = button.innerHTML;
-    button.innerHTML = '<span class="material-icons">check</span><span>Copied!</span>';
-    button.classList.add('copied');
-    
-    setTimeout(() => {
-        button.innerHTML = originalContent;
-        button.classList.remove('copied');
-    }, 2000);
-}
+    function showCopyFeedback(button) {
+        const originalContent = button.innerHTML;
+        button.innerHTML = '<span class="material-icons">check</span><span>Copied!</span>';
+        button.classList.add('copied');
+        
+        setTimeout(() => {
+            button.innerHTML = originalContent;
+            button.classList.remove('copied');
+        }, 2000);
+    }
 
-// Attendee filtering and sorting functions
-let selectedStatusFilters = new Set(['confirmed', 'maybe', 'waitlisted', 'not_attending']);
-let currentViewMode = 'list';
+    // Attendee filtering and sorting functions
+    let selectedStatusFilters = new Set(['confirmed', 'maybe', 'waitlisted', 'not_attending']);
+    let currentViewMode = 'list';
 
 function filterAttendees() {
     const searchTerm = document.getElementById('attendeeSearch').value.toLowerCase();
@@ -1346,7 +1543,7 @@ function setViewMode(mode, event) {
             list.classList.remove('grid-view');
         }
     });
-}
+});
 </script>
 
 <style>
@@ -1448,6 +1645,248 @@ function setViewMode(mode, event) {
     align-items: center;
     gap: 0.5rem;
     transition: all 0.3s ease;
+}
+
+/* Modern Modal Styling */
+.modern-modal {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+}
+
+.modern-modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 1.5rem;
+    border-radius: 16px 16px 0 0;
+}
+
+.modern-modal-header .modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.modern-modal-body {
+    padding: 2rem;
+    max-height: 70vh;
+    overflow-y: auto;
+    background: #f8fafc;
+}
+
+.modern-modal-footer {
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    padding: 1.5rem;
+    border-radius: 0 0 16px 16px;
+}
+
+/* Form Section Styling */
+.form-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    border: 1px solid #e2e8f0;
+}
+
+.form-section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+.form-section-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+}
+
+.form-section-header .material-icons {
+    color: #667eea;
+    font-size: 1.25rem;
+}
+
+.form-section-content {
+    padding: 0;
+}
+
+/* Modern Form Controls */
+.modern-label {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.modern-input {
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    background: white;
+    color: #1f2937;
+    transition: all 0.2s ease;
+}
+
+.modern-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.modern-btn {
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+}
+
+.modern-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.modern-checkbox {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.modern-checkbox:hover {
+    border-color: #667eea;
+    background: #f8fafc;
+}
+
+.modern-checkbox .form-check-input {
+    margin-right: 0.75rem;
+}
+
+.modern-checkbox .form-check-label {
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+}
+
+/* Options Grid Styling */
+.options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.option-card {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.option-card:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transform: translateY(-2px);
+}
+
+.option-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.option-card:hover::before {
+    opacity: 1;
+}
+
+.option-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.option-icon {
+    color: #667eea;
+    font-size: 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.option-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+}
+
+.option-content {
+    padding: 0;
+}
+
+.option-content .form-check {
+    margin-bottom: 0.5rem;
+}
+
+.option-content .form-check-label {
+    font-weight: 500;
+    color: #374151;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.option-description {
+    color: #6b7280;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    margin-top: 0.5rem;
+    display: block;
+}
+
+/* Enhanced checkbox styling */
+.option-card .form-check-input {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-right: 0.75rem;
+    border: 2px solid #d1d5db;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.option-card .form-check-input:checked {
+    background-color: #667eea;
+    border-color: #667eea;
+}
+
+.option-card .form-check-input:focus {
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: #667eea;
+}
     white-space: nowrap;
 }
 

@@ -2651,8 +2651,31 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             if (visibleDescription && hiddenDescription) {
-                hiddenDescription.value = visibleDescription.value;
-                console.log('Synced description:', visibleDescription.value);
+                // For Trix editor, we need to handle attachments and convert them to base64
+                const trixEditor = document.querySelector('trix-editor');
+                if (trixEditor && trixEditor.editor) {
+                    // Get the HTML content from Trix editor
+                    let htmlContent = trixEditor.editor.getDocument().toString();
+                    
+                    // Convert Trix attachments to base64 img tags
+                    const attachments = trixEditor.editor.getDocument().getAttachments();
+                    for (let i = 0; i < attachments.length; i++) {
+                        const attachment = attachments[i];
+                        if (attachment.file && attachment.file.type.startsWith('image/')) {
+                            // Convert attachment to base64 img tag
+                            const imgTag = `<img src="${attachment.url}" alt="${attachment.file.name}" style="max-width: 100%; height: auto;">`;
+                            // Replace the attachment placeholder with the img tag
+                            htmlContent = htmlContent.replace(attachment.toString(), imgTag);
+                        }
+                    }
+                    
+                    hiddenDescription.value = htmlContent;
+                    console.log('Synced description with base64 images:', htmlContent);
+                } else {
+                    // Fallback to direct value sync
+                    hiddenDescription.value = visibleDescription.value;
+                    console.log('Synced description (fallback):', visibleDescription.value);
+                }
             }
             
             if (visibleDate && hiddenDate) {

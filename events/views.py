@@ -275,11 +275,7 @@ def home(request):
 
 def event_detail(request, event_id):
     event = get_object_or_404(Event, pk=event_id)
-    
-    # Clean the event description HTML
-    if event.description:
-        event.description = clean_html_content(event.description)
-    
+
     rsvps = event.rsvps.all().select_related('user__profile')
     
     # Calculate if event has passed
@@ -742,8 +738,81 @@ def edit_event(request, event_id):
             return redirect('event_detail', event_id=event.id)
 
     if request.method == 'POST':
-        form = EventForm(request.POST, instance=event, user=request.user)
-        if form.is_valid():
+        # Handle the form submission manually to avoid TinyMCE validation issues
+        try:
+            # Get all the form data
+            title = request.POST.get('title', event.title)
+            group_id = request.POST.get('group')
+            date = request.POST.get('date')
+            start_time = request.POST.get('start_time')
+            end_time = request.POST.get('end_time')
+            address = request.POST.get('address', event.address)
+            city = request.POST.get('city', event.city)
+            state = request.POST.get('state', event.state)
+            age_restriction = request.POST.get('age_restriction', event.age_restriction)
+            description = request.POST.get('description', event.description)
+            capacity = request.POST.get('capacity')
+            waitlist_enabled = request.POST.get('waitlist_enabled') == 'on'
+            attendee_list_public = request.POST.get('attendee_list_public') == 'on'
+            accessibility_details = request.POST.get('accessibility_details', event.accessibility_details)
+            
+            print(f"DEBUG: Description content received: {description[:200]}...")  # Debug log
+            
+            # Validate required fields
+            errors = []
+            if not title:
+                errors.append('Title is required')
+            if not group_id:
+                errors.append('Group is required')
+            if not date:
+                errors.append('Date is required')
+            if not start_time:
+                errors.append('Start time is required')
+            if not end_time:
+                errors.append('End time is required')
+            
+            if errors:
+                print(f"DEBUG: Validation errors: {errors}")  # Debug log
+                messages.error(request, f"Please fix the following errors: {', '.join(errors)}")
+                return redirect(f'{event.get_absolute_url()}?edit=1')
+            
+            # Update the event
+            event.title = title
+            if group_id:
+                event.group = Group.objects.get(id=group_id)
+            if date:
+                # Convert MM/DD/YYYY to YYYY-MM-DD format
+                try:
+                    from datetime import datetime
+                    parsed_date = datetime.strptime(date, '%m/%d/%Y')
+                    event.date = parsed_date.date()
+                except ValueError:
+                    # Try alternative format if the first one fails
+                    try:
+                        parsed_date = datetime.strptime(date, '%Y-%m-%d')
+                        event.date = parsed_date.date()
+                    except ValueError:
+                        print(f"DEBUG: Could not parse date: {date}")
+                        messages.error(request, f"Invalid date format: {date}. Please use MM/DD/YYYY format.")
+                        return redirect(f'{event.get_absolute_url()}?edit=1')
+            if start_time:
+                event.start_time = start_time
+            if end_time:
+                event.end_time = end_time
+            event.address = address
+            event.city = city
+            event.state = state
+            event.age_restriction = age_restriction
+            event.description = description
+            if capacity:
+                event.capacity = int(capacity) if capacity.isdigit() else None
+            event.waitlist_enabled = waitlist_enabled
+            event.attendee_list_public = attendee_list_public
+            event.accessibility_details = accessibility_details
+            
+            event.save()
+            print(f"DEBUG: Event saved with description length: {len(event.description)}")  # Debug log
+            
             # Store old data for comparison
             old_data = {
                 'title': event.title,
@@ -753,11 +822,6 @@ def edit_event(request, event_id):
                 'status': event.status,
                 'group': event.group.name if event.group else None
             }
-            
-            event = form.save(commit=False)
-            if not event.organizer:
-                event.organizer = request.user
-            event.save()
             
             # Log the event update
             AuditLog.log_action(
@@ -790,15 +854,14 @@ def edit_event(request, event_id):
                         link=event.get_absolute_url()
                     )
             return redirect('event_detail', event_id=event.id)
-        else:
-            # Store form errors and POST data in session, converting ErrorList to plain lists
-            plain_errors = {k: list(map(str, v)) for k, v in form.errors.items()}
-            request.session['edit_event_errors'] = plain_errors
-            request.session['edit_event_post'] = request.POST
-            return redirect(f'{event.get_absolute_url()}?edit=1')
+            
+        except Exception as e:
+            print(f"DEBUG: Error saving event: {e}")  # Debug log
+            messages.error(request, f"Error saving event: {str(e)}")
+            return redirect(event.get_absolute_url())
     else:
-        # Redirect GET requests to event detail with ?edit=1 to trigger modal
-        return redirect(f'{event.get_absolute_url()}?edit=1')
+        # For GET requests, just redirect to event detail page
+        return redirect(event.get_absolute_url())
 
 @login_required
 def uncancel_event(request, event_id):
