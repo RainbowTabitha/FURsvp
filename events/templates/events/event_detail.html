@@ -1009,8 +1009,23 @@
             const mapElement = document.getElementById('event-map');
             if (!mapElement) return;
 
+            // Build complete address string with all location fields
             const address = '{{ event.address|escapejs }}';
+            const city = '{{ event.city|escapejs }}';
+            const state = '{{ event.state|escapejs }}';
+            
             if (!address) return;
+            
+            // Construct full address for geocoding
+            let fullAddress = address;
+            if (city) {
+                fullAddress += ', ' + city;
+            }
+            if (state) {
+                fullAddress += ', ' + state;
+            }
+            
+            console.log('Geocoding address:', fullAddress);
 
             // Check if map is already initialized
             if (mapElement._mapInstance) {
@@ -1022,7 +1037,7 @@
             mapElement.innerHTML = '';
 
             // Try to get coordinates using Nominatim (OpenStreetMap's geocoding service)
-            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`, {
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}&limit=1`, {
                 headers: {
                     'Accept': 'application/json',
                     'User-Agent': 'FURsvp/1.0 (https://fursvp.org)',
@@ -1078,12 +1093,12 @@
                         
                     } else {
                         // Fallback: show a message if geocoding fails
-                        console.log('Geocoding failed: No results found for address:', address);
+                        console.log('Geocoding failed: No results found for address:', fullAddress);
                         mapElement.innerHTML = `
                             <div class="map-error">
                                 <i class="material-icons">location_off</i>
                                 <p>Unable to display map for this location</p>
-                                <small>Address: ${address}</small>
+                                <small>Address: ${fullAddress}</small>
                             </div>
                         `;
                     }
@@ -1091,12 +1106,12 @@
                 .catch(error => {
                     console.error('Geocoding error:', error);
                     console.log('Could not geocode address, showing error message');
-                    console.log('Address that failed:', address);
+                    console.log('Address that failed:', fullAddress);
                     mapElement.innerHTML = `
                         <div class="map-error">
                             <i class="material-icons">location_off</i>
                             <p>Unable to display map for this location</p>
-                            <small>Address: ${address}</small>
+                            <small>Address: ${fullAddress}</small>
                             <small>Error: ${error.message}</small>
                         </div>
                     `;
