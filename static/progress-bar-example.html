@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress Bar Component Example</title>
+    
+    <!-- Include the Progress Bar Component -->
+    <link rel="stylesheet" type="text/css" href="progress-bar-component.html">
+</head>
+<body>
+    <div class="container">
+        <h1>Progress Bar Component Examples</h1>
+        
+        <!-- Basic Progress Bar -->
+        <section>
+            <h2>Basic Progress Bar</h2>
+            <div id="basic-progress" 
+                 data-progress-bar 
+                 data-current-step="2" 
+                 data-total-steps="5"
+                 data-step-labels="Basic Information|Schedule|Location|Settings|Review & Submit">
+            </div>
+        </section>
+        
+        <!-- Interactive Progress Bar -->
+        <section>
+            <h2>Interactive Progress Bar</h2>
+            <div id="interactive-progress" 
+                 data-progress-bar 
+                 data-current-step="1" 
+                 data-total-steps="5"
+                 data-step-labels="Step 1|Step 2|Step 3|Step 4|Step 5">
+            </div>
+            
+            <div class="controls">
+                <button onclick="previousStep()">Previous</button>
+                <button onclick="nextStep()">Next</button>
+                <button onclick="resetProgress()">Reset</button>
+                <button onclick="goToStep(3)">Go to Step 3</button>
+            </div>
+        </section>
+        
+        <!-- Custom Progress Bar -->
+        <section>
+            <h2>Custom Progress Bar</h2>
+            <div id="custom-progress"></div>
+            
+            <div class="controls">
+                <button onclick="updateLabels()">Update Labels</button>
+                <button onclick="changeStep()">Change Step</button>
+            </div>
+        </section>
+        
+        <!-- Form Wizard Example -->
+        <section>
+            <h2>Form Wizard Example</h2>
+            <div id="wizard-progress" 
+                 data-progress-bar 
+                 data-current-step="1" 
+                 data-total-steps="4"
+                 data-step-labels="Personal Info|Contact Details|Preferences|Confirmation">
+            </div>
+            
+            <div class="wizard-content">
+                <div id="step-1" class="wizard-step active">
+                    <h3>Personal Information</h3>
+                    <p>Enter your personal details here...</p>
+                    <button onclick="wizardNext()">Next</button>
+                </div>
+                
+                <div id="step-2" class="wizard-step">
+                    <h3>Contact Details</h3>
+                    <p>Enter your contact information...</p>
+                    <button onclick="wizardPrevious()">Previous</button>
+                    <button onclick="wizardNext()">Next</button>
+                </div>
+                
+                <div id="step-3" class="wizard-step">
+                    <h3>Preferences</h3>
+                    <p>Select your preferences...</p>
+                    <button onclick="wizardPrevious()">Previous</button>
+                    <button onclick="wizardNext()">Next</button>
+                </div>
+                
+                <div id="step-4" class="wizard-step">
+                    <h3>Confirmation</h3>
+                    <p>Review and confirm your information...</p>
+                    <button onclick="wizardPrevious()">Previous</button>
+                    <button onclick="wizardSubmit()">Submit</button>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <script>
+        let interactiveProgress, customProgress, wizardProgress;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize custom progress bar
+            customProgress = new ProgressBar('custom-progress', {
+                currentStep: 1,
+                totalSteps: 3,
+                stepLabels: ['Setup', 'Configure', 'Launch'],
+                onStepChange: (step) => {
+                    console.log(`Custom progress changed to step: ${step}`);
+                }
+            });
+            
+            // Initialize wizard progress
+            wizardProgress = new ProgressBar('wizard-progress', {
+                currentStep: 1,
+                totalSteps: 4,
+                stepLabels: ['Personal Info', 'Contact Details', 'Preferences', 'Confirmation'],
+                onStepChange: (step) => {
+                    showWizardStep(step);
+                }
+            });
+            
+            // Get interactive progress reference
+            const interactiveContainer = document.getElementById('interactive-progress');
+            if (interactiveContainer) {
+                interactiveProgress = interactiveContainer._progressBar;
+            }
+        });
+        
+        // Interactive progress controls
+        function nextStep() {
+            if (interactiveProgress) {
+                interactiveProgress.nextStep();
+            }
+        }
+        
+        function previousStep() {
+            if (interactiveProgress) {
+                interactiveProgress.previousStep();
+            }
+        }
+        
+        function resetProgress() {
+            if (interactiveProgress) {
+                interactiveProgress.reset();
+            }
+        }
+        
+        function goToStep(step) {
+            if (interactiveProgress) {
+                interactiveProgress.goToStep(step);
+            }
+        }
+        
+        // Custom progress controls
+        function updateLabels() {
+            if (customProgress) {
+                customProgress.setStepLabels(['Phase 1', 'Phase 2', 'Phase 3']);
+            }
+        }
+        
+        function changeStep() {
+            if (customProgress) {
+                const currentStep = customProgress.getCurrentStep();
+                const newStep = currentStep === 3 ? 1 : currentStep + 1;
+                customProgress.goToStep(newStep);
+            }
+        }
+        
+        // Wizard functions
+        function showWizardStep(step) {
+            // Hide all steps
+            document.querySelectorAll('.wizard-step').forEach(stepEl => {
+                stepEl.classList.remove('active');
+            });
+            
+            // Show current step
+            const currentStepEl = document.getElementById(`step-${step}`);
+            if (currentStepEl) {
+                currentStepEl.classList.add('active');
+            }
+        }
+        
+        function wizardNext() {
+            if (wizardProgress) {
+                wizardProgress.nextStep();
+            }
+        }
+        
+        function wizardPrevious() {
+            if (wizardProgress) {
+                wizardProgress.previousStep();
+            }
+        }
+        
+        function wizardSubmit() {
+            alert('Form submitted!');
+        }
+    </script>
+    
+    <style>
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        section {
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: #f8fafc;
+            border-radius: 12px;
+        }
+        
+        h1 {
+            color: #1e293b;
+            margin-bottom: 2rem;
+        }
+        
+        h2 {
+            color: #374151;
+            margin-bottom: 1rem;
+        }
+        
+        .controls {
+            margin-top: 1rem;
+        }
+        
+        button {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            transition: all 0.2s ease;
+        }
+        
+        button:hover {
+            background: #4338ca;
+            transform: translateY(-1px);
+        }
+        
+        .wizard-content {
+            margin-top: 2rem;
+        }
+        
+        .wizard-step {
+            display: none;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .wizard-step.active {
+            display: block;
+        }
+        
+        .wizard-step h3 {
+            color: #1e293b;
+            margin-bottom: 1rem;
+        }
+        
+        .wizard-step p {
+            color: #64748b;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</body>
+</html> 

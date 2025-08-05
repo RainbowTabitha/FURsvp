@@ -174,6 +174,10 @@ def home(request):
     if request.user.is_authenticated:
         # Add user's RSVP list for template compatibility
         for event in events_page:
+            # Clean HTML content for event descriptions
+            if event.description:
+                event.description = clean_html_content(event.description)
+            
             user_rsvp = event.rsvps.filter(user=request.user).first()
             if user_rsvp:
                 event.user_rsvp_list = [user_rsvp]
@@ -271,6 +275,11 @@ def home(request):
 
 def event_detail(request, event_id):
     event = get_object_or_404(Event, pk=event_id)
+    
+    # Clean the event description HTML
+    if event.description:
+        event.description = clean_html_content(event.description)
+    
     rsvps = event.rsvps.all().select_related('user__profile')
     
     # Calculate if event has passed
@@ -707,6 +716,10 @@ def create_event(request):
                 )
                 post_to_telegram_channel(group.telegram_webhook_channel, msg, parse_mode="Markdown")
             return redirect('event_detail', event_id=event.id)
+        else:
+            # Form is invalid - render with errors but preserve the data
+            print("Form errors:", form.errors)
+            return render(request, 'events/event_create.html', {'form': form})
     else:
         form = EventForm(user=request.user)
     return render(request, 'events/event_create.html', {'form': form})
@@ -824,8 +837,74 @@ def eula(request):
 def privacy(request):
     return render(request, 'events/privacy.html')
 
+def clean_html_content(html_content):
+    """
+    Clean and parse HTML content, removing unwanted tags and attributes
+    while preserving safe HTML formatting.
+    """
+    if not html_content:
+        return ""
+    
+    import re
+    from bs4 import BeautifulSoup
+    
+    try:
+        # Parse HTML with BeautifulSoup
+        soup = BeautifulSoup(html_content, 'html.parser')
+        
+        # Remove unwanted tags and attributes
+        unwanted_tags = ['script', 'style', 'iframe', 'object', 'embed']
+        for tag in unwanted_tags:
+            for element in soup.find_all(tag):
+                element.decompose()
+        
+        # Remove unwanted attributes
+        unwanted_attrs = ['onclick', 'onload', 'onerror', 'onmouseover', 'onmouseout']
+        for tag in soup.find_all():
+            for attr in unwanted_attrs:
+                if attr in tag.attrs:
+                    del tag.attrs[attr]
+        
+        # Clean up Wix-specific classes and styles
+        for tag in soup.find_all():
+            if 'wixui-rich-text' in tag.get('class', []):
+                # Remove Wix-specific classes but keep the content
+                new_classes = [cls for cls in tag.get('class', []) if 'wixui' not in cls]
+                if new_classes:
+                    tag['class'] = new_classes
+                else:
+                    del tag['class']
+            
+            # Clean up inline styles that might be problematic
+            if tag.get('style'):
+                style = tag['style']
+                # Remove potentially dangerous CSS properties
+                dangerous_props = ['javascript:', 'expression(', 'eval(']
+                for prop in dangerous_props:
+                    if prop in style.lower():
+                        del tag['style']
+                        break
+        
+        # Convert to string and clean up
+        cleaned_html = str(soup)
+        
+        # Remove any remaining problematic patterns
+        cleaned_html = re.sub(r'<p><span[^>]*>', '<p>', cleaned_html)
+        cleaned_html = re.sub(r'</span></p>', '</p>', cleaned_html)
+        
+        return cleaned_html
+        
+    except Exception as e:
+        # If parsing fails, return the original content stripped of HTML tags
+        import html
+        return html.escape(html_content)
+
 def group_detail(request, group_id):
     group = get_object_or_404(Group, pk=group_id)
+    
+    # Clean the group description HTML
+    if group.description:
+        group.description = clean_html_content(group.description)
     
     # Remove legacy organizers and assistants
     organizers = []
@@ -1074,6 +1153,12 @@ def groups_list(request):
             models.Q(description__icontains=search_query)
         )
     groups = groups.order_by('name')
+    
+    # Clean HTML content for all groups
+    for group in groups:
+        if group.description:
+            group.description = clean_html_content(group.description)
+    
     paginator = Paginator(groups, 9)  # 9 groups per page
     page = request.GET.get('page', 1)
     try:
@@ -1147,6 +1232,11 @@ def event_index(request):
     
     # Convert to list for filtering
     all_events = list(all_events)
+    
+    # Clean HTML content for all events
+    for event in all_events:
+        if event.description:
+            event.description = clean_html_content(event.description)
     
     # Handle adult content filtering
     if filter_adult == 'false' or filter_adult == 'hide':

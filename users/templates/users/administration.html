@@ -839,50 +839,50 @@
         <h1>
             <span class="material-icons">admin_panel_settings</span>
             Administration Panel
-            </h1>
+        </h1>
         <p>Manage users, groups, and platform settings</p>
     </div>
 
     <!-- Navigation -->
     <div class="admin-nav">
         <ul class="nav nav-pills justify-content-center" id="adminTabs" role="tablist">
-                <li class="nav-item" role="presentation">
+            <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="users-tab" data-bs-toggle="pill" data-bs-target="#users" type="button" role="tab">
                     <span class="material-icons">people</span>
                     Users
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
                 <button class="nav-link" id="groups-tab" data-bs-toggle="pill" data-bs-target="#groups" type="button" role="tab">
                     <span class="material-icons">groups</span>
                     Groups
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
                 <button class="nav-link" id="bans-tab" data-bs-toggle="pill" data-bs-target="#bans" type="button" role="tab">
                     <span class="material-icons">gavel</span>
                     Bans
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
                 <button class="nav-link" id="notify-tab" data-bs-toggle="pill" data-bs-target="#notify" type="button" role="tab">
                     <span class="material-icons">notifications</span>
                     Notifications
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
                 <button class="nav-link" id="audit-tab" data-bs-toggle="pill" data-bs-target="#audit" type="button" role="tab">
                     <span class="material-icons">history</span>
                     Audit Log
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
                 <button class="nav-link" id="blog-tab" data-bs-toggle="pill" data-bs-target="#blog" type="button" role="tab">
                     <span class="material-icons">article</span>
                     Blog
-                    </button>
-                </li>
-            </ul>
+                </button>
+            </li>
+        </ul>
     </div>
 
     <!-- Tab Content -->
@@ -906,11 +906,11 @@
                             <button type="submit" class="search-btn">
                                 <span class="material-icons">search</span>
                                 Search
-                                </button>
+                            </button>
                         </form>
                     </div>
 
-                                        <!-- Users Table -->
+                    <!-- Users Table -->
                     {% if users_to_promote %}
                         <div class="table-responsive">
                             <table class="user-table">
@@ -924,34 +924,34 @@
                                 </thead>
                                 <tbody>
                                     {% for user_obj in users_to_promote %}
-                                    <tr data-user-id="{{ user_obj.id }}" 
-                                        data-staff="{{ user_obj.is_superuser|yesno:'true,false' }}"
-                                        data-blog-permission="{{ user_obj.profile.can_post_blog|yesno:'true,false' }}">
-                                        <td>
-                                            <div class="user-info">
-                                                <div class="user-avatar" {% if not user_obj.profile.profile_picture_base64 %}style="background-color: {{ user_obj.profile.get_avatar_color }};"{% endif %}>
-                                                    {% if user_obj.profile.profile_picture_base64 %}
-                                                        <img src="{{ user_obj.profile.profile_picture_base64 }}" alt="{{ user_obj.profile.get_display_name }}">
-                                                    {% else %}
-                                                        {{ user_obj.profile.get_initials }}
-                                                    {% endif %}
-                                                </div>
-                                                <div class="user-details">
-                                                    <div class="user-name">
-                                                        {{ user_obj.profile.get_display_name }}
-                                                        {% if user_obj.is_superuser %}
-                                                            <span class="material-icons verified-checkmark" style="color: #f59e0b; font-size: 1rem;">build</span>
+                                        <tr data-user-id="{{ user_obj.id }}" 
+                                            data-staff="{{ user_obj.is_superuser|yesno:'true,false' }}"
+                                            data-blog-permission="{{ user_obj.profile.can_post_blog|yesno:'true,false' }}">
+                                            <td>
+                                                <div class="user-info">
+                                                    <div class="user-avatar" {% if not user_obj.profile.profile_picture_base64 %}style="background-color: {{ user_obj.profile.get_avatar_color }};"{% endif %}>
+                                                        {% if user_obj.profile.profile_picture_base64 %}
+                                                            <img src="{{ user_obj.profile.profile_picture_base64 }}" alt="{{ user_obj.profile.get_display_name }}">
+                                                        {% else %}
+                                                            {{ user_obj.profile.get_initials }}
                                                         {% endif %}
                                                     </div>
-                                                    <div class="username">@{{ user_obj.username }}</div>
-                                                    <div class="user-id">ID: {{ user_obj.id }}</div>
-                                                    <!-- Hidden group data for JavaScript -->
-                                                    {% for group in user_obj.group_roles.all %}
-                                                        <span data-group-id="{{ group.group.id }}" style="display: none;"></span>
-                                                    {% endfor %}
+                                                    <div class="user-details">
+                                                        <div class="user-name">
+                                                            {{ user_obj.profile.get_display_name }}
+                                                            {% if user_obj.is_superuser %}
+                                                                <span class="material-icons verified-checkmark" style="color: #f59e0b; font-size: 1rem;">build</span>
+                                                            {% endif %}
+                                                        </div>
+                                                        <div class="username">@{{ user_obj.username }}</div>
+                                                        <div class="user-id">ID: {{ user_obj.id }}</div>
+                                                        <!-- Hidden group data for JavaScript -->
+                                                        {% for group in user_obj.group_roles.all %}
+                                                            <span data-group-id="{{ group.group.id }}" style="display: none;"></span>
+                                                        {% endfor %}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </td>
+                                            </td>
                                         <td>
                                             <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                                                 {% if user_obj.is_superuser %}
@@ -1002,7 +1002,7 @@
                                 {% if users_to_promote.has_previous %}
                                     <a href="?tab=users&user_page={{ users_to_promote.previous_page_number }}{% if user_search %}&user_search={{ user_search }}{% endif %}" class="page-link">Previous</a>
                                 {% endif %}
-                                    
+                                
                                 {% for num in users_to_promote.paginator.page_range %}
                                     {% if users_to_promote.number == num %}
                                         <span class="page-link active">{{ num }}</span>
@@ -1010,11 +1010,11 @@
                                         <a href="?tab=users&user_page={{ num }}{% if user_search %}&user_search={{ user_search }}{% endif %}" class="page-link">{{ num }}</a>
                                     {% endif %}
                                 {% endfor %}
-                                    
+                                
                                 {% if users_to_promote.has_next %}
                                     <a href="?tab=users&user_page={{ users_to_promote.next_page_number }}{% if user_search %}&user_search={{ user_search }}{% endif %}" class="page-link">Next</a>
                                 {% endif %}
-                        </nav>
+                            </nav>
                         {% endif %}
                     {% else %}
                         <div class="empty-state">
@@ -1022,7 +1022,7 @@
                             <h4>No users found</h4>
                             <p>Try adjusting your search criteria</p>
                         </div>
-                        {% endif %}
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -1046,7 +1046,7 @@
                             <button type="submit" class="search-btn">
                                 <span class="material-icons">search</span>
                                 Search
-                                </button>
+                            </button>
                         </form>
                     </div>
 
@@ -1057,8 +1057,8 @@
                             <input type="text" name="new_group_name" class="search-input" placeholder="Enter new group name..." required>
                             <button type="submit" name="create_group_submit" class="search-btn">
                                 <span class="material-icons">add</span>
-                            Create Group
-                        </button>
+                                Create Group
+                            </button>
                         </form>
                     </div>
 
@@ -1349,7 +1349,7 @@
                         Audit Log
                     </h2>
                     <p>View system activity and administrative actions</p>
-                                </div>
+                </div>
                 <div class="admin-card-body">
                     <!-- Search -->
                     <div class="search-container">
@@ -1357,62 +1357,62 @@
                             <input type="hidden" name="tab" value="audit">
                             <input type="text" name="audit_search" value="{{ audit_search }}" class="search-input" placeholder="Search audit log...">
                             <select name="audit_action_filter" class="form-control">
-                                        <option value="">All Actions</option>
-                                        {% for action_code, action_name in audit_actions %}
-                                            <option value="{{ action_code }}" {% if audit_action_filter == action_code %}selected{% endif %}>{{ action_name }}</option>
-                                        {% endfor %}
-                                    </select>
+                                <option value="">All Actions</option>
+                                {% for action_code, action_name in audit_actions %}
+                                    <option value="{{ action_code }}" {% if audit_action_filter == action_code %}selected{% endif %}>{{ action_name }}</option>
+                                {% endfor %}
+                            </select>
                             <button type="submit" class="search-btn">
                                 <span class="material-icons">search</span>
                                 Search
-                                    </button>
-                            </form>
+                            </button>
+                        </form>
                     </div>
 
                     <!-- Audit Log Table -->
                     {% if audit_logs %}
-                    <div class="table-responsive">
-                        <table class="user-table">
-                            <thead>
-                                <tr>
-                                    <th>User</th>
-                                    <th>Action</th>
-                                    <th>Description</th>
+                        <div class="table-responsive">
+                            <table class="user-table">
+                                <thead>
+                                    <tr>
+                                        <th>User</th>
+                                        <th>Action</th>
+                                        <th>Description</th>
                                         <th>Timestamp</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+                                    </tr>
+                                </thead>
+                                <tbody>
                                     {% for log in audit_logs %}
-                                <tr>
-                                    <td>
-                                            {% if log.user %}
-                                                <div class="user-info">
-                                                    <div class="user-avatar" {% if not log.user.profile.profile_picture_base64 %}style="background-color: {{ log.user.profile.get_avatar_color }};"{% endif %}>
-                                                        {% if log.user.profile.profile_picture_base64 %}
-                                                            <img src="{{ log.user.profile.profile_picture_base64 }}" alt="{{ log.user.profile.get_display_name }}">
-                                        {% else %}
-                                                            {{ log.user.profile.get_initials }}
-                                        {% endif %}
-                                        </div>
-                                                    <div class="user-details">
-                                                        <div class="user-name">{{ log.user.profile.get_display_name }}</div>
-                                                        <div class="username">@{{ log.user.username }}</div>
+                                        <tr>
+                                            <td>
+                                                {% if log.user %}
+                                                    <div class="user-info">
+                                                        <div class="user-avatar" {% if not log.user.profile.profile_picture_base64 %}style="background-color: {{ log.user.profile.get_avatar_color }};"{% endif %}>
+                                                            {% if log.user.profile.profile_picture_base64 %}
+                                                                <img src="{{ log.user.profile.profile_picture_base64 }}" alt="{{ log.user.profile.get_display_name }}">
+                                                            {% else %}
+                                                                {{ log.user.profile.get_initials }}
+                                                            {% endif %}
+                                                        </div>
+                                                        <div class="user-details">
+                                                            <div class="user-name">{{ log.user.profile.get_display_name }}</div>
+                                                            <div class="username">@{{ log.user.username }}</div>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                        {% else %}
-                                                System
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                            <span class="status-indicator status-staff">{{ log.get_action_display }}</span>
-                                    </td>
-                                        <td>{{ log.description }}</td>
-                                        <td>{{ log.timestamp|date:"M j, Y g:i A" }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                                                {% else %}
+                                                    System
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="status-indicator status-staff">{{ log.get_action_display }}</span>
+                                            </td>
+                                            <td>{{ log.description }}</td>
+                                            <td>{{ log.timestamp|date:"M j, Y g:i A" }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
 
                         <!-- Pagination -->
                         {% if audit_logs.has_other_pages %}

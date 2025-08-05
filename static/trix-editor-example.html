@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trix Editor Component Example</title>
+    
+    <!-- Include the Trix Editor Component -->
+    <link rel="stylesheet" type="text/css" href="trix-editor-component.html">
+</head>
+<body>
+    <div class="container">
+        <h1>Trix Editor Component Example</h1>
+        
+        <!-- Basic Usage -->
+        <div class="form-group">
+            <label for="description">Description:</label>
+            <div id="description-container" data-trix-editor>
+                <input type="hidden" id="description" name="description">
+                <trix-editor input="description" placeholder="Describe your event in detail..."></trix-editor>
+            </div>
+        </div>
+        
+        <!-- Advanced Usage with Custom Options -->
+        <div class="form-group">
+            <label for="content">Content with Custom Options:</label>
+            <div id="content-container" 
+                 data-trix-editor
+                 data-placeholder="Enter your content here..."
+                 data-min-height="300px"
+                 data-max-file-size="10485760"
+                 data-accepted-types="image/*,application/pdf">
+                <input type="hidden" id="content" name="content">
+                <trix-editor input="content" placeholder="Enter your content here..."></trix-editor>
+            </div>
+        </div>
+        
+        <!-- Manual Initialization -->
+        <div class="form-group">
+            <label for="manual">Manual Initialization:</label>
+            <div id="manual-container">
+                <input type="hidden" id="manual" name="manual">
+                <trix-editor input="manual" placeholder="This editor is manually initialized..."></trix-editor>
+            </div>
+        </div>
+        
+        <button onclick="getContent()">Get Content</button>
+        <button onclick="setContent()">Set Content</button>
+    </div>
+    
+    <script>
+        // Manual initialization example
+        document.addEventListener('DOMContentLoaded', () => {
+            const manualEditor = new TrixEditorComponent('manual-container', {
+                placeholder: 'Manual initialization...',
+                minHeight: '150px',
+                maxFileSize: 2 * 1024 * 1024, // 2MB
+                acceptedFileTypes: ['image/*']
+            });
+            
+            // Store reference for later use
+            window.manualEditor = manualEditor;
+        });
+        
+        function getContent() {
+            const descriptionContent = document.getElementById('description').value;
+            const contentContent = document.getElementById('content').value;
+            const manualContent = window.manualEditor ? window.manualEditor.getContent() : '';
+            
+            console.log('Description:', descriptionContent);
+            console.log('Content:', contentContent);
+            console.log('Manual:', manualContent);
+            
+            alert('Check console for content');
+        }
+        
+        function setContent() {
+            const sampleContent = '<strong>Bold text</strong> and <em>italic text</em> with some content.';
+            
+            // Set content in manual editor
+            if (window.manualEditor) {
+                window.manualEditor.setContent(sampleContent);
+            }
+            
+            // Set content in regular editors
+            document.getElementById('description').value = sampleContent;
+            document.getElementById('content').value = sampleContent;
+            
+            alert('Content set!');
+        }
+    </script>
+    
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 2rem;
+        }
+        
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        button {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-right: 1rem;
+        }
+        
+        button:hover {
+            background: #4338ca;
+        }
+    </style>
+</body>
+</html> 

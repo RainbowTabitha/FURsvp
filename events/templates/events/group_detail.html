@@ -778,21 +778,21 @@
             <div class="group-header-content">
                 <div class="group-header-main">
                     <div class="group-logo-section">
-                            {% if group.logo_base64 %}
+                        {% if group.logo_base64 %}
                             <img src="data:image/png;base64,{{ group.logo_base64 }}" alt="{{ group.name }} Logo" class="group-logo">
-                            {% else %}
+                        {% else %}
                             <div class="group-logo-placeholder">
                                 <i class="material-icons">groups</i>
-                                </div>
-                            {% endif %}
-                        </div>
+                            </div>
+                        {% endif %}
+                    </div>
                     
                     <div class="group-info-section">
                         <h1 class="group-title">{{ group.name }}</h1>
                         
                         {% if group.description %}
                             <p class="group-subtitle">{{ group.description|striptags|truncatewords:25 }}</p>
-                                {% endif %}
+                        {% endif %}
                         
                         {% if group.contact_email %}
                             <div class="group-contact">
@@ -811,29 +811,29 @@
                         </button>
                     {% endif %}
                     
-                {% if group.website %}
+                    {% if group.website %}
                         <a href="{{ group.website }}" target="_blank" class="group-action-btn secondary">
                             <i class="material-icons">language</i>
                             Website
                         </a>
-                {% endif %}
+                    {% endif %}
                     
-                {% if group.telegram_channel %}
+                    {% if group.telegram_channel %}
                         <a href="https://t.me/{{ group.telegram_channel|cut:'@' }}" target="_blank" class="group-action-btn secondary">
                             <i class="material-icons">send</i>
                             General Channel
                         </a>
-                {% endif %}
+                    {% endif %}
                     
                     {% if group.telegram_announcements %}
                         <a href="https://t.me/{{ group.telegram_announcements|cut:'@' }}" target="_blank" class="group-action-btn secondary">
                             <i class="material-icons">campaign</i>
                             Announcements
                         </a>
-                                {% endif %}
+                    {% endif %}
                 </div>
-                            </div>
-                        </div>
+            </div>
+        </div>
     </div>
 
     <!-- Main Content -->
@@ -846,26 +846,26 @@
                     <div class="group-card-header">
                         <i class="material-icons">info</i>
                         <h3>About This Group</h3>
-                </div>
+                    </div>
                     <div class="group-card-body">
-                    {% if group.description %}
+                        {% if group.description %}
                             <div class="group-description-html">{{ group.description|safe }}</div>
-                    {% else %}
+                        {% else %}
                             <p class="text-muted fst-italic">No description provided yet.</p>
-                    {% endif %}
-            </div>
-        </div>
+                        {% endif %}
+                    </div>
+                </div>
 
-    <!-- Leadership Section -->
+                <!-- Leadership Section -->
                 <div class="group-card">
                     <div class="group-card-header">
                         <i class="material-icons">people</i>
                         <h3>Group Leadership</h3>
-                        </div>
+                    </div>
                     <div class="group-card-body">
-                    {% if leadership_roles %}
+                        {% if leadership_roles %}
                             <div class="leadership-grid">
-                            {% for role in leadership_roles %}
+                                {% for role in leadership_roles %}
                                     <div class="leader-card">
                                         <div>
                                             {% if role.user.profile.profile_picture_base64 %}
@@ -888,7 +888,7 @@
                                                 <a href="https://t.me/{{ role.user.profile.telegram_username }}" target="_blank" class="leader-btn telegram">
                                                     <i class="material-icons">send</i>
                                                     Telegram
-                                            </a>
+                                                </a>
                                             {% endif %}
                                             {% if role.user.profile.discord_username %}
                                                 <button type="button" class="leader-btn discord" data-discord-popup data-discord="{{ role.user.profile.discord_username }}" data-display-name="{{ role.user.profile.get_display_name }}">
@@ -896,31 +896,31 @@
                                                     Discord
                                                 </button>
                                             {% endif %}
+                                        </div>
                                     </div>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
+                                {% endfor %}
+                            </div>
+                        {% else %}
                             <div class="text-center py-4">
                                 <i class="material-icons mb-3" style="font-size: 3rem; color: #9ca3af;">people_outline</i>
                                 <p class="text-muted">No leaders assigned to this group yet.</p>
-                        </div>
-                    {% endif %}
-            </div>
-        </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
 
                 <!-- Events Section -->
                 <div class="group-card">
                     <div class="group-card-header">
                         <i class="material-icons">event</i>
                         <h3>Upcoming Events</h3>
-                </div>
+                    </div>
                     <div class="group-card-body">
-                    {% if upcoming_events %}
+                        {% if upcoming_events %}
                             <div class="events-toggle">
                                 <button class="toggle-btn active" data-view="grid">Grid View</button>
                                 <button class="toggle-btn" data-view="list">List View</button>
-                        </div>
+                            </div>
                             
                             <!-- Event Filters -->
                             <div class="event-filters mb-4">
@@ -1004,55 +1004,55 @@
                             </div>
                             
                             <div id="eventsGrid" class="events-grid">
-                            {% for event in upcoming_events %}
+                                {% for event in upcoming_events %}
                                     <div class="event-card" data-title="{{ event.title|lower }}" data-date="{{ event.date|date:'Y-m-d' }}" data-rsvps="{{ event.confirmed_count|default:0 }}" data-capacity="{{ event.capacity|default:0 }}" data-type="{% if event.capacity and event.confirmed_count >= event.capacity %}full{% else %}upcoming{% endif %}">
                                         <a href="{% url 'event_detail' event.id %}" class="event-title">
-                                                    {{ event.title }}
-                                                </a>
+                                            {{ event.title }}
+                                        </a>
                                         <div class="event-meta">
                                             <span><i class="material-icons">calendar_month</i> {{ event.date }}</span>
-                                                    {% if event.start_time %}
+                                            {% if event.start_time %}
                                                 <span><i class="material-icons">schedule</i> {{ event.start_time|time:"g:i A" }}</span>
                                             {% endif %}
                                         </div>
                                         {% if event.capacity %}
                                             <div class="event-rsvp">
                                                 {{ event.confirmed_count|default:0 }} / {{ event.capacity }} RSVPs
-                                        </div>
+                                            </div>
                                         {% endif %}
                                         <a href="{% url 'event_detail' event.id %}" class="event-link">View Event →</a>
-                                </div>
-                            {% endfor %}
-                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
                             
                             <div id="eventsList" class="events-list" style="display: none;">
                                 {% for event in upcoming_events %}
                                     <div class="event-card" data-title="{{ event.title|lower }}" data-date="{{ event.date|date:'Y-m-d' }}" data-rsvps="{{ event.confirmed_count|default:0 }}" data-capacity="{{ event.capacity|default:0 }}" data-type="{% if event.capacity and event.confirmed_count >= event.capacity %}full{% else %}upcoming{% endif %}">
                                         <div class="d-flex justify-content-between align-items-start">
-                                        <div>
+                                            <div>
                                                 <a href="{% url 'event_detail' event.id %}" class="event-title">
-                                                {{ event.title }}
-                                            </a>
+                                                    {{ event.title }}
+                                                </a>
                                                 <div class="event-meta">
                                                     <span><i class="material-icons">calendar_month</i> {{ event.date }}</span>
-                                                {% if event.start_time %}
+                                                    {% if event.start_time %}
                                                         <span><i class="material-icons">schedule</i> {{ event.start_time|time:"g:i A" }}</span>
-                                                {% endif %}
-                                            </div>
+                                                    {% endif %}
+                                                </div>
                                             </div>
                                             <a href="{% url 'event_detail' event.id %}" class="event-link">View Event →</a>
                                         </div>
-                                        </div>
+                                    </div>
                                 {% endfor %}
-                        </div>
-                    {% else %}
+                            </div>
+                        {% else %}
                             <div class="text-center py-4">
                                 <i class="material-icons mb-3" style="font-size: 3rem; color: #9ca3af;">event_busy</i>
                                 <p class="text-muted">No upcoming events for this group.</p>
                             </div>
-                    {% endif %}
-            </div>
-        </div>
+                        {% endif %}
+                    </div>
+                </div>
 
                 <!-- Telegram Announcements Section -->
                 {% if telegram_feed %}
