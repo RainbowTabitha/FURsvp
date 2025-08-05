@@ -1566,17 +1566,20 @@ trix-editor .trix-attachment__caption {
                                 </div>
                             </div>
 
-                            <!-- Hidden form fields for submission -->
-                            <div style="display: none;" >
+                        <!-- Description Field -->
+                        <div class="mb-4">
+                            <label for="{{ form.description.id_for_label }}" class="event-form-label">
+                                <i class="material-icons align-middle me-1 event-form-icon">description</i>
+                                Description
+                            </label>
+                            {{ form.description }}
+                        </div>
 
-                            </div>
-
-                            <!-- Agreements Section -->
-                            <div class="agreement-card mt-4" id="agreements-section">
-                                <h3 class="agreement-title">
-                                    <i class="material-icons">gavel</i>
-                                    Required Agreements
-                                </h3>
+                        <!-- Agreement Checkboxes -->
+                        <div class="mb-4">
+                            <div class="card bg-light border-0">
+                                <div class="card-body">
+                                    <h3 class="h5 fw-bold mb-3">Required Agreements</h3>
 
                                 <div class="form-check mb-3">
                                     {{ form.eula_agreement|add_class:'form-check-input' }}
@@ -1618,1083 +1621,505 @@ trix-editor .trix-attachment__caption {
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-steps/1.1.0/jquery.steps.min.js"></script>
 <script>
-$(document).ready(function() {
-    console.log('jQuery loaded:', typeof $ !== 'undefined');
-    console.log('jQuery Steps loaded:', typeof $.fn.steps !== 'undefined');
-    console.log('Form found:', $("#event-form").length);
-    console.log('Form HTML:', $("#event-form").html().substring(0, 200));
-    
-    // Initialize progress bar
-    updateProgressBar(1);
-    
-    // Try to initialize flatpickr immediately if available
-    if (typeof flatpickr !== 'undefined') {
-        console.log('Flatpickr available on document ready, initializing...');
-        initializeFlatpickr();
-    } else {
-        console.log('Flatpickr not yet available, will try later...');
-    }
-    
-    // Initialize Flatpickr for date and time fields
-    function initializeFlatpickr() {
-        console.log('Initializing Flatpickr...');
-        
-        // Date picker
-        const dateInput = document.querySelector('.flatpickr-date');
-        console.log('Date input found:', dateInput);
-        if (dateInput) {
-            try {
-                const datePicker = flatpickr(dateInput, {
-                    dateFormat: "m/d/Y",
-                    allowInput: true,
-                    clickOpens: true,
-                    disableMobile: false,
-                    locale: {
-                        firstDayOfWeek: 0
-                    },
-                                    onChange: function(selectedDates, dateStr, instance) {
-                    console.log('Date selected:', dateStr);
-                    updateReviewSummary();
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize address autocomplete
+        const addressInput = document.getElementById('{{ form.address.id_for_label }}');
+        const stateInput = document.getElementById('{{ form.state.id_for_label }}');
+        const cityInput = document.getElementById('{{ form.city.id_for_label }}');
+        let searchTimeout;
+        let lastRequestTime = 0;
+        const MIN_REQUEST_INTERVAL = 1000; // 1 second between requests
+        let userLocation = null;
+
+        // Get user location when page loads
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    userLocation = {
+                        lat: position.coords.latitude,
+                        lon: position.coords.longitude
+                    };
                 },
-                onClose: function(selectedDates, dateStr, instance) {
-                    // Force clear focus state
-                    setTimeout(() => {
-                        instance.input.blur();
-                        instance.input.style.borderColor = '#e2e8f0';
-                        instance.input.style.boxShadow = 'none';
-                    }, 100);
+                (error) => {
+                    console.error('Error getting location:', error);
                 }
-                });
-                console.log('Date picker initialized:', datePicker);
-            } catch (error) {
-                console.error('Error initializing date picker:', error);
-            }
+            );
         }
-        
-        // Time pickers
-        const timeInputs = document.querySelectorAll('.flatpickr-time');
-        console.log('Time inputs found:', timeInputs.length);
-        timeInputs.forEach((input, index) => {
-            try {
-                const timePicker = flatpickr(input, {
-                    enableTime: true,
-                    noCalendar: true,
-                    dateFormat: "h:i K", // 12-hour format with AM/PM
-                    time_24hr: false,
-                    allowInput: true,
-                    clickOpens: true,
-                    disableMobile: false,
-                    onChange: function(selectedDates, dateStr, instance) {
-                        console.log('Time selected:', dateStr);
-                        updateReviewSummary();
-                    },
-                    onClose: function(selectedDates, dateStr, instance) {
-                        // Force clear focus state
-                        setTimeout(() => {
-                            instance.input.blur();
-                            instance.input.style.borderColor = '#e2e8f0';
-                            instance.input.style.boxShadow = 'none';
-                        }, 100);
-                    }
-                });
-                console.log(`Time picker ${index + 1} initialized:`, timePicker);
-            } catch (error) {
-                console.error(`Error initializing time picker ${index + 1}:`, error);
-            }
-        });
-    }
-    
-    // Wait a moment for everything to load
-    setTimeout(function() {
-        try {
-            // Check if flatpickr is loaded
-            if (typeof flatpickr === 'undefined') {
-                console.error('Flatpickr is not loaded!');
+
+        // Create autocomplete container
+        const autocompleteContainer = document.createElement('div');
+        autocompleteContainer.className = 'autocomplete-container';
+        autocompleteContainer.style.cssText = `
+            position: absolute;
+            width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: none;
+            margin-top: 4px;
+            top: 100%;
+        `;
+        addressInput.parentElement.style.position = 'relative';
+        addressInput.parentElement.appendChild(autocompleteContainer);
+
+        // Handle address input
+        addressInput.addEventListener('input', function (e) {
+            e.preventDefault(); // Prevent default to avoid URL showing
+            clearTimeout(searchTimeout);
+            const query = this.value;
+
+            if (query.length < 3) {
+                autocompleteContainer.style.display = 'none';
                 return;
             }
-            console.log('Flatpickr is available:', typeof flatpickr);
-            
-            // Initialize flatpickr
-            initializeFlatpickr();
-            
-            // Initialize jQuery Steps wizard
-            $("#event-form").steps({
-                headerTag: "h3",
-                bodyTag: "section",
-                transitionEffect: "slideLeft",
-                autoFocus: true,
-                enableFinishButton: true,
-                enablePagination: true,
-                enableAllSteps: false,
-                showFinishButtonAlways: false,
-                finishButtonText: "Create Event",
-                nextButtonText: "Next",
-                previousButtonText: "Previous",
-                onStepChanging: function (event, currentIndex, newIndex) {
-                    console.log('Step changing from', currentIndex, 'to', newIndex);
-                    
-                    // Sync form fields before any step change
-                    if (typeof syncFormFields === 'function') {
-                        syncFormFields();
-                    }
-                    
-                    // Always allow going back
-                    if (currentIndex > newIndex) {
-                        return true;
-                    }
-                    
-                    // Validate each step before proceeding
-                    if (currentIndex === 0 && newIndex === 1) {
-                        // Step 1 validation (Basic Information)
-                        var title = $('#{{ form.title.id_for_label }}').val().trim();
-                        var group = $('#{{ form.group.id_for_label }}').val();
-                        var description = $('#{{ form.description.id_for_label }}').val().trim();
-                        
-                        var isValid = true;
-                        var errorMessage = '';
-                        
-                        if (!title) {
-                            isValid = false;
-                            errorMessage += 'Event title is required.\n';
-                        }
-                        
-                        if (!group) {
-                            isValid = false;
-                            errorMessage += 'Please select a group.\n';
-                        }
-                        
-                        if (!description) {
-                            isValid = false;
-                            errorMessage += 'Event description is required.\n';
-                        }
-                        
-                        if (!isValid) {
-                            alert('Please fill out all required fields:\n' + errorMessage);
-                            return false;
-                        }
-                    } else if (currentIndex === 1 && newIndex === 2) {
-                        // Step 2 validation (Date & Time)
-                        var date = $('#{{ form.date.id_for_label }}').val().trim();
-                        var startTime = $('#{{ form.start_time.id_for_label }}').val().trim();
-                        var endTime = $('#{{ form.end_time.id_for_label }}').val().trim();
-                        
-                        var isValid = true;
-                        var errorMessage = '';
-                        
-                        if (!date) {
-                            isValid = false;
-                            errorMessage += 'Event date is required.\n';
-                        }
-                        
-                        if (!startTime) {
-                            isValid = false;
-                            errorMessage += 'Start time is required.\n';
-                        }
-                        
-                        if (!endTime) {
-                            isValid = false;
-                            errorMessage += 'End time is required.\n';
-                        }
-                        
-                        if (!isValid) {
-                            alert('Please fill out all required fields:\n' + errorMessage);
-                            return false;
-                        }
-                    } else if (currentIndex === 2 && newIndex === 3) {
-                        // Step 3 validation (Location)
-                        var address = $('#{{ form.address.id_for_label }}').val().trim();
-                        var city = $('#{{ form.city.id_for_label }}').val().trim();
-                        var state = $('#{{ form.state.id_for_label }}').val();
-                        
-                        var isValid = true;
-                        var errorMessage = '';
-                        
-                        if (!address) {
-                            isValid = false;
-                            errorMessage += 'Address is required.\n';
-                        }
-                        
-                        if (!city) {
-                            isValid = false;
-                            errorMessage += 'City is required.\n';
-                        }
-                        
-                        if (!state) {
-                            isValid = false;
-                            errorMessage += 'State is required.\n';
-                        }
-                        
-                        if (!isValid) {
-                            alert('Please fill out all required fields:\n' + errorMessage);
-                            return false;
-                        }
-                    } else if (currentIndex === 3 && newIndex === 4) {
-                        // Step 4 validation (Additional Details)
-                        var ageRestriction = $('#{{ form.age_restriction.id_for_label }}').val();
-                        
-                        var isValid = true;
-                        var errorMessage = '';
-                        
-                        if (!ageRestriction) {
-                            isValid = false;
-                            errorMessage += 'Age restriction is required.\n';
-                        }
-                        
-                        if (!isValid) {
-                            alert('Please fill out all required fields:\n' + errorMessage);
-                            return false;
-                        }
-                    }
-                    
-                    // Allow going forward if validation passes
-                    return true;
-                },
-                onStepChanged: function (event, currentIndex, priorIndex) {
-                    console.log('Step changed to', currentIndex);
-                    
-                    // Sync form fields after step change to ensure data is preserved
-                    if (typeof syncFormFields === 'function') {
-                        syncFormFields();
-                    }
-                    
-                    // Update progress bar
-                    updateProgressBar(currentIndex + 1);
-                    
-                    // Show agreements section only on review step
-                    const agreementsSection = document.getElementById('agreements-section');
-                    if (agreementsSection) {
-                        if (currentIndex === 4) { // Review step (0-indexed)
-                            agreementsSection.style.display = 'block';
-                            updateReviewSummary();
-                        } else {
-                            agreementsSection.style.display = 'none';
-                        }
-                    }
-                },
-                onFinishing: function (event, currentIndex) {
-                    console.log('Finishing wizard - step:', currentIndex);
-                    
-                    try {
-                        // Sync visible form fields with hidden ones before submission
-                        if (typeof syncFormFields === 'function') {
-                            syncFormFields();
-                        }
-                        
-                        // Validate checkboxes before submission
-                        var eulaAgreement = $('#{{ form.eula_agreement.id_for_label }}').is(':checked');
-                        var stateAgreement = $('#{{ form.state_agreement.id_for_label }}').is(':checked');
-                        
-                        var isValid = true;
-                        var errorMessage = '';
-                        
-                        if (!eulaAgreement) {
-                            isValid = false;
-                            errorMessage += 'You must agree to the End User License Agreement (EULA).\n';
-                        }
-                        
-                        if (!stateAgreement) {
-                            isValid = false;
-                            errorMessage += 'You must confirm that all event details are accurate and truthful.\n';
-                        }
-                        
-                        if (!isValid) {
-                            alert('Please complete all required agreements:\n' + errorMessage);
-                            return false;
-                        }
-                        
-                        // Update review summary before submission
-                        if (typeof updateReviewSummary === 'function') {
-                            updateReviewSummary();
-                        }
-                        
-                        console.log('Form validation passed, proceeding with submission');
-                        return true;
-                    } catch (error) {
-                        console.error('Error in onFinishing:', error);
-                        // Don't show alert, just log the error and continue
-                        console.log('Continuing with form submission despite error');
-                        return true;
-                    }
-                },
-                onFinished: function (event, currentIndex) {
-                    console.log('Wizard finished, submitting form');
-                    
-                    try {
-                        // Final sync of all form fields before submission
-                        if (typeof syncFormFields === 'function') {
-                            syncFormFields();
-                        }
-                        
-                        // Show loading state
-                        var finishButton = $('.wizard .actions a[href="#finish"]');
-                        if (finishButton.length > 0) {
-                            var originalText = finishButton.text();
-                            finishButton.text('Creating Event...').prop('disabled', true);
-                        }
-                        
-                        // Submit the form
-                        var form = $(this);
-                        console.log('Submitting form:', form);
-                        
-                        // Submit immediately
-                        form.submit();
-                        
-                    } catch (error) {
-                        console.error('Error submitting form:', error);
-                        if (finishButton && finishButton.length > 0) {
-                            finishButton.text(originalText).prop('disabled', false);
-                        }
-                        alert('There was an error submitting the form. Please try again.');
-                    }
-                }
-            });
-            
-            console.log('Wizard initialized successfully');
-            console.log('Wizard structure created:', $('.wizard').length);
-            console.log('Steps found:', $('.wizard .steps').length);
-            console.log('Content found:', $('.wizard .content').length);
-            console.log('Actions found:', $('.wizard .actions').length);
-            
-            // Clean up step text
-            $('.wizard .steps ul li a').each(function() {
-                var $this = $(this);
-                var text = $this.text();
-                
-                // Remove "current step:" prefix
-                text = text.replace(/current step:\s*/i, '');
-                
-                // Clean up step formatting
-                text = text.replace(/^\d+\.\s*/, ''); // Remove "1. " prefix
-                
-                $this.text(text);
-            });
-            
-            // Initialize flatpickr after wizard is ready
-            setTimeout(function() {
-                if (typeof flatpickr !== 'undefined') {
-                    console.log('Initializing flatpickr after wizard setup...');
-                    initializeFlatpickr();
+
+            searchTimeout = setTimeout(() => {
+                const now = Date.now();
+                const timeSinceLastRequest = now - lastRequestTime;
+
+                if (timeSinceLastRequest < MIN_REQUEST_INTERVAL) {
+                    setTimeout(() => {
+                        performSearch(query);
+                    }, MIN_REQUEST_INTERVAL - timeSinceLastRequest);
                 } else {
-                    console.error('Flatpickr still not available after wizard setup');
+                    performSearch(query);
                 }
-            }, 500);
-        } catch (error) {
-            console.error('Error initializing wizard:', error);
-        }
-    }, 100);
-    
-        // Initialize Trix Editor
-    const descriptionField = document.getElementById('{{ form.description.id_for_label }}');
-    const trixEditor = document.querySelector('trix-editor');
-    
-    if (descriptionField && trixEditor) {
-        console.log('Trix editor found:', trixEditor);
-        
-        // Trix automatically handles the connection between the hidden input and the editor
-        // We just need to ensure the form validation works properly
-        trixEditor.addEventListener('trix-change', function() {
-            console.log('Trix content changed');
-            // The hidden input is automatically updated by Trix
+            }, 300);
         });
-        
-        trixEditor.addEventListener('trix-initialize', function() {
-            console.log('Trix editor initialized');
+
+        // Prevent form submission on enter
+        addressInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+            }
         });
-    } else {
-        console.error('Trix editor not found');
-    }
-    
-    // Add event listeners for form field changes
-    const formFields = document.querySelectorAll('input, select, textarea');
-    formFields.forEach(field => {
-        field.addEventListener('change', updateReviewSummary);
-        field.addEventListener('input', updateReviewSummary);
-    });
-    
-    // Configure Trix for image/file attachments
-    if (typeof Trix !== 'undefined') {
-        // Allow file attachments (images, documents, etc.)
-        Trix.config.attachments.preview.caption = {
-            name: false,
-            size: false
-        };
-        
-        // Configure accepted file types
-        Trix.config.attachments.accept = [
-            'image/*',
-            'application/pdf',
-            'text/plain',
-            'application/msword',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-        ];
-        
-        // Set maximum file size (5MB)
-        Trix.config.attachments.maxFileSize = 5 * 1024 * 1024;
-        
-        // Add custom image insertion functionality and reorder toolbar
-        document.addEventListener('trix-initialize', function(event) {
-            const toolbar = event.target.toolbarElement;
-            
-            // Remove unnecessary buttons
-            const buttonsToRemove = [
-                '[data-trix-attribute="href"]', // Link button
-                '[data-trix-attribute="quote"]', // Quote button
-                '[data-trix-attribute="code"]', // Code button
-                '[data-trix-action="outdent"]', // Outdent button
-                '[data-trix-action="indent"]'   // Indent button
-            ];
-            
-            buttonsToRemove.forEach(selector => {
-                const button = toolbar.querySelector(selector);
-                if (button) {
-                    button.remove();
-                }
-            });
-            
-            // Create image button
-            const imageButton = document.createElement('button');
-            imageButton.type = 'button';
-            imageButton.className = 'trix-button trix-button--icon trix-button--icon-attach';
-            imageButton.setAttribute('data-trix-attribute', 'href');
-            imageButton.setAttribute('data-trix-action', 'attachFiles');
-            imageButton.title = 'Insert images and files';
-            imageButton.innerHTML = '<span class="trix-button-icon">🖼️</span>';
-            
-            // Create file input
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file';
-            fileInput.multiple = true;
-            fileInput.accept = 'image/*,application/pdf,text/plain,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-            fileInput.style.display = 'none';
-            
-            // Add click handler
-            imageButton.addEventListener('click', function() {
-                fileInput.click();
-            });
-            
-            // Handle file selection
-            fileInput.addEventListener('change', function() {
-                const files = Array.from(this.files);
-                const editor = event.target;
-                
-                files.forEach(file => {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const attachment = new Trix.Attachment({
-                            file: file,
-                            url: e.target.result
+
+        // Add keyboard navigation
+        addressInput.addEventListener('keydown', function (e) {
+            const suggestions = autocompleteContainer.getElementsByClassName('autocomplete-suggestion');
+            const activeSuggestion = autocompleteContainer.querySelector(
+                '.autocomplete-suggestion.active');
+            let index = Array.from(suggestions).indexOf(activeSuggestion);
+
+            switch (e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    if (index < suggestions.length - 1) {
+                        if (activeSuggestion) activeSuggestion.classList.remove('active');
+                        suggestions[index + 1].classList.add('active');
+                        suggestions[index + 1].scrollIntoView({
+                            block: 'nearest'
                         });
-                        editor.insertAttachment(attachment);
-                    };
-                    reader.readAsDataURL(file);
-                });
-                
-                this.value = '';
-            });
-            
-            // Remove any existing attachment buttons to avoid duplicates
-            const existingAttachButtons = toolbar.querySelectorAll('[data-trix-action="attachFiles"]');
-            existingAttachButtons.forEach(button => {
-                if (button !== imageButton) {
-                    button.remove();
-                }
-            });
-            
-            // Reorder toolbar with logical grouping: Formatting, Structure, Actions
-            const buttonGroups = toolbar.querySelectorAll('.trix-button-group');
-            if (buttonGroups.length >= 2) {
-                const firstGroup = buttonGroups[0];
-                
-                // Clear first group and add text formatting buttons first
-                firstGroup.innerHTML = '';
-                
-                // Add text formatting buttons to first group
-                const boldButton = toolbar.querySelector('[data-trix-attribute="bold"]');
-                const italicButton = toolbar.querySelector('[data-trix-attribute="italic"]');
-                
-                // Create bold button if it doesn't exist
-                if (!boldButton) {
-                    const newBoldButton = document.createElement('button');
-                    newBoldButton.type = 'button';
-                    newBoldButton.className = 'trix-button trix-button--icon trix-button--icon-bold';
-                    newBoldButton.setAttribute('data-trix-attribute', 'bold');
-                    newBoldButton.setAttribute('data-trix-key', 'b');
-                    newBoldButton.title = 'Bold';
-                    newBoldButton.innerHTML = '<span class="trix-button-icon">B</span>';
-                    firstGroup.appendChild(newBoldButton);
-                } else {
-                    firstGroup.appendChild(boldButton);
-                }
-                
-                // Create italic button if it doesn't exist
-                if (!italicButton) {
-                    const newItalicButton = document.createElement('button');
-                    newItalicButton.type = 'button';
-                    newItalicButton.className = 'trix-button trix-button--icon trix-button--icon-italic';
-                    newItalicButton.setAttribute('data-trix-attribute', 'italic');
-                    newItalicButton.setAttribute('data-trix-key', 'i');
-                    newItalicButton.title = 'Italic';
-                    newItalicButton.innerHTML = '<span class="trix-button-icon">I</span>';
-                    firstGroup.appendChild(newItalicButton);
-                } else {
-                    firstGroup.appendChild(italicButton);
-                }
-                
-                // Add image button as the 3rd item
-                firstGroup.appendChild(imageButton);
-                
-                // Add event handlers for formatting buttons
-                const formatButtons = firstGroup.querySelectorAll('[data-trix-attribute]');
-                formatButtons.forEach(button => {
-                    button.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        const attribute = this.getAttribute('data-trix-attribute');
-                        const editor = event.target;
-                        
-                        if (attribute === 'bold') {
-                            editor.activateAttribute('bold');
-                        } else if (attribute === 'italic') {
-                            editor.activateAttribute('italic');
+                    }
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    if (index > 0) {
+                        if (activeSuggestion) activeSuggestion.classList.remove('active');
+                        suggestions[index - 1].classList.add('active');
+                        suggestions[index - 1].scrollIntoView({
+                            block: 'nearest'
+                        });
+                    }
+                    break;
+                case 'Enter':
+                    e.preventDefault();
+                    if (activeSuggestion) {
+                        activeSuggestion.click();
+                    }
+                    break;
+                case 'Escape':
+                    e.preventDefault();
+                    autocompleteContainer.style.display = 'none';
+                    break;
+            }
+        });
+
+        function performSearch(query) {
+            lastRequestTime = Date.now();
+
+            // Get existing city and state values
+            const existingCity = cityInput.value.trim();
+            const existingState = stateInput.value.trim();
+
+            // Build the search query
+            let searchQuery = query;
+            if (existingCity && existingState) {
+                searchQuery = `${query} ${existingCity} ${existingState}`;
+            }
+
+            let searchUrl =
+                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&countrycodes=us&addressdetails=1&limit=10`;
+
+            // If we have user location, add it to the search to prioritize nearby results
+            if (userLocation) {
+                searchUrl += `&lat=${userLocation.lat}&lon=${userLocation.lon}&radius=50000`; // 50km radius
+            }
+
+            fetch(searchUrl, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'User-Agent': 'FURsvp/1.0 (https://fursvp.org)',
+                        'Referer': window.location.origin
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        console.error('Geocoding API error:', response.status, response.statusText);
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .catch(error => {
+                    console.error('Geocoding error:', error);
+                    console.log('Search query that failed:', searchQuery);
+                    autocompleteContainer.style.display = 'none';
+                })
+                .then(data => {
+                    if (!data || data.length === 0) {
+                        autocompleteContainer.style.display = 'none';
+                        return;
+                    }
+
+                    // Clear existing suggestions
+                    autocompleteContainer.innerHTML = '';
+
+                    // Add new suggestions
+                    data.forEach(result => {
+                        const address = result.address;
+                        let streetAddress = '';
+                        let fullAddress = '';
+
+                        if (address.road) {
+                            streetAddress = address.road;
+                            fullAddress = address.road;
+                            if (address.house_number) {
+                                streetAddress = address.house_number + ' ' + streetAddress;
+                                fullAddress = address.house_number + ' ' + fullAddress;
+                            }
+                            // Add city and state to the full address only
+                            if (address.city || address.town || address.village) {
+                                fullAddress += ', ' + (address.city || address.town ||
+                                    address.village);
+                            }
+                            if (address.state) {
+                                fullAddress += ', ' + address.state;
+                            }
+                        }
+
+                        if (streetAddress) {
+                            const suggestion = document.createElement('div');
+                            suggestion.className = 'autocomplete-suggestion';
+                            suggestion.style.cssText = `
+                        padding: 8px 12px;
+                        cursor: pointer;
+                        border-bottom: 1px solid #eee;
+                    `;
+                            suggestion.textContent = fullAddress;
+                            suggestion.addEventListener('click', () => {
+                                // Set only the street address in the address field
+                                addressInput.value = streetAddress;
+                                // Update city and state fields separately
+                                if (address.state) {
+                                    stateInput.value = address.state;
+                                }
+                                if (address.city || address.town || address.village) {
+                                    cityInput.value = address.city || address.town ||
+                                        address.village;
+                                }
+                                autocompleteContainer.style.display = 'none';
+                            });
+                            suggestion.addEventListener('mouseover', () => {
+                                // Remove active class from all suggestions
+                                Array.from(autocompleteContainer.getElementsByClassName(
+                                    'autocomplete-suggestion')).forEach(s => {
+                                    s.classList.remove('active');
+                                });
+                                suggestion.classList.add('active');
+                                suggestion.style.backgroundColor = '#f5f5f5';
+                            });
+                            suggestion.addEventListener('mouseout', () => {
+                                suggestion.style.backgroundColor = 'white';
+                            });
+                            autocompleteContainer.appendChild(suggestion);
                         }
                     });
+
+                    // Add active class to first suggestion
+                    const firstSuggestion = autocompleteContainer.querySelector('.autocomplete-suggestion');
+                    if (firstSuggestion) {
+                        firstSuggestion.classList.add('active');
+                    }
+
+                    autocompleteContainer.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error fetching address:', error);
+                    autocompleteContainer.style.display = 'none';
                 });
-                
-                // Add list buttons to second group
-                const secondGroup = buttonGroups[1];
-                const bulletListButton = toolbar.querySelector('[data-trix-attribute="bullet"]');
-                const numberListButton = toolbar.querySelector('[data-trix-attribute="number"]');
-                
-                if (bulletListButton) secondGroup.appendChild(bulletListButton);
-                if (numberListButton) secondGroup.appendChild(numberListButton);
-                
-                // Move undo/redo to the last group (actions)
-                const undoRedoGroup = toolbar.querySelector('.trix-button-group:last-child');
-                if (undoRedoGroup) {
-                    const undoButton = toolbar.querySelector('[data-trix-action="undo"]');
-                    const redoButton = toolbar.querySelector('[data-trix-action="redo"]');
-                    
-                    if (undoButton) undoRedoGroup.appendChild(undoButton);
-                    if (redoButton) undoRedoGroup.appendChild(redoButton);
+        }
+
+        // Handle location button click
+        const locationButton = document.getElementById('locationButton');
+        locationButton.addEventListener('click', (e) => {
+            e.preventDefault();
+
+            if (!navigator.geolocation) {
+                alert('Geolocation is not supported by your browser');
+                return;
+            }
+
+            locationButton.disabled = true;
+            locationButton.innerHTML = '<i class="material-icons">hourglass_empty</i>';
+
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    try {
+                        // Search for nearby cities instead of exact location
+                        const response = await fetch(
+                            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}&addressdetails=1&zoom=10`, {
+                                method: 'GET',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'User-Agent': 'FURsvp/1.0 (https://fursvp.org)',
+                                    'Referer': window.location.origin
+                                }
+                            }
+                        );
+
+                        if (!response.ok) {
+                            console.error('Reverse geocoding API error:', response.status, response.statusText);
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+
+                        const data = await response.json();
+
+                        if (data && data.address) {
+                            // Create a container for nearby cities
+                            const nearbyContainer = document.createElement('div');
+                            nearbyContainer.className = 'autocomplete-container';
+                            nearbyContainer.style.cssText = `
+                        position: absolute;
+                        width: 100%;
+                        max-height: 200px;
+                        overflow-y: auto;
+                        background: white;
+                        border: 1px solid #ddd;
+                        border-radius: 4px;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                        z-index: 1000;
+                        margin-top: 4px;
+                    `;
+                            addressInput.parentElement.appendChild(nearbyContainer);
+
+                            // Add the current location as a suggestion
+                            const suggestion = document.createElement('div');
+                            suggestion.className = 'autocomplete-suggestion';
+                            suggestion.style.cssText = `
+                        padding: 8px 12px;
+                        cursor: pointer;
+                        border-bottom: 1px solid #eee;
+                    `;
+                            suggestion.textContent = data.display_name;
+                            suggestion.addEventListener('click', () => {
+                                // Set city and state only (ignore county)
+                                if (data.address) {
+                                    if (data.address.city || data.address.town || data.address.village) {
+                                        cityInput.value = data.address.city || data.address.town || data.address.village;
+                                    }
+                                    if (data.address.state) {
+                                        // Set the state dropdown by matching the state name
+                                        for (let i = 0; i < stateInput.options.length; i++) {
+                                            if (stateInput.options[i].text === data.address.state) {
+                                                stateInput.selectedIndex = i;
+                                                stateInput.dispatchEvent(new Event('change'));
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                                nearbyContainer.remove();
+                            });
+                            suggestion.addEventListener('mouseover', () => {
+                                suggestion.style.backgroundColor = '#f5f5f5';
+                            });
+                            suggestion.addEventListener('mouseout', () => {
+                                suggestion.style.backgroundColor = 'white';
+                            });
+                            nearbyContainer.appendChild(suggestion);
+
+                            // Close suggestions when clicking outside
+                            document.addEventListener('click', function closeSuggestions(e) {
+                                if (!nearbyContainer.contains(e.target) && e.target !==
+                                    locationButton) {
+                                    nearbyContainer.remove();
+                                    document.removeEventListener('click',
+                                        closeSuggestions);
+                                }
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Error fetching nearby cities:', error);
+                        alert('Error getting nearby cities. Please try again.');
+                    } finally {
+                        locationButton.disabled = false;
+                        locationButton.innerHTML = '<i class="material-icons">my_location</i>';
+                    }
+                },
+                (error) => {
+                    console.error('Geolocation error:', error);
+                    alert(
+                        'Error getting your location. Please make sure location services are enabled.'
+                        );
+                    locationButton.disabled = false;
+                    locationButton.innerHTML = '<i class="material-icons">my_location</i>';
                 }
-            }
-            
-            // Add the file input to the document
-            document.body.appendChild(fileInput);
-        });
-        
-        console.log('Trix configured for file attachments with custom image button');
-    }
-});
-
-function updateProgressBar(currentStep) {
-    const steps = document.querySelectorAll('.progress-step');
-    
-    steps.forEach((step, index) => {
-        const stepNumber = index + 1;
-        step.classList.remove('completed', 'current', 'pending');
-        
-        if (stepNumber < currentStep) {
-            step.classList.add('completed');
-        } else if (stepNumber === currentStep) {
-            step.classList.add('current');
-        } else {
-            step.classList.add('pending');
-        }
-    });
-}
-
-function updateReviewSummary() {
-    try {
-        // Helper function to safely parse HTML content
-        function safeParseHTML(htmlContent) {
-            if (!htmlContent) return '-';
-            
-            // Create a temporary div to parse HTML safely
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = htmlContent;
-            
-            // Remove any script tags for security
-            const scripts = tempDiv.querySelectorAll('script');
-            scripts.forEach(script => script.remove());
-            
-            // Remove any style tags for security
-            const styles = tempDiv.querySelectorAll('style');
-            styles.forEach(style => style.remove());
-            
-            // Get text content and clean it up
-            let text = tempDiv.textContent || tempDiv.innerText || '';
-            text = text.trim();
-            
-            // Limit length and add ellipsis if needed
-            if (text.length > 100) {
-                text = text.substring(0, 100) + '...';
-            }
-            
-            return text || '-';
-        }
-        
-        // Get form elements with null checks
-        const titleElement = document.getElementById('{{ form.title.id_for_label }}');
-        const groupElement = document.getElementById('{{ form.group.id_for_label }}');
-        const descriptionElement = document.getElementById('{{ form.description.id_for_label }}');
-        const dateElement = document.getElementById('{{ form.date.id_for_label }}');
-        const startTimeElement = document.getElementById('{{ form.start_time.id_for_label }}');
-        const endTimeElement = document.getElementById('{{ form.end_time.id_for_label }}');
-        const addressElement = document.getElementById('{{ form.address.id_for_label }}');
-        const cityElement = document.getElementById('{{ form.city.id_for_label }}');
-        const stateElement = document.getElementById('id_state');
-        const capacityElement = document.getElementById('{{ form.capacity.id_for_label }}');
-        const ageRestrictionElement = document.getElementById('{{ form.age_restriction.id_for_label }}');
-        const accessibilityElement = document.getElementById('{{ form.accessibility_details.id_for_label }}');
-        
-        // Get values with safe fallbacks
-        const title = titleElement ? titleElement.value || '-' : '-';
-        const groupText = groupElement && groupElement.options ? (groupElement.options[groupElement.selectedIndex]?.text || '-') : '-';
-        const description = descriptionElement ? descriptionElement.value || '-' : '-';
-        const date = dateElement ? dateElement.value || '-' : '-';
-        const startTime = startTimeElement ? startTimeElement.value || '-' : '-';
-        const endTime = endTimeElement ? endTimeElement.value || '-' : '-';
-        const address = addressElement ? addressElement.value || '-' : '-';
-        const city = cityElement ? cityElement.value || '-' : '-';
-        const state = stateElement ? stateElement.value || '-' : '-';
-        const capacity = capacityElement ? capacityElement.value || 'Unlimited' : 'Unlimited';
-        const ageText = ageRestrictionElement && ageRestrictionElement.options ? (ageRestrictionElement.options[ageRestrictionElement.selectedIndex]?.text || 'None') : 'None';
-        const accessibility = accessibilityElement ? accessibilityElement.value || 'Not specified' : 'Not specified';
-
-        // Update review elements with null checks
-        const reviewElements = {
-            'review-title': title,
-            'review-group': groupText,
-            'review-description': safeParseHTML(description),
-            'review-date': date,
-            'review-time': startTime && endTime && startTime !== '-' && endTime !== '-' ? `${startTime} - ${endTime}` : '-',
-            'review-address': address,
-            'review-city': city,
-            'review-state': state,
-            'review-capacity': capacity,
-            'review-age': ageText,
-            'review-accessibility': safeParseHTML(accessibility)
-        };
-        
-        // Update each review element
-        Object.keys(reviewElements).forEach(elementId => {
-            const element = document.getElementById(elementId);
-            if (element) {
-                element.textContent = reviewElements[elementId];
-            }
-        });
-        
-        console.log('Review summary updated successfully');
-    } catch (error) {
-        console.error('Error updating review summary:', error);
-        // Don't throw the error, just log it
-    }
-}
-
-// Current Location and Address Autocomplete Functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const useCurrentLocationBtn = document.getElementById('useCurrentLocation');
-    const locationStatus = document.getElementById('locationStatus');
-    const addressInput = document.getElementById('{{ form.address.id_for_label }}');
-    const cityInput = document.getElementById('{{ form.city.id_for_label }}');
-    const stateSelect = document.getElementById('id_state');
-    const addressAutocomplete = document.getElementById('addressAutocomplete');
-    const addressSuggestions = document.getElementById('addressSuggestions');
-    
-    let autocompleteTimeout;
-    let currentLocation = null;
-    
-    // Debug field availability
-    console.log('Field IDs:', {
-        addressFieldId: '{{ form.address.id_for_label }}',
-        cityFieldId: '{{ form.city.id_for_label }}',
-        addressInput: addressInput,
-        cityInput: cityInput
-    });
-
-    // Current Location Button
-    useCurrentLocationBtn.addEventListener('click', function() {
-        if (!navigator.geolocation) {
-            alert('Geolocation is not supported by this browser.');
-            return;
-        }
-
-        locationStatus.style.display = 'block';
-        useCurrentLocationBtn.disabled = true;
-        useCurrentLocationBtn.innerHTML = '<i class="material-icons">location_searching</i> Getting location...';
-
-        navigator.geolocation.getCurrentPosition(
-            function(position) {
-                currentLocation = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                };
-                
-                // Reverse geocode to get address
-                reverseGeocode(currentLocation.lat, currentLocation.lng);
-            },
-            function(error) {
-                locationStatus.style.display = 'none';
-                useCurrentLocationBtn.disabled = false;
-                useCurrentLocationBtn.innerHTML = '<i class="material-icons">my_location</i> Use Current Location';
-                
-                switch(error.code) {
-                    case error.PERMISSION_DENIED:
-                        alert('Location access denied. Please enable location services.');
-                        break;
-                    case error.POSITION_UNAVAILABLE:
-                        alert('Location information unavailable.');
-                        break;
-                    case error.TIMEOUT:
-                        alert('Location request timed out.');
-                        break;
-                    default:
-                        alert('An unknown error occurred.');
-                        break;
-                }
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 60000
-            }
         );
     });
 
-    // Reverse geocoding function
-    function reverseGeocode(lat, lng) {
-        console.log('Reverse geocoding for:', lat, lng);
-        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`;
+    // Initialize Quill.js
+    function initQuill() {
+        const isDark = document.body.classList.contains('dark-mode');
+        const descriptionField = document.getElementById('{{ form.description.id_for_label }}');
         
-        fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                console.log('Reverse geocoding response:', data);
-                if (data.address) {
-                    const address = data.address;
-                    
-                    // Fill in the form fields
-                    let addressValue = '';
-                    if (address.house_number && address.road) {
-                        addressValue = `${address.house_number} ${address.road}`;
-                    } else if (address.road) {
-                        addressValue = address.road;
-                    } else if (address.street) {
-                        addressValue = address.street;
-                    }
-                    
-                    if (addressValue) {
-                        addressInput.value = addressValue;
-                        console.log('Set address to:', addressValue);
-                    }
-                    
-                    let cityValue = '';
-                    if (address.city) {
-                        cityValue = address.city;
-                    } else if (address.town) {
-                        cityValue = address.town;
-                    } else if (address.village) {
-                        cityValue = address.village;
-                    } else if (address.county) {
-                        cityValue = address.county;
-                    }
-                    
-                    if (cityValue) {
-                        cityInput.value = cityValue;
-                        console.log('Set city to:', cityValue);
-                    }
-                    
-                    if (address.state) {
-                        const stateOption = Array.from(stateSelect.options).find(option => 
-                            option.text.toLowerCase() === address.state.toLowerCase()
-                        );
-                        if (stateOption) {
-                            stateSelect.value = stateOption.value;
-                            console.log('Set state to:', stateOption.value);
-                        }
-                    }
-                    
-                    // Trigger change events to update form validation
-                    addressInput.dispatchEvent(new Event('change', { bubbles: true }));
-                    cityInput.dispatchEvent(new Event('change', { bubbles: true }));
-                    stateSelect.dispatchEvent(new Event('change', { bubbles: true }));
-                    
-                    locationStatus.style.display = 'none';
-                    useCurrentLocationBtn.disabled = false;
-                    useCurrentLocationBtn.innerHTML = '<i class="material-icons">my_location</i> Use Current Location';
-                    
-                    // Show success message
-                    showLocationSuccess();
+        if (!descriptionField) return;
+        
+        // Create Quill container
+        const quillContainer = document.createElement('div');
+        quillContainer.id = 'quill-editor';
+        quillContainer.style.height = '300px';
+        descriptionField.parentNode.insertBefore(quillContainer, descriptionField);
+        descriptionField.style.display = 'none';
+        
+        // Initialize Quill
+        const quill = new Quill('#quill-editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'color': [] }, { 'background': [] }],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    [{ 'align': [] }],
+                    ['link', 'image'],
+                    ['clean']
+                ]
+            },
+            placeholder: 'Describe your event...',
+            readOnly: false
+        });
+        
+        // Set initial content if any
+        if (descriptionField.value) {
+            quill.root.innerHTML = descriptionField.value;
+        }
+        
+        // Sync Quill content with hidden textarea
+        quill.on('text-change', function() {
+            descriptionField.value = quill.root.innerHTML;
+        });
+        
+        // Dark mode support
+        if (isDark) {
+            quillContainer.querySelector('.ql-toolbar').style.backgroundColor = '#2d3748';
+            quillContainer.querySelector('.ql-toolbar').style.borderColor = '#4a5568';
+            quillContainer.querySelector('.ql-container').style.backgroundColor = '#2d3748';
+            quillContainer.querySelector('.ql-container').style.borderColor = '#4a5568';
+            quillContainer.querySelector('.ql-editor').style.color = '#e2e8f0';
+        }
+    }
+
+    // Initialize Quill on page load
+    initQuill();
+
+    // Initialize Flatpickr
+    flatpickr("#{{ form.date.id_for_label }}", {
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        disableMobile: "true",
+            theme: "light",
+        allowInput: true,
+        altInput: true,
+        altFormat: "F j, Y",
+        altInputClass: "form-control",
+            onChange: function (selectedDates, dateStr, instance) {
+            document.getElementById("{{ form.date.id_for_label }}").value = dateStr;
+            },
+            onReady: function (selectedDates, dateStr, instance) {
+                // Add custom styles to match theme
+                const calendar = instance.calendarContainer;
+                calendar.style.borderRadius = '8px';
+                calendar.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+                calendar.style.border = '1px solid #dee2e6';
+
+                // Style the selected date
+                const selectedDay = calendar.querySelector('.selected');
+                if (selectedDay) {
+                    selectedDay.style.backgroundColor = '#0d6efd';
+                    selectedDay.style.borderColor = '#0d6efd';
                 }
-            })
-            .catch(error => {
-                console.error('Reverse geocoding error:', error);
-                locationStatus.style.display = 'none';
-                useCurrentLocationBtn.disabled = false;
-                useCurrentLocationBtn.innerHTML = '<i class="material-icons">my_location</i> Use Current Location';
-                alert('Could not get address from location. Please enter manually.');
-            });
-    }
 
-    // Show location success message
-    function showLocationSuccess() {
-        const successAlert = document.createElement('div');
-        successAlert.className = 'alert alert-success mt-2';
-        successAlert.innerHTML = '<i class="material-icons">check_circle</i> Location filled successfully!';
-        locationStatus.appendChild(successAlert);
-        
-        setTimeout(() => {
-            successAlert.remove();
-        }, 3000);
-    }
-
-    // Address autocomplete functionality
-    if (addressInput) {
-        addressInput.addEventListener('input', function() {
-            clearTimeout(autocompleteTimeout);
-            const query = this.value.trim();
-            
-            if (query.length < 3) {
-                addressAutocomplete.style.display = 'none';
-                return;
+                // Style the current day
+                const today = calendar.querySelector('.today');
+                if (today) {
+                    today.style.borderColor = '#0d6efd';
+                }
             }
-
-            autocompleteTimeout = setTimeout(() => {
-                searchAddresses(query);
-            }, 300);
         });
-    }
 
-    // Search addresses using OpenStreetMap Nominatim
-    function searchAddresses(query) {
-        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5`;
-        
-        fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                displayAddressSuggestions(data);
-            })
-            .catch(error => {
-                console.error('Address search error:', error);
-            });
-    }
-
-    // Display address suggestions
-    function displayAddressSuggestions(suggestions) {
-        addressSuggestions.innerHTML = '';
-        
-        if (suggestions.length === 0) {
-            addressAutocomplete.style.display = 'none';
-            return;
-        }
-
-        suggestions.forEach(suggestion => {
-            const li = document.createElement('li');
-            li.className = 'list-group-item';
-            
-            const address = suggestion.address;
-            const mainText = suggestion.display_name.split(',')[0];
-            const secondaryText = suggestion.display_name.split(',').slice(1, 3).join(',');
-            
-            li.innerHTML = `
-                <div class="address-main">${mainText}</div>
-                <div class="address-secondary">${secondaryText}</div>
-            `;
-            
-            li.addEventListener('click', function() {
-                selectAddress(suggestion);
-            });
-            
-            addressSuggestions.appendChild(li);
-        });
-        
-        addressAutocomplete.style.display = 'block';
-    }
-
-    // Select address from autocomplete
-    function selectAddress(suggestion) {
-        console.log('Selecting address:', suggestion);
-        const address = suggestion.address;
-        
-        // Fill address field
-        let addressValue = '';
-        if (address.house_number && address.road) {
-            addressValue = `${address.house_number} ${address.road}`;
-        } else if (address.road) {
-            addressValue = address.road;
-        } else if (address.street) {
-            addressValue = address.street;
-        }
-        
-        if (addressValue) {
-            addressInput.value = addressValue;
-            console.log('Set address to:', addressValue);
-        }
-        
-        // Fill city field
-        let cityValue = '';
-        if (address.city) {
-            cityValue = address.city;
-        } else if (address.town) {
-            cityValue = address.town;
-        } else if (address.village) {
-            cityValue = address.village;
-        } else if (address.county) {
-            cityValue = address.county;
-        }
-        
-        if (cityValue) {
-            cityInput.value = cityValue;
-            console.log('Set city to:', cityValue);
-        }
-        
-        // Fill state field
-        if (address.state) {
-            const stateOption = Array.from(stateSelect.options).find(option => 
-                option.text.toLowerCase() === address.state.toLowerCase()
-            );
-            if (stateOption) {
-                stateSelect.value = stateOption.value;
-                console.log('Set state to:', stateOption.value);
+        // Initialize Flatpickr for start_time
+        const startTimePicker = flatpickr("#{{ form.start_time.id_for_label }}", {
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i",
+            time_24hr: false,
+            disableMobile: "true",
+            theme: "light",
+            allowInput: true,
+            altInput: true,
+            altFormat: "h:i K",
+            altInputClass: "form-control",
+            onChange: function (selectedDates, dateStr, instance) {
+                document.getElementById("{{ form.start_time.id_for_label }}").value = dateStr;
+                // Update end time min time when start time changes
+                if (endTimePicker) {
+                    endTimePicker.set('minTime', dateStr);
+                    // If end time is before start time, update it
+                    const endTime = endTimePicker.selectedDates[0];
+                    if (endTime && endTime < selectedDates[0]) {
+                        endTimePicker.setDate(selectedDates[0]);
+                    }
+                }
             }
-        }
-        
-        // Trigger change events to update form validation
-        addressInput.dispatchEvent(new Event('change', { bubbles: true }));
-        cityInput.dispatchEvent(new Event('change', { bubbles: true }));
-        stateSelect.dispatchEvent(new Event('change', { bubbles: true }));
-        
-        addressAutocomplete.style.display = 'none';
-    }
+        });
 
-    // Hide autocomplete when clicking outside
-    document.addEventListener('click', function(e) {
-        if (!addressInput.contains(e.target) && !addressAutocomplete.contains(e.target)) {
-            addressAutocomplete.style.display = 'none';
+        // Initialize Flatpickr for end_time
+        const endTimePicker = flatpickr("#{{ form.end_time.id_for_label }}", {
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i",
+            time_24hr: false,
+            disableMobile: "true",
+            theme: "light",
+            allowInput: true,
+            altInput: true,
+            altFormat: "h:i K",
+            altInputClass: "form-control",
+            onChange: function (selectedDates, dateStr, instance) {
+                document.getElementById("{{ form.end_time.id_for_label }}").value = dateStr;
         }
     });
 
-    // Hide autocomplete on escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            addressAutocomplete.style.display = 'none';
-        }
-    });
-    
-    // Function to sync visible form fields with hidden ones
-    function syncFormFields() {
-        console.log('Syncing form fields...');
-        
-        try {
-            // Get visible form fields
-            var visibleTitle = document.getElementById('{{ form.title.id_for_label }}');
-            var visibleGroup = document.getElementById('{{ form.group.id_for_label }}');
-            var visibleDescription = document.getElementById('{{ form.description.id_for_label }}');
-            var visibleDate = document.getElementById('{{ form.date.id_for_label }}');
-            var visibleStartTime = document.getElementById('{{ form.start_time.id_for_label }}');
-            var visibleEndTime = document.getElementById('{{ form.end_time.id_for_label }}');
-            var visibleAddress = document.getElementById('{{ form.address.id_for_label }}');
-            var visibleCity = document.getElementById('{{ form.city.id_for_label }}');
-            var visibleState = document.getElementById('id_state');
-            var visibleEulaAgreement = document.getElementById('{{ form.eula_agreement.id_for_label }}');
-            var visibleStateAgreement = document.getElementById('{{ form.state_agreement.id_for_label }}');
-            
-            // Get hidden form fields
-            var hiddenTitle = document.querySelector('[name="{{ form.title.name }}"]');
-            var hiddenGroup = document.querySelector('[name="{{ form.group.name }}"]');
-            var hiddenDescription = document.querySelector('[name="{{ form.description.name }}"]');
-            var hiddenDate = document.querySelector('[name="{{ form.date.name }}"]');
-            var hiddenStartTime = document.querySelector('[name="{{ form.start_time.name }}"]');
-            var hiddenEndTime = document.querySelector('[name="{{ form.end_time.name }}"]');
-            var hiddenAddress = document.querySelector('[name="{{ form.address.name }}"]');
-            var hiddenCity = document.querySelector('[name="{{ form.city.name }}"]');
-            var hiddenEulaAgreement = document.querySelector('[name="{{ form.eula_agreement.name }}"]');
-            var hiddenStateAgreement = document.querySelector('[name="{{ form.state_agreement.name }}"]');
-            
-            console.log('Field elements found:', {
-                visibleTitle: !!visibleTitle,
-                visibleGroup: !!visibleGroup,
-                visibleDescription: !!visibleDescription,
-                visibleDate: !!visibleDate,
-                visibleStartTime: !!visibleStartTime,
-                visibleEndTime: !!visibleEndTime,
-                visibleAddress: !!visibleAddress,
-                visibleCity: !!visibleCity,
-                visibleState: !!visibleState,
-                hiddenTitle: !!hiddenTitle,
-                hiddenGroup: !!hiddenGroup,
-                hiddenDescription: !!hiddenDescription,
-                hiddenDate: !!hiddenDate,
-                hiddenStartTime: !!hiddenStartTime,
-                hiddenEndTime: !!hiddenEndTime,
-                hiddenAddress: !!hiddenAddress,
-                hiddenCity: !!hiddenCity
-            });
-            
-            // Sync values from visible to hidden fields
-            if (visibleTitle && hiddenTitle) {
-                hiddenTitle.value = visibleTitle.value;
-                console.log('Synced title:', visibleTitle.value);
-                console.log('Hidden title value after sync:', hiddenTitle.value);
-            } else {
-                console.error('Title sync failed:', {
-                    visibleTitle: !!visibleTitle,
-                    hiddenTitle: !!hiddenTitle,
-                    visibleTitleId: visibleTitle ? visibleTitle.id : 'not found',
-                    hiddenTitleName: hiddenTitle ? hiddenTitle.name : 'not found'
-                });
-            }
-            
-            if (visibleGroup && hiddenGroup) {
-                hiddenGroup.value = visibleGroup.value;
-                console.log('Synced group:', visibleGroup.value);
-            }
-            
-            if (visibleDescription && hiddenDescription) {
-                hiddenDescription.value = visibleDescription.value;
-                console.log('Synced description:', visibleDescription.value);
-            }
-            
-            if (visibleDate && hiddenDate) {
-                hiddenDate.value = visibleDate.value;
-                console.log('Synced date:', visibleDate.value);
-            }
-            
-            if (visibleStartTime && hiddenStartTime) {
-                hiddenStartTime.value = visibleStartTime.value;
-                console.log('Synced start time:', visibleStartTime.value);
-            }
-            
-            if (visibleEndTime && hiddenEndTime) {
-                hiddenEndTime.value = visibleEndTime.value;
-                console.log('Synced end time:', visibleEndTime.value);
-            }
-            
-            if (visibleAddress && hiddenAddress) {
-                hiddenAddress.value = visibleAddress.value;
-                console.log('Synced address:', visibleAddress.value);
-            }
-            
-            if (visibleCity && hiddenCity) {
-                hiddenCity.value = visibleCity.value;
-                console.log('Synced city:', visibleCity.value);
-            }
-            
-            // Sync checkbox fields
-            if (visibleEulaAgreement && hiddenEulaAgreement) {
-                hiddenEulaAgreement.checked = visibleEulaAgreement.checked;
-                console.log('Synced eula agreement:', visibleEulaAgreement.checked);
-            }
-            
-            if (visibleStateAgreement && hiddenStateAgreement) {
-                hiddenStateAgreement.checked = visibleStateAgreement.checked;
-                console.log('Synced state agreement:', visibleStateAgreement.checked);
-            }
-            
-            console.log('Form field sync completed');
-        } catch (error) {
-            console.error('Error in syncFormFields:', error);
-        }
+    // RSVP Questions toggle
+    var enableRsvpQuestions = document.getElementById('{{ form.enable_rsvp_questions.id_for_label }}');
+    var rsvpQuestionsSection = document.getElementById('rsvp-questions-section');
+    if (enableRsvpQuestions && rsvpQuestionsSection) {
+        enableRsvpQuestions.addEventListener('change', function() {
+            rsvpQuestionsSection.style.display = this.checked ? 'block' : 'none';
+        });
     }
 });
 </script>

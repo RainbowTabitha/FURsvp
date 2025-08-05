@@ -599,120 +599,7 @@
             </div>
             <div class="suggestion-item">
                 <i class="material-icons">location_on</i>
-                <span>Increase your distance range</span>
-            </div>
-            <div class="suggestion-item">
-                <i class="material-icons">visibility</i>
-                <span>Show 18+/21+ events</span>
-            </div>
-            <div class="suggestion-item">
-                <i class="material-icons">calendar_today</i>
-                <span>Maybe there isn't anything here</span>
-            </div>
-        </div>
-        <div class="empty-events-actions">
-            <button type="button" class="btn btn-outline-primary" id="clearFiltersBtn">
-                <i class="material-icons">clear_all</i>
-                Clear All Filters
-            </button>
-            <a href="{% url 'event_index' %}" class="btn btn-primary">
-                <i class="material-icons">refresh</i>
-                Reset View
-            </a>
-        </div>
-    </div>
-    {% endfor %}
-</div>
-
-<div class="list-group shadow-sm" id="eventsList" style="display: none;">
-    {% for event in events %}
-    <a href="{% url 'event_detail' event.id %}" class="list-group-item event-card-modern event-list-item-modern list-group-item-action p-0 mb-3 text-decoration-none position-relative">
-        <!-- RSVP Status Icon Badge -->
-        {% if event.user_rsvp_list %}
-            {% with user_rsvp=event.user_rsvp_list.0 %}
-                <div class="rsvp-status-icon-badge"
-                    {% if user_rsvp.status == 'confirmed' %}title="Going"{% elif user_rsvp.status == 'maybe' %}title="Maybe"{% elif user_rsvp.status == 'waitlisted' %}title="Waitlist"{% elif user_rsvp.status == 'not_attending' %}title="Not Going"{% endif %}>
-                    {% if user_rsvp.status == 'confirmed' %}
-                        <span class="d-flex align-items-center">
-                            <span class="long-badge going"><i class="material-icons">check_circle</i>GOING</span>
-                        </span>
-                    {% elif user_rsvp.status == 'maybe' %}
-                        <span class="d-flex align-items-center">
-                            <span class="long-badge maybe"><i class="material-icons">help</i>MAYBE</span>
-                        </span>
-                    {% elif user_rsvp.status == 'waitlisted' %}
-                        <span class="d-flex align-items-center">
-                            <span class="long-badge waitlist"><i class="material-icons">queue</i>WAITLIST</span>
-                        </span>
-                    {% elif user_rsvp.status == 'not_attending' %}
-                        <span class="d-flex align-items-center">
-                            <span class="long-badge notgoing"><i class="material-icons">cancel</i>NOT GOING</span>
-                        </span>
-                    {% endif %}
-                </div>
-            {% endwith %}
-        {% endif %}
-        
-        
-        <div class="d-flex w-100 p-4 align-items-center">
-            <div class="flex-grow-1">
-                <h5 class="event-title mb-2">{{ event.title }}</h5>
-                <div class="event-meta mb-2">
-                    <span class="event-date">
-                        <i class="material-icons align-middle me-1" style="font-size: 18px; color: #a0aec0;">calendar_today</i>
-                        {{ event.date }}{% if event.start_time %} at {{ event.start_time|time:"P" }}{% endif %}{% if event.end_time %} - {{ event.end_time|time:"P" }}{% endif %}
-                    </span>
-                </div>
-                <div class="event-details mb-3">
-                    <span class="me-3">
-                        <i class="material-icons align-middle me-1" style="font-size: 18px; color: #a0aec0;">group</i>
-                        {{ event.group.name }}
-                    </span>
-                    <div>
-                        <i class="material-icons align-middle me-1" style="font-size: 18px; color: #a0aec0;">location_on</i>
-                        {{ event.city }}{% if event.state %}, <abbr title="{{ event.state }}">{{ event.state|state_abbr }}</abbr>{% endif %}
-                    </div>
-                </div>
-                <div class="d-flex align-items-center">
-                    <span class="badge rsvp-badge-modern">
-                        <i class="material-icons align-middle me-1" style="font-size: 18px;">people</i>
-                        {% if event.capacity %}
-                            {{ event.confirmed_count }} / {{ event.capacity }} RSVPs
-                        {% else %}
-                            {{ event.confirmed_count }} RSVPs
-                        {% endif %}
-                    </span>
-                    {% if event.age_restriction == 'mature' %}
-                        <span class="badge gradient-badge-21 ms-2">
-                            <i class="material-icons me-1 align-middle" style="font-size: 16px;">warning</i> 21+
-                        </span>
-                    {% elif event.age_restriction == 'adult' %}
-                        <span class="badge gradient-badge-18 ms-2">
-                            <i class="material-icons me-1 align-middle" style="font-size: 16px;">warning</i> 18+
-                        </span>
-                    {% endif %}
-                </div>
-            </div>
-            <div class="ms-3 d-flex align-items-center">
-                <i class="material-icons event-list-chevron">chevron_right</i>
-            </div>
-        </div>
-    </a>
-    {% empty %}
-    <div class="empty-events-state">
-        <div class="empty-events-icon">
-            <i class="material-icons">event_busy</i>
-        </div>
-        <h3>No Events Found</h3>
-        <p>No events match your current filters. Try adjusting your search criteria:</p>
-        <div class="empty-events-suggestions">
-            <div class="suggestion-item">
-                <i class="material-icons">search</i>
-                <span>Clear your search terms</span>
-            </div>
-            <div class="suggestion-item">
-                <i class="material-icons">location_on</i>
-                <span>Increase your distance range</span>
+                <span>Browse different locations</span>
             </div>
             <div class="suggestion-item">
                 <i class="material-icons">visibility</i>
@@ -736,6 +623,8 @@
     </div>
     {% endfor %}
 </div>
+
+
 
 <!-- Loading Spinner -->
 <div id="loadingSpinner" class="text-center py-5" style="display: none;">
@@ -836,6 +725,64 @@
 </div>
 
 <style>
+
+/* Basic empty state styles */
+.empty-events-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: #f8fafc;
+    border-radius: 1rem;
+    border: 2px dashed #cbd5e1;
+    margin: 2rem 0;
+}
+
+.empty-events-icon {
+    margin-bottom: 1.5rem;
+}
+
+.empty-events-icon i {
+    font-size: 4rem;
+    color: #94a3b8;
+}
+
+.empty-events-suggestions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.suggestion-item {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.suggestion-item i {
+    font-size: 1.5rem;
+    color: #64748b;
+}
+
+.suggestion-item span {
+    color: #374151;
+    font-weight: 500;
+}
+
+.empty-events-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* Pagination styles */
 .modern-pagination-container {
     background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
     border-radius: 2rem;
@@ -906,49 +853,27 @@
     box-shadow: 0 2px 8px rgba(59, 130, 246, 0.05);
 }
 
-/* Dark mode styles */
-.dark-mode .modern-pagination-container {
-    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-    border: 1px solid rgba(59, 130, 246, 0.2);
-    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15);
-}
-
-.dark-mode .modern-page-link {
-    background: linear-gradient(135deg, #334155 0%, #475569 100%);
-    color: #cbd5e1;
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
-}
-
-.dark-mode .modern-page-link:hover {
-    background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
-    color: #ffffff;
-    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.25);
-}
-
-.dark-mode .modern-page-link.active {
-    background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
-    color: #ffffff;
-    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.35);
-}
-
-.dark-mode .modern-page-link.disabled {
-    background: linear-gradient(135deg, #475569 0%, #64748b 100%);
-    color: #64748b;
-}
-
-.dark-mode .modern-page-link.disabled:hover {
-    background: linear-gradient(135deg, #475569 0%, #64748b 100%);
-    color: #64748b;
-}
-
-.dark-mode .modern-page-info {
-    background: rgba(30, 41, 59, 0.8);
-    color: #cbd5e1;
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
-}
-
 /* Mobile responsive */
 @media (max-width: 768px) {
+    .empty-events-suggestions {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .suggestion-item {
+        padding: 1rem;
+    }
+    
+    .empty-events-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .empty-events-actions .btn {
+        width: 100%;
+        max-width: 300px;
+    }
+    
     .modern-pagination-container {
         padding: 1.5rem;
         border-radius: 1.5rem;
