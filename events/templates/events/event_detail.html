@@ -356,8 +356,8 @@
 <!-- Edit Event Modal -->
 {% if is_organizer or is_site_admin or is_delegated_assistant %}
 <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-scrollable">
-        <div class="modal-content modern-modal">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable" style="max-height: 85vh; margin: 2vh auto;">
+        <div class="modal-content modern-modal" style="max-height: 85vh; display: flex; flex-direction: column;">
             <div class="modal-header modern-modal-header">
                 <h5 class="modal-title d-flex align-items-center" id="editEventModalLabel">
                     <span class="material-icons me-2">edit</span> Edit Event
@@ -366,7 +366,7 @@
             </div>
             <form method="post" action="{% url 'edit_event' event.id %}" enctype="multipart/form-data" id="editEventForm">
                 {% csrf_token %}
-                <div class="modal-body modern-modal-body">
+                <div class="modal-body modern-modal-body" style="flex: 1; overflow-y: auto; max-height: 70vh;">
                     <!-- Event Details -->
                     <div class="form-section mb-4">
                         <div class="form-section-header">
@@ -617,7 +617,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer modern-modal-footer">
+                <div class="modal-footer modern-modal-footer" style="flex-shrink: 0; position: sticky; bottom: 0; background: white; border-top: 1px solid #dee2e6;">
                     <button type="button" class="btn btn-outline-secondary modern-btn" data-bs-dismiss="modal">
                         <span class="material-icons me-1">close</span> Cancel
                     </button>

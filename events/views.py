@@ -796,9 +796,50 @@ def edit_event(request, event_id):
                         messages.error(request, f"Invalid date format: {date}. Please use MM/DD/YYYY format.")
                         return redirect(f'{event.get_absolute_url()}?edit=1')
             if start_time:
-                event.start_time = start_time
+                # Parse time string to time object
+                try:
+                    from datetime import datetime
+                    # Try different time formats
+                    time_formats = ['%H:%M', '%I:%M %p', '%I:%M%p', '%I:%M %P', '%I:%M%P']
+                    parsed_start_time = None
+                    for fmt in time_formats:
+                        try:
+                            parsed_start_time = datetime.strptime(start_time, fmt).time()
+                            break
+                        except ValueError:
+                            continue
+                    
+                    if parsed_start_time is None:
+                        messages.error(request, f"Invalid start time format: {start_time}. Please use HH:MM or HH:MM AM/PM format.")
+                        return redirect(f'{event.get_absolute_url()}?edit=1')
+                    
+                    event.start_time = parsed_start_time
+                except Exception as e:
+                    messages.error(request, f"Error parsing start time: {start_time}")
+                    return redirect(f'{event.get_absolute_url()}?edit=1')
+            
             if end_time:
-                event.end_time = end_time
+                # Parse time string to time object
+                try:
+                    from datetime import datetime
+                    # Try different time formats
+                    time_formats = ['%H:%M', '%I:%M %p', '%I:%M%p', '%I:%M %P', '%I:%M%P']
+                    parsed_end_time = None
+                    for fmt in time_formats:
+                        try:
+                            parsed_end_time = datetime.strptime(end_time, fmt).time()
+                            break
+                        except ValueError:
+                            continue
+                    
+                    if parsed_end_time is None:
+                        messages.error(request, f"Invalid end time format: {end_time}. Please use HH:MM or HH:MM AM/PM format.")
+                        return redirect(f'{event.get_absolute_url()}?edit=1')
+                    
+                    event.end_time = parsed_end_time
+                except Exception as e:
+                    messages.error(request, f"Error parsing end time: {end_time}")
+                    return redirect(f'{event.get_absolute_url()}?edit=1')
             event.address = address
             event.city = city
             event.state = state
