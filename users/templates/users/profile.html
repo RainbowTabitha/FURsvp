@@ -3,6 +3,11 @@
 {% load widget_tweaks %}
 {% block title %}Profile - FURsvp{% endblock %}
 
+{% block extra_head %}
+    {{ block.super }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+{% endblock %}
+
 {% block content %}
 <!-- Breadcrumbs -->
 <div class="container py-3">
@@ -1039,6 +1044,7 @@
 
 {% block extra_js %}
 {{ block.super }}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Profile picture handling

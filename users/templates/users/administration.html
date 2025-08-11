@@ -1483,7 +1483,6 @@
                                 <thead>
                                     <tr>
                                         <th>Post</th>
-                                        <th>Date</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -1492,11 +1491,10 @@
                                     <tr>
                                         <td>
                                             <div class="user-details">
-                                                <div class="user-name">{{ post.post.text|truncatechars:100 }}</div>
+                                                <div class="user-name">{{ post.post.record.text|truncatechars:100 }}</div>
                                                 <div class="username">{{ post.post.uri }}</div>
-                </div>
+                                 </div>
                                         </td>
-                                        <td>{{ post.post.indexedAt|date:"M j, Y g:i A" }}</td>
                                         <td>
                                             <form method="post" style="display: inline;">
                                                 {% csrf_token %}

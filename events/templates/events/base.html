@@ -209,6 +209,23 @@
             transform: none !important;
         }
 
+        /* Responsive modal sizing */
+        .modal-dialog {
+            max-width: 600px !important;
+            width: 90vw !important;
+            margin: 1.75rem auto !important;
+        }
+        .modal-content {
+            max-height: 90vh !important;
+            overflow: hidden !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+        .modal-body {
+            overflow-y: auto !important;
+            max-height: 60vh !important;
+        }
+
 
 
 
@@ -1042,7 +1059,7 @@
         <nav class="navbar navbar-expand-lg">
         <div class="container">
                 <a class="navbar-brand" href="{% url 'home' %}">
-                    <img src="{% static 'fursvp-logo2025.png' %}" alt="FURsvp Logo">
+                    <img src="{% static 'fursvp-v2.png' %}" alt="FURsvp Logo">
                 </a>
 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
