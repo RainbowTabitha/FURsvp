@@ -1191,7 +1191,7 @@
 
 <!-- Edit Group Modal -->
 <div class="modal fade" id="editGroupModal" tabindex="-1" aria-labelledby="editGroupModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="editGroupModalLabel">
@@ -1200,7 +1200,7 @@
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-                <div class="modal-body">
+            <div class="modal-body">
                 <ul class="nav nav-tabs" id="groupManageTabs" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link active" id="edit-tab" data-bs-toggle="tab" data-bs-target="#edit" type="button" role="tab">
@@ -1220,7 +1220,7 @@
                     <div class="tab-pane fade show active" id="edit" role="tabpanel">
                         <form method="post" action="{% url 'group_detail' group.id %}">
                             {% csrf_token %}
-                            <input type="hidden" name="submit_group_edit" value="1">
+                            <input type="hidden" name="edit_group" value="1">
                             
                     <div class="mb-3">
                                 <label for="group_name" class="form-label">Group Name</label>
@@ -1253,7 +1253,28 @@
                                 <label for="group_email" class="form-label">Contact Email</label>
                                 <input type="email" class="form-control" id="group_email" name="group_email" value="{{ group.contact_email|default:'' }}">
                     </div>
-                            
+                            <div class="d-flex gap-2 row align-items-center">
+                                <div class="col-md-4 text-center">
+                                    <label class="form-label">Group Logo</label>
+                                    <div class="mb-2">
+                                        {% if group.logo_base64 %}
+                                            <img id="current-group-logo" src="data:image/png;base64,{{ group.logo_base64 }}" alt="{{ group.name }} Logo" style="width: 96px; height: 96px; border-radius: 50%; object-fit: cover;">
+                                        {% else %}
+                                            <div id="current-group-logo" style="width: 96px; height: 96px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #888; font-size: 2.5rem;">
+                                                <span class="material-icons">group</span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <input type="hidden" name="logo_base64" id="group-logo-base64" value="{{ group.logo_base64|default:'' }}">
+                                    <input type="file" class="form-control mb-2" id="group-logo-input" accept="image/*">
+                                </div>
+                                <div class="col-md-8">
+                                    <div id="group-image-cropper-container" class="d-none">
+                                        <img id="group-image-to-crop" src="" alt="Image to Crop" style="max-width: 100%; display: block;">
+                                        <button type="button" class="btn btn-primary mt-2" id="group-crop-and-save-button">Crop and Save</button>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="d-flex gap-2">
                                 <button type="submit" class="btn btn-primary">
                                     <i class="material-icons">save</i>
@@ -1361,9 +1382,36 @@
     </div>
 </div>
 
+<!-- Group Logo Cropper Modal -->
+<div class="modal fade" id="groupLogoModal" tabindex="-1" aria-labelledby="groupLogoModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="groupLogoModalLabel">Update Group Logo</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <input type="file" class="form-control mb-3" id="group-logo-input" accept="image/*">
+        <div id="group-image-cropper-container" class="d-none">
+          <img id="group-image-to-crop" src="" alt="Image to Crop" style="max-width: 100%; display: block;">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="group-crop-and-save-button">Crop and Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Tom Select JS -->
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+
+<!-- Cropper.js CSS should remain in <head> or top of file -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+<!-- Place Cropper.js JS right before your custom script -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
 <script>
 // Initialize Quill.js for edit group modal
@@ -1427,6 +1475,25 @@ if (editGroupModal) {
         setTimeout(initQuill, 100);
     });
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+  const changeLogoBtn = document.querySelector('[data-bs-target="#groupLogoModal"]');
+  const editGroupModal = document.getElementById('editGroupModal');
+  const groupLogoModal = document.getElementById('groupLogoModal');
+  if (changeLogoBtn && editGroupModal && groupLogoModal) {
+    changeLogoBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      // Hide the edit modal first
+      const editModalInstance = bootstrap.Modal.getInstance(editGroupModal);
+      if (editModalInstance) editModalInstance.hide();
+      // Then show the logo modal
+      setTimeout(() => {
+        const logoModalInstance = new bootstrap.Modal(groupLogoModal);
+        logoModalInstance.show();
+      }, 400); // Wait for the first modal to finish hiding
+    });
+  }
+});
 
 // Events view toggle
 document.addEventListener('DOMContentLoaded', function() {
@@ -1763,6 +1830,76 @@ function openAnnouncementModal(element) {
         document.getElementById('modalAnnouncementDate').textContent = '';
         document.getElementById('modalAnnouncementContent').innerHTML = '';
         document.getElementById('modalAnnouncementLink').href = '#';
+    });
+}
+
+let cropper = null;
+const groupLogoInput = document.getElementById('group-logo-input');
+const groupImageToCrop = document.getElementById('group-image-to-crop');
+const groupImageCropperContainer = document.getElementById('group-image-cropper-container');
+const groupCropAndSaveButton = document.getElementById('group-crop-and-save-button');
+const groupLogoBase64Input = document.getElementById('group-logo-base64');
+const currentGroupLogo = document.getElementById('current-group-logo');
+
+if (groupLogoInput && groupImageToCrop && groupImageCropperContainer && groupCropAndSaveButton && groupLogoBase64Input) {
+    groupLogoInput.addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (event) {
+            groupImageToCrop.src = event.target.result;
+            groupImageCropperContainer.classList.remove('d-none');
+            if (cropper) {
+                cropper.destroy();
+            }
+            cropper = new Cropper(groupImageToCrop, {
+                aspectRatio: 1,
+                viewMode: 1,
+                autoCropArea: 1,
+                background: false,
+                movable: false,
+                zoomable: true,
+                rotatable: false,
+                scalable: false,
+                responsive: true,
+                minContainerWidth: 300,
+                minContainerHeight: 300
+            });
+        };
+        reader.readAsDataURL(file);
+    });
+
+    groupCropAndSaveButton.addEventListener('click', function () {
+        if (!cropper) return;
+        const canvas = cropper.getCroppedCanvas({
+            width: 256,
+            height: 256,
+            imageSmoothingQuality: 'high',
+        });
+        const base64 = canvas.toDataURL('image/png');
+        groupLogoBase64Input.value = base64.replace(/^data:image\/png;base64,/, '');
+        // Update preview in the form
+        if (currentGroupLogo.tagName === 'IMG') {
+            currentGroupLogo.src = base64;
+        } else {
+            // Replace placeholder with image
+            const img = document.createElement('img');
+            img.id = 'current-group-logo';
+            img.src = base64;
+            img.alt = 'Group Logo';
+            img.style.width = '96px';
+            img.style.height = '96px';
+            img.style.borderRadius = '50%';
+            img.style.objectFit = 'cover';
+            currentGroupLogo.parentNode.replaceChild(img, currentGroupLogo);
+        }
+        // Hide cropper and reset input
+        groupImageCropperContainer.classList.add('d-none');
+        groupLogoInput.value = '';
+        if (cropper) {
+            cropper.destroy();
+            cropper = null;
+        }
     });
 }
 </script>
