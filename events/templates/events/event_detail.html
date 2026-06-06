@@ -1691,20 +1691,7 @@
                                                 <div class="invalid-feedback d-block">{{ event_form.city.errors }}</div>
                                                 {% endif %}
                                             </div>
-                                            <div class="col-md-6 mb-3 mb-md-0">
-                                                <label for="{{ event_form.country.id_for_label }}"
-                                                    class="form-label d-flex align-items-center">
-                                                    <i class="material-icons me-2" style="font-size: 1.3em;">flag</i>
-                                                    Country
-                                                </label>
-                                                {% render_field event_form.country class="custom-select-modern" %}
-                                                {% if event_form.country.errors %}
-                                                <div class="invalid-feedback d-block">{{ event_form.country.errors }}</div>
-                                                {% endif %}
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-6 mb-3 mb-md-0 state-field-group">
+                                            <div class="col-md-6">
                                                 <label for="{{ event_form.state.id_for_label }}"
                                                     class="form-label d-flex align-items-center">
                                                     <i class="material-icons me-2" style="font-size: 1.3em;">map</i>
@@ -1712,18 +1699,8 @@
                                                 </label>
                                                 {% render_field event_form.state class="custom-select-modern" %}
                                                 {% if event_form.state.errors %}
-                                                <div class="invalid-feedback d-block">{{ event_form.state.errors }}</div>
-                                                {% endif %}
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label for="{{ event_form.timezone.id_for_label }}"
-                                                    class="form-label d-flex align-items-center">
-                                                    <i class="material-icons me-2" style="font-size: 1.3em;">schedule</i>
-                                                    Time Zone
-                                                </label>
-                                                {% render_field event_form.timezone class="custom-select-modern" %}
-                                                {% if event_form.timezone.errors %}
-                                                <div class="invalid-feedback d-block">{{ event_form.timezone.errors }}</div>
+                                                <div class="invalid-feedback d-block">{{ event_form.state.errors }}
+                                                </div>
                                                 {% endif %}
                                             </div>
                                         </div>
@@ -2329,45 +2306,6 @@
         var cityField = document.getElementById('id_city');
         var stateField = document.getElementById('id_state');
         var addressField = document.getElementById('id_address');
-
-        function updateStateVisibility() {
-            var countrySelect = document.getElementById('id_country');
-            var stateGroup = document.querySelector('.state-field-group');
-            var stateSelect = document.getElementById('id_state');
-            if (!countrySelect || !stateGroup || !stateSelect) {
-                return;
-            }
-
-            var selectedCountry = countrySelect.value;
-            var visibleStates = 0;
-
-            Array.from(stateSelect.options).forEach(function (option) {
-                if (!option.value) {
-                    option.hidden = false;
-                    return;
-                }
-                var optionCountry = option.dataset.country || '';
-                if (selectedCountry && optionCountry === selectedCountry) {
-                    option.hidden = false;
-                    visibleStates += 1;
-                } else {
-                    option.hidden = true;
-                    if (option.selected) {
-                        option.selected = false;
-                    }
-                }
-            });
-
-            stateGroup.style.display = selectedCountry && visibleStates ? '' : 'none';
-        }
-
-        updateStateVisibility();
-        var countrySelect = document.getElementById('id_country');
-        if (countrySelect) {
-            countrySelect.addEventListener('change', function () {
-                updateStateVisibility();
-            });
-        }
 
         if (addressField) {
             var autocompleteContainer = document.createElement('div');

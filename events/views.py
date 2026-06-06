@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Event, RSVP, Post, Group, State, Country
+from .models import Event, RSVP, Post, Group
 from django.utils import timezone
 from datetime import timedelta, datetime
 from django.contrib.auth.decorators import login_required
@@ -89,7 +89,6 @@ def home(request):
     
     search_query = request.GET.get('search', '').strip()
     state_filter = request.GET.get('state', '').strip()
-    country_filter = request.GET.get('country', '').strip()
     
     # Base queryset - filter out events that have already passed and cancelled events
     now = timezone.now()
@@ -113,18 +112,7 @@ def home(request):
 
     # Apply state filter
     if state_filter:
-        events = events.filter(
-            models.Q(state__state_name__iexact=state_filter) |
-            models.Q(state__state_code__iexact=state_filter)
-        )
-
-    # Apply country filter
-    if country_filter:
-        events = events.filter(
-            models.Q(country__country_name__iexact=country_filter) |
-            models.Q(country__alpha_2_code__iexact=country_filter) |
-            models.Q(country__alpha_3_code__iexact=country_filter)
-        )
+        events = events.filter(state__iexact=state_filter)
 
     events = events.annotate(
         confirmed_count=models.Count('rsvps', filter=models.Q(rsvps__status='confirmed'))
@@ -231,13 +219,11 @@ def home(request):
     else:
         calendar_data = None
     
-    # Get all unique states and countries for the dropdown
-    all_states = State.objects.select_related('country').order_by('state_name')
-    all_countries = Country.objects.order_by('country_name')
+    # Get all unique states for the dropdown
+    all_states = Event.objects.exclude(state__isnull=True).exclude(state__exact='').values_list('state', flat=True).distinct().order_by('state')
     
     context = {
         'events': events_page,
-        'all_countries': all_countries,
         'current_sort': sort_by,
         'current_order': sort_order,
         'filter_adult': filter_adult,
@@ -635,7 +621,7 @@ def event_detail(request, event_id):
     if event.city:
         city_state_parts.append(event.city)
     if event.state:
-        city_state_parts.append(str(event.state))
+        city_state_parts.append(event.state)
     
     if city_state_parts:
         location_components.append(", ".join(city_state_parts))

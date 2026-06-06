@@ -4,7 +4,6 @@ from django.contrib.auth.models import User
 from datetime import datetime
 from django.utils import timezone
 from django.utils.html import strip_tags
-import pytz
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -59,9 +58,6 @@ class GroupSerializer(serializers.ModelSerializer):
 class EventSerializer(serializers.ModelSerializer):
     """Serializer for Event model with basic info"""
     group = GroupSerializer(read_only=True)
-    state = serializers.CharField(source='state.state_name', read_only=True, allow_null=True)
-    country = serializers.CharField(source='country.country_name', read_only=True, allow_null=True)
-    timezone = serializers.CharField(read_only=True, allow_null=True)
     start_timestamp = serializers.SerializerMethodField()
     end_timestamp = serializers.SerializerMethodField()
     description = serializers.SerializerMethodField()
@@ -70,7 +66,7 @@ class EventSerializer(serializers.ModelSerializer):
         model = Event
         fields = [
             'id', 'title', 'group', 'date', 'start_time', 'end_time',
-            'start_timestamp', 'end_timestamp', 'description', 'address', 'city', 'state', 'country', 'timezone',
+            'start_timestamp', 'end_timestamp', 'description', 'address', 'city', 'state',
             'status', 'age_restriction', 'capacity', 'waitlist_enabled',
             'attendee_list_public', 'enable_rsvp_questions'
         ]
@@ -79,14 +75,9 @@ class EventSerializer(serializers.ModelSerializer):
         """Get ISO-8601 timestamp for start time"""
         if obj.date and obj.start_time:
             dt = datetime.combine(obj.date, obj.start_time)
-            tz = timezone.get_current_timezone()
-            if getattr(obj, 'timezone', None):
-                try:
-                    tz = pytz.timezone(obj.timezone)
-                except Exception:
-                    tz = timezone.get_current_timezone()
-            if not timezone.is_aware(dt):
-                dt = tz.localize(dt) if hasattr(tz, 'localize') else timezone.make_aware(dt, tz)
+            # Make timezone-aware if Django is configured for timezones
+            if timezone.is_aware(timezone.now()):
+                dt = timezone.make_aware(dt, timezone.get_current_timezone())
             return dt.isoformat()
         return None
     
@@ -94,14 +85,9 @@ class EventSerializer(serializers.ModelSerializer):
         """Get ISO-8601 timestamp for end time"""
         if obj.date and obj.end_time:
             dt = datetime.combine(obj.date, obj.end_time)
-            tz = timezone.get_current_timezone()
-            if getattr(obj, 'timezone', None):
-                try:
-                    tz = pytz.timezone(obj.timezone)
-                except Exception:
-                    tz = timezone.get_current_timezone()
-            if not timezone.is_aware(dt):
-                dt = tz.localize(dt) if hasattr(tz, 'localize') else timezone.make_aware(dt, tz)
+            # Make timezone-aware if Django is configured for timezones
+            if timezone.is_aware(timezone.now()):
+                dt = timezone.make_aware(dt, timezone.get_current_timezone())
             return dt.isoformat()
         return None
 
@@ -113,9 +99,6 @@ class EventSerializer(serializers.ModelSerializer):
 class EventDetailSerializer(serializers.ModelSerializer):
     """Detailed serializer for Event model with additional info"""
     group = GroupSerializer(read_only=True)
-    state = serializers.CharField(source='state.state_name', read_only=True, allow_null=True)
-    country = serializers.CharField(source='country.country_name', read_only=True, allow_null=True)
-    timezone = serializers.CharField(read_only=True, allow_null=True)
     attendee_count = serializers.SerializerMethodField()
     waitlist_count = serializers.SerializerMethodField()
     start_timestamp = serializers.SerializerMethodField()
@@ -126,7 +109,7 @@ class EventDetailSerializer(serializers.ModelSerializer):
         model = Event
         fields = [
             'id', 'title', 'group', 'date', 'start_time', 'end_time',
-            'start_timestamp', 'end_timestamp', 'description', 'address', 'city', 'state', 'country', 'timezone',
+            'start_timestamp', 'end_timestamp', 'description', 'address', 'city', 'state',
             'status', 'age_restriction', 'capacity', 'waitlist_enabled',
             'attendee_list_public', 'enable_rsvp_questions',
             'attendee_count', 'waitlist_count'
@@ -144,14 +127,9 @@ class EventDetailSerializer(serializers.ModelSerializer):
         """Get ISO-8601 timestamp for start time"""
         if obj.date and obj.start_time:
             dt = datetime.combine(obj.date, obj.start_time)
-            tz = timezone.get_current_timezone()
-            if getattr(obj, 'timezone', None):
-                try:
-                    tz = pytz.timezone(obj.timezone)
-                except Exception:
-                    tz = timezone.get_current_timezone()
-            if not timezone.is_aware(dt):
-                dt = tz.localize(dt) if hasattr(tz, 'localize') else timezone.make_aware(dt, tz)
+            # Make timezone-aware if Django is configured for timezones
+            if timezone.is_aware(timezone.now()):
+                dt = timezone.make_aware(dt, timezone.get_current_timezone())
             return dt.isoformat()
         return None
     
@@ -159,14 +137,9 @@ class EventDetailSerializer(serializers.ModelSerializer):
         """Get ISO-8601 timestamp for end time"""
         if obj.date and obj.end_time:
             dt = datetime.combine(obj.date, obj.end_time)
-            tz = timezone.get_current_timezone()
-            if getattr(obj, 'timezone', None):
-                try:
-                    tz = pytz.timezone(obj.timezone)
-                except Exception:
-                    tz = timezone.get_current_timezone()
-            if not timezone.is_aware(dt):
-                dt = tz.localize(dt) if hasattr(tz, 'localize') else timezone.make_aware(dt, tz)
+            # Make timezone-aware if Django is configured for timezones
+            if timezone.is_aware(timezone.now()):
+                dt = timezone.make_aware(dt, timezone.get_current_timezone())
             return dt.isoformat()
         return None
 

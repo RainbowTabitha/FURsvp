@@ -51,31 +51,6 @@ class Group(models.Model):
             status='active'
         ).order_by('-date', '-start_time')
 
-class Country(models.Model):
-    alpha_2_code = models.CharField(max_length=2, primary_key=True)
-    alpha_3_code = models.CharField(max_length=3, unique=True, blank=True, null=True)
-    country_name = models.CharField(max_length=100)
-
-    class Meta:
-        verbose_name = 'Country'
-        verbose_name_plural = 'Countries'
-
-    def __str__(self):
-        return self.country_name
-
-class State(models.Model):
-    state_code = models.CharField(max_length=2, primary_key=True)
-    country = models.ForeignKey(Country, on_delete=models.CASCADE, related_name='states')
-    state_name = models.CharField(max_length=100)
-
-    class Meta:
-        ordering = ['country__alpha_2_code', 'state_name']
-        verbose_name = 'State'
-        verbose_name_plural = 'States'
-
-    def __str__(self):
-        return self.state_name
-
 class Event(models.Model):
     title = models.CharField(max_length=200)
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
@@ -85,14 +60,7 @@ class Event(models.Model):
     description = models.TextField(blank=True)
     address = models.CharField(max_length=255, blank=True, null=True)
     city = models.CharField(max_length=50, blank=True, null=True)
-    country = models.ForeignKey('Country', null=True, blank=True, on_delete=models.SET_NULL, related_name='events')
-    state = models.ForeignKey('State', null=True, blank=True, on_delete=models.SET_NULL, related_name='events')
-    timezone = models.CharField(
-        max_length=50,
-        blank=True,
-        null=True,
-        help_text="IANA time zone for the event location"
-    )
+    state = models.CharField(max_length=50, blank=True, null=True)
     organizer = models.ForeignKey(User, on_delete=models.CASCADE)
     STATUS_CHOICES = [
         ('active', 'Active'),
@@ -159,15 +127,6 @@ class Event(models.Model):
                 'waitlist_enabled': 'Capacity must be set when waitlist is enabled.',
                 'capacity': 'Capacity must be set when waitlist is enabled.'
             })
-
-        if self.state:
-            if self.country and self.state.country != self.country:
-                raise ValidationError({
-                    'state': 'Selected state does not belong to the selected country.',
-                    'country': 'Selected country does not match the state.'
-                })
-            if not self.country:
-                self.country = self.state.country
     
     def __str__(self):
         return self.title

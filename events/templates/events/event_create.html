@@ -206,30 +206,64 @@
                                         {{ form.city|attr:'placeholder:City' }}
                                     </div>
                                 </div>
-                                <div class="col-md-6 mb-3 mb-md-0">
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light">
-                                            <i class="material-icons text-primary">flag</i>
-                                        </span>
-                                        {{ form.country|add_class:'form-select' }}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6 mb-3 mb-md-0 state-field-group">
+                                <div class="col-md-6">
                                     <div class="input-group">
                                         <span class="input-group-text bg-light">
                                             <i class="material-icons text-primary">map</i>
                                         </span>
-                                        {{ form.state|add_class:'form-select' }}
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light">
-                                            <i class="material-icons text-primary">schedule</i>
-                                        </span>
-                                        {{ form.timezone|add_class:'form-select' }}
+                                        <select name="state" id="id_state" class="form-select" style="height: 48px;">
+                                            <option value="">Select State</option>
+                                            <option value="Alabama">Alabama</option>
+                                            <option value="Alaska">Alaska</option>
+                                            <option value="Arizona">Arizona</option>
+                                            <option value="Arkansas">Arkansas</option>
+                                            <option value="California">California</option>
+                                            <option value="Colorado">Colorado</option>
+                                            <option value="Connecticut">Connecticut</option>
+                                            <option value="Delaware">Delaware</option>
+                                            <option value="Florida">Florida</option>
+                                            <option value="Georgia">Georgia</option>
+                                            <option value="Hawaii">Hawaii</option>
+                                            <option value="Idaho">Idaho</option>
+                                            <option value="Illinois">Illinois</option>
+                                            <option value="Indiana">Indiana</option>
+                                            <option value="Iowa">Iowa</option>
+                                            <option value="Kansas">Kansas</option>
+                                            <option value="Kentucky">Kentucky</option>
+                                            <option value="Louisiana">Louisiana</option>
+                                            <option value="Maine">Maine</option>
+                                            <option value="Maryland">Maryland</option>
+                                            <option value="Massachusetts">Massachusetts</option>
+                                            <option value="Michigan">Michigan</option>
+                                            <option value="Minnesota">Minnesota</option>
+                                            <option value="Mississippi">Mississippi</option>
+                                            <option value="Missouri">Missouri</option>
+                                            <option value="Montana">Montana</option>
+                                            <option value="Nebraska">Nebraska</option>
+                                            <option value="Nevada">Nevada</option>
+                                            <option value="New Hampshire">New Hampshire</option>
+                                            <option value="New Jersey">New Jersey</option>
+                                            <option value="New Mexico">New Mexico</option>
+                                            <option value="New York">New York</option>
+                                            <option value="North Carolina">North Carolina</option>
+                                            <option value="North Dakota">North Dakota</option>
+                                            <option value="Ohio">Ohio</option>
+                                            <option value="Oklahoma">Oklahoma</option>
+                                            <option value="Oregon">Oregon</option>
+                                            <option value="Pennsylvania">Pennsylvania</option>
+                                            <option value="Rhode Island">Rhode Island</option>
+                                            <option value="South Carolina">South Carolina</option>
+                                            <option value="South Dakota">South Dakota</option>
+                                            <option value="Tennessee">Tennessee</option>
+                                            <option value="Texas">Texas</option>
+                                            <option value="Utah">Utah</option>
+                                            <option value="Vermont">Vermont</option>
+                                            <option value="Virginia">Virginia</option>
+                                            <option value="Washington">Washington</option>
+                                            <option value="West Virginia">West Virginia</option>
+                                            <option value="Wisconsin">Wisconsin</option>
+                                            <option value="Wyoming">Wyoming</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
@@ -404,46 +438,7 @@
 <script src="https://cdn.jsdelivr.net/npm/tinymce@7.9.1/tinymce.min.js" crossorigin="anonymous"
     referrerpolicy="no-referrer"></script>
 <script>
-    function updateStateVisibility() {
-        const countrySelect = document.getElementById('id_country');
-        const stateGroup = document.querySelector('.state-field-group');
-        const stateSelect = document.getElementById('id_state');
-        if (!countrySelect || !stateGroup || !stateSelect) {
-            return;
-        }
-
-        const selectedCountry = countrySelect.value;
-        let visibleStates = 0;
-
-        Array.from(stateSelect.options).forEach(option => {
-            if (!option.value) {
-                option.hidden = false;
-                return;
-            }
-            const optionCountry = option.dataset.country || '';
-            if (selectedCountry && optionCountry === selectedCountry) {
-                option.hidden = false;
-                visibleStates += 1;
-            } else {
-                option.hidden = true;
-                if (option.selected) {
-                    option.selected = false;
-                }
-            }
-        });
-
-        stateGroup.style.display = selectedCountry && visibleStates ? '' : 'none';
-    }
-
     document.addEventListener('DOMContentLoaded', function () {
-        updateStateVisibility();
-        const countrySelect = document.getElementById('id_country');
-        if (countrySelect) {
-            countrySelect.addEventListener('change', function () {
-                updateStateVisibility();
-            });
-        }
-
         // Initialize address autocomplete
         const addressInput = document.getElementById('{{ form.address.id_for_label }}');
         const stateInput = document.getElementById('{{ form.state.id_for_label }}');
